@@ -1,0 +1,20 @@
+<ion-content class="content">
+  <app-header></app-header>
+  <app-nav></app-nav>
+  <div class="container">
+    <app-tab [column]="column">
+      <tr *ngFor="let user of users">
+        <td>{{ user.name }}</td>
+        <td><input type="text" value="{{ user.age }}" /></td>
+        <td>
+          <input
+            type="checkbox"
+            id="scales"
+            name="scales"
+            [checked]="user.isBig"
+          />
+        </td>
+      </tr>
+    </app-tab>
+  </div>
+</ion-content>
