@@ -1,0 +1,44 @@
+<div>
+  <span
+    class="nav-left"
+    style="border-bottom-left-radius: 23px;
+  border-top-left-radius: 23px;width: 11%"
+  >
+    <ion-icon name="rewind"></ion-icon>
+  </span>
+  <span (click)="onPrevious()" style="width: 11%">
+    <ion-icon
+      [ngStyle]="{ color: leftIsEnding ? 'grey' : 'black' }"
+      name="arrow-dropleft"
+    ></ion-icon>
+  </span>
+  <span
+    (click)="listerOuvrier()"
+    style="width: 20% ; border-bottom: 2px solid blue"
+  >
+    <ion-icon name="copy"></ion-icon>
+  </span>
+  <span style="width: 8% ;padding: 11px">
+    <b> {{ count }} / {{ totalCount }}</b>
+  </span>
+  <span
+    (click)="onValider()"
+    class="side_right"
+    style="width: 20% ;border-bottom: 2px solid red"
+  >
+    <ion-icon name="checkmark"></ion-icon>
+  </span>
+  <span (click)="onNext()" class="side_right" style="width: 11%">
+    <ion-icon
+      [ngStyle]="{ color: rightIsEnding ? 'grey' : 'black' }"
+      name="arrow-dropright"
+    ></ion-icon>
+  </span>
+  <span
+    class="nav_right"
+    style="border-bottom-right-radius: 23px;
+  border-top-right-radius: 23px;width: 11%"
+  >
+    <ion-icon name="fastforward"></ion-icon>
+  </span>
+</div>

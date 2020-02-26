@@ -1,0 +1,225 @@
+<div (onclick)="click()" class="container">
+  <app-dialog (OnCtn)="onDelete()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    id="form1"
+    (ngSubmit)="
+      isUpdate ? OnUpdateOuvrierDesignation() : OnAddOuvrierDesignation()
+    "
+    #f="ngForm"
+  >
+    <app-tab [column]="columnDesignation">
+      <tr>
+        <td class="tdInput">
+          <select
+            (focus)="isUpdate = false"
+            name="ouvID"
+            class="Select_options"
+            (change)="onSelect($event.target.value)"
+            ngModel
+          >
+            <option value="" selected></option>
+            <option
+              [value]="item.id"
+              *ngFor="let item of projetSelectionner.ouvriers"
+              >{{ item.nom }} {{ item.prenom }}</option
+            >
+          </select>
+        </td>
+        <td class="tdInput">
+          {{ ouvrierCin }}
+        </td>
+
+        <td class="tdInput">
+          {{ ouvrierQualification }}
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="time"
+            name="debut"
+            placeholder="debut"
+            (blur)="onBlur($event)"
+            required
+            ngModel
+            #dateDebut
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="time"
+            name="fin"
+            (blur)="onBlur($event)"
+            placeholder="fin"
+            required
+            ngModel
+            #dateFin
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            disabled
+            type="text"
+            name="travail"
+            (blur)="onBlur($event)"
+            placeholder="travail"
+            required
+            ngModel
+            [ngModel]="calculTravail(dateDebut.value, dateFin.value)"
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="jour"
+            (blur)="onBlur($event)"
+            placeholder="jour"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="hSup"
+            (blur)="onBlur($event)"
+            placeholder="hSup"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            [ngModel]="false"
+            (focus)="isUpdate = false"
+            type="checkbox"
+            name="epi"
+            (blur)="onBlur($event)"
+            placeholder="epi"
+            ngModel
+            #epiInput
+          />
+        </td>
+      </tr>
+
+      <!--****************************************************************************************************************************-->
+      <!--****************************************************************************************************************************-->
+      <!--****************************************************************************************************************************-->
+
+      <ng-container *ngIf="FicheOuvrier?.ouvrierDesignations.length > 0">
+        <tr
+          [ngStyle]="{
+            'background-color':
+              this.ouvDsSlIndex == i ? 'rgba(255, 0, 0, 0.1)' : '',
+            'border-bottom': timeException(
+              tempsDebut.value,
+              tempsFin.value,
+              hSup.value,
+              jour.value
+            )
+              ? ''
+              : '2px solid red'
+          }"
+          long-press
+          (onLongPress)="onLongPress(ouvDs.id)"
+          *ngFor="let ouvDs of FicheOuvrier?.ouvrierDesignations; let i = index"
+        >
+          <td tabindex="1" (focus)="onFocus(i)">
+            {{ ouvDs.nom }}
+          </td>
+
+          <td tabindex="1" (focus)="onFocus(i)">
+            {{ ouvDs.cin }}
+          </td>
+
+          <td tabindex="1" (focus)="onFocus(i)">
+            {{ ouvDs.qualification }}
+          </td>
+          <td>
+            <input
+              (focus)="onFocus(i)"
+              [ngModel]="ouvDs.tempsDebut"
+              type="time"
+              name="debut{{ i }}"
+              placeholder="debut"
+              (blur)="onUpdateBlur($event)"
+              required
+              ngModel
+              #tempsDebut
+            />
+          </td>
+          <td>
+            <input
+              (focus)="onFocus(i)"
+              [ngModel]="ouvDs.tempsFin"
+              type="time"
+              name="fin{{ i }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="fin"
+              required
+              ngModel
+              #tempsFin
+            />
+          </td>
+          <td>
+            <input
+              div
+              (focus)="onFocus(i)"
+              readonly
+              type="text"
+              name="travail{{ i }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="travail"
+              required
+              ngModel
+              [ngModel]="calculTravail(tempsDebut.value, tempsFin.value)"
+              #trv
+            />
+          </td>
+          <td>
+            <input
+              (focus)="onFocus(i)"
+              [ngModel]="ouvDs.jour"
+              type="text"
+              name="jour{{ i }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="jour"
+              required
+              ngModel
+              #jour
+            />
+          </td>
+          <td>
+            <input
+              (focus)="onFocus(i)"
+              [ngModel]="ouvDs.hsup"
+              type="text"
+              name="hSup{{ i }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="hSup"
+              required
+              ngModel
+              #hSup
+            />
+          </td>
+          <td>
+            <input
+              (focus)="onFocus(i)"
+              type="checkbox"
+              name="epi{{ i }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="epi"
+              [ngModel]="ouvDs.epi"
+              ngModel
+            />
+          </td>
+        </tr>
+      </ng-container>
+    </app-tab>
+  </form>
+</div>

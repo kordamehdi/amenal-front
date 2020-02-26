@@ -1,0 +1,52 @@
+<div>
+  <span class="side_left" style="padding: 6px">. . . </span>
+  <span class="content" style="align-content: left">
+    <label>
+      <ion-icon
+        ios="ios-calendar"
+        md="md-calendar"
+        style="color: blue;margin-bottom: -5px ;margin-left: 15px"
+      >
+      </ion-icon
+    ></label>
+    <input type="date" class="date" [ngModel]="ficheSelectionner?.date" />
+  </span>
+
+  <span class="content" style="padding: 10px">
+    <select
+      #tp
+      (change)="OnSelectProjetType(tp.value)"
+      class="Select_options"
+      [disabled]="selectDisable"
+    >
+      <option value="TOUS">TOUS</option>
+      <option
+        value="{{ type }}"
+        class="content"
+        style="padding: 10px"
+        *ngFor="let type of fichierTypes"
+        value="type"
+      >
+        {{ type }}
+      </option>
+    </select>
+  </span>
+
+  <span class="content" style="padding: 10px">
+    <select #t (change)="OnSelectProjet(t.value)" class="Select_options">
+      <option value="">Selectionner les projet...</option>
+      <option
+        class="content"
+        style="padding: 10px"
+        *ngFor="let projet of projets"
+        [value]="projet.id"
+      >
+        {{ projet.titre }}
+      </option>
+    </select>
+  </span>
+
+  <span class="side_right">
+    <ion-icon name="log-in" style="color: red"></ion-icon>
+  </span>
+</div>
