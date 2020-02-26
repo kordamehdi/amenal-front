@@ -1,0 +1,71 @@
+div {
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px;
+}
+span {
+  vertical-align: baseline;
+  padding: 2px;
+  height: 31px;
+  display: inline-block;
+  margin-left: 2px;
+  margin-right: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.content {
+  width: 25%;
+  align-content: center;
+}
+
+.side_left {
+  width: 10%;
+  border-bottom-left-radius: 23px;
+  border-top-left-radius: 23px;
+}
+.side_right {
+  width: 10%;
+  border-bottom-right-radius: 23px;
+  border-top-right-radius: 23px;
+}
+ion-icon {
+  font-size: 20px;
+  margin: 3px;
+  color: black;
+}
+
+.date {
+  display: inline-block;
+  background: transparent;
+  border: none;
+}
+.date:focus {
+  border: none;
+}
+
+.Select_options {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  background: transparent;
+  border: none;
+}
+.select_options :after {
+  background: transparent;
+}
+
+@media only screen and (max-width: 379px) {
+  /* For mobile phones: */
+  span {
+    vertical-align: baseline;
+    padding: 2px;
+    height: 50px;
+    display: inline-block;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}

@@ -1,0 +1,18 @@
+<div *ngIf="showHeader" class="header">
+  <span class="left"><ion-icon name="arrow-round-up"></ion-icon> </span>
+
+  <span class="middle">{{ headerTitle }}</span>
+
+  <span class="left" (click)="OnCancel()">
+    <ion-icon name="arrow-round-up"></ion-icon>
+  </span>
+</div>
+
+<table style="width:100%">
+  <tr>
+    <th *ngFor="let element of column; let first = first; let last = last">
+      {{ element }}
+    </th>
+  </tr>
+  <ng-content></ng-content>
+</table>

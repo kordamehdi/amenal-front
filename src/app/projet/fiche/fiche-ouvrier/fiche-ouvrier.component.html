@@ -1,0 +1,283 @@
+<div class="container">
+  <app-dialog *ngIf="hasError" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <app-fiche-ouvrier-designation></app-fiche-ouvrier-designation>
+  <form
+    style="margin-top:10px "
+    *ngIf="listerOuvrier"
+    (ngSubmit)="isUpdate ? OnUpdateOuvrier() : OnAddOuvrier()"
+    #f="ngForm"
+  >
+    <app-tab
+      headerTitle="LISTE DES MAIN D' OEUVRE"
+      [showHeader]="true"
+      [column]="columnOuvrier"
+    >
+      <tr>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="cin"
+            placeholder="CIN"
+            (blur)="onBlur($event)"
+            required
+            maxlength="7"
+            minlength="7"
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="nom"
+            placeholder="nom"
+            (blur)="onBlur($event)"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="prenom"
+            placeholder="prenom"
+            (blur)="onBlur($event)"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <select
+            (focus)="isUpdate = false"
+            name="qualification"
+            class="Select_options"
+            ngModel
+          >
+            <option [value]="item" *ngFor="let item of qualification">{{
+              item
+            }}</option>
+          </select>
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            max="1998-01-01"
+            type="date"
+            name="age"
+            placeholder="age"
+            (blur)="onBlur($event)"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            max="1998-01-01"
+            type="date"
+            name="ancienter"
+            (blur)="onBlur($event)"
+            placeholder="ancienter"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="J_TRV"
+            (blur)="onBlur($event)"
+            placeholder="J_TRV"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="tele"
+            (blur)="onBlur($event)"
+            placeholder="telephone"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            (focus)="isUpdate = false"
+            type="text"
+            name="appreciation"
+            (blur)="onBlur($event)"
+            placeholder="appreciation"
+            required
+            ngModel
+          />
+        </td>
+      </tr>
+
+      <!-- /****************************************************************************/-->
+
+      <ng-container *ngFor="let ouv of ouvriers">
+        <tr
+          long-press
+          (onLongPress)="onLongPress(ouv.id)"
+          (blur)="onUpdateBlur($event)"
+          [ngStyle]="{
+            'background-color':
+              this.focusID == ouv.id ? 'rgba(255, 0, 0, 0.1)' : ''
+          }"
+          (dblclick)="addOuvToProjet(ouv.id)"
+          [appHasProjet]="ouv.idProjets"
+        >
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="cin{{ ouv.id }}"
+              (blur)="onUpdateBlur($event)"
+              required
+              maxlength="7"
+              minlength="7"
+              [ngModel]="ouv.cin"
+              ngModel
+            />
+          </td>
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="nom{{ ouv.id }}"
+              [ngModel]="ouv.nom"
+              placeholder="nom"
+              (blur)="onUpdateBlur($event)"
+              required
+              ngModel
+            />
+          </td>
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="prenom{{ ouv.id }}"
+              [ngModel]="ouv.prenom"
+              placeholder="prenom"
+              (blur)="onUpdateBlur($event)"
+              required
+              ngModel
+            />
+          </td>
+          <td class="">
+            <select
+              (focus)="onFocus(ouv.id)"
+              (blur)="onUpdateBlur($event)"
+              name="qualification{{ ouv.id }}"
+              class="Select_options"
+              [ngModel]="ouv.qualification"
+              ngModel
+            >
+              <option [value]="item" *ngFor="let item of qualification">{{
+                item
+              }}</option>
+            </select>
+          </td>
+          <td class="">
+            <input
+              [ngStyle]="{
+                display: this.focusID == ouv.id ? 'block' : 'none'
+              }"
+              (focus)="onFocus(ouv.id)"
+              max="1998-01-01"
+              type="date"
+              name="age{{ ouv.id }}"
+              placeholder="age"
+              (blur)="onUpdateBlur($event)"
+              required
+              ngModel="{{ ouv.dateNaissance }}"
+              #dateNss
+              ngModel
+            />
+            <span
+              (blur)="dateNss.focus()"
+              tabindex="1"
+              (focus)="onFocus(ouv.id)"
+              [ngStyle]="{
+                display: this.focusID != ouv.id ? 'block' : 'none'
+              }"
+            >
+              {{ dateNss.value | diffFromNow: "age" }}
+            </span>
+          </td>
+          <td class="">
+            <input
+              [ngStyle]="{
+                display: this.focusID == ouv.id ? 'block' : 'none'
+              }"
+              (focus)="onFocus(ouv.id)"
+              autofocus
+              max="1998-01-01"
+              type="date"
+              name="ancienter{{ ouv.id }}"
+              (blur)="onUpdateBlur($event)"
+              placeholder="ancienter"
+              required
+              [ngModel]="ouv.dateRecrutement"
+              #dateRec
+              ngModel
+            />
+            <span
+              (blur)="dateRec.focus()"
+              tabindex="1"
+              (focus)="onFocus(ouv.id)"
+              [ngStyle]="{
+                display: this.focusID != ouv.id ? 'block' : 'none'
+              }"
+            >
+              {{ dateRec.value | diffFromNow }}
+            </span>
+          </td>
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="J_TRV{{ ouv.id }}"
+              [ngModel]="ouv.J_TRV"
+              (blur)="onUpdateBlur($event)"
+              placeholder="J_TRV"
+              required
+              ngModel
+            />
+          </td>
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="tele{{ ouv.id }}"
+              [ngModel]="ouv.tele"
+              (blur)="onUpdateBlur($event)"
+              placeholder="telephone"
+              ngModel
+            />
+          </td>
+          <td class="">
+            <input
+              (focus)="onFocus(ouv.id)"
+              type="text"
+              name="appreciation{{ ouv.id }}"
+              [ngModel]="ouv.appreciation"
+              (blur)="onUpdateBlur($event)"
+              placeholder="appreciation"
+              required
+              ngModel
+            />
+          </td>
+        </tr>
+      </ng-container>
+    </app-tab>
+  </form>
+</div>
