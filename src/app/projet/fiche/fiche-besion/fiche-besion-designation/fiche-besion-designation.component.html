@@ -1,0 +1,238 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="
+      update === 1 ? OnUpdateBesoinDesignation() : OnAddBesoinDesignation()
+    "
+    #f="ngForm"
+  >
+    <table>
+      <tr class="header">
+        <th style="width: 20%">
+          DESIGNATION
+        </th>
+        <th style="width: 8%">
+          UNITÉ
+        </th>
+        <th style="width: 8%">
+          QT.
+        </th>
+        <th style="width: 12%">
+          DEMANDÉ LE
+        </th>
+        <th style="width: 14%">
+          PRÉVU LE
+        </th>
+        <th style="width: 8%">
+          RETARD
+        </th>
+        <th style="width: 10%">
+          SATISFAIT
+        </th>
+        <th style="width: 20%">
+          OBSERVATION
+        </th>
+      </tr>
+      <tr
+        (click)="onAddClick()"
+        (clickOutside)="onAddClickOutside()"
+        class="stock-content"
+      >
+        <td class="tdInput">
+          <input
+            required
+            type="text"
+            name="designation"
+            placeholder="DESIGNATION"
+            (input)="onSearchBsn(bsn.value)"
+            (focus)="onFocusInputBesoin(bsnList)"
+            (blur)="onBlurInputBesoin(bsnList)"
+            #bsn
+            ngModel
+          />
+          <div #bsnList hidden style="width :27.7%" class="div-list">
+            <div *ngFor="let item of listBesoin" (click)="onSelectBesion(item)">
+              <span class="border-case-black" style="width: 71%">{{
+                item.besoin
+              }}</span>
+              <span class="border-case-black" style="width: 29%">{{
+                item.unite
+              }}</span>
+            </div>
+          </div>
+        </td>
+        <td class="tdInput">
+          <input
+            required
+            type="text"
+            name="unite"
+            placeholder="UNITE"
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            required
+            type="number"
+            min="1"
+            step="0.1"
+            name="quantite"
+            placeholder="QT"
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          {{ now }}
+        </td>
+        <td class="tdInput">
+          <input
+            [min]="now"
+            type="date"
+            name="datePrevu"
+            placeholder="DATE PREVU"
+            ngModel
+            (input)="onCalculeRetard(dP.value)"
+            #dP
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            readonly
+            type="text"
+            name="retard"
+            placeholder="RETARD"
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <ion-checkbox
+            [ngModel]="0"
+            name="satisfaction"
+            ngModel
+          ></ion-checkbox>
+        </td>
+        <td class="tdInput">
+          <input
+            type="text"
+            name="observation"
+            placeholder="OBSERVATION"
+            ngModel
+          />
+        </td>
+      </tr>
+
+      <tr
+        (press)="ondeleteDesignation(ds.id)"
+        [ngStyle]="{
+          'background-color':
+            focusedDsID === ds.id ? 'rgba(255, 0, 0, 0.1)' : '',
+          color: ds.retard < 0 ? 'red' : ''
+        }"
+        (click)="onUpdateClick(i, ds.id)"
+        (clickOutside)="onUpdateClickOutside(i)"
+        class="stock-content"
+        *ngFor="let ds of designation$; let i = index"
+      >
+        <td>
+          <input
+            disabled
+            [ngModel]="ds.designation"
+            required
+            type="text"
+            name="designation{{ i }}"
+            placeholder="DESIGNATION"
+            (focus)="onFocusInputUpdateBesoin(bsnUListUpdt, bsnu.value)"
+            (blur)="onBlurInputBesoin(bsnUListUpdt)"
+            (input)="onSearchBsn(bsnu.value)"
+            #bsnu
+            ngModel
+          />
+          <div hidden #bsnUListUpdt style="width :27.7%" class="div-list">
+            <div
+              *ngFor="let item of listBesoin"
+              (click)="onUpdateSelectBesion(item, i)"
+            >
+              <span class="border-case-black" style="width: 71%">{{
+                item.besoin
+              }}</span>
+              <span class="border-case-black" style="width: 29%">{{
+                item.unite
+              }}</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <input
+            type="text"
+            [ngModel]="ds.unite"
+            name="unite{{ i }}"
+            disabled
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            [ngModel]="ds.quantite"
+            type="number"
+            min="1"
+            step="0.1"
+            name="quantite{{ i }}"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            readonly
+            type="text"
+            [ngModel]="ds.dateDemande"
+            name="dateDemande{{ i }}"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            [ngModel]="ds.datePrevu"
+            [min]="ds.dateDemande"
+            type="date"
+            [type]="focusedDsID === ds.id ? 'date' : 'text'"
+            name="datePrevu{{ i }}"
+            (input)="onCalculeRetardUpdate(dpU.value, i)"
+            #dpU
+            ngModel
+          />
+        </td>
+
+        <td>
+          <input
+            readonly
+            [ngModel]="ds.retard"
+            type="number"
+            name="retard{{ i }}"
+            ngModel
+          />
+        </td>
+        <td>
+          <ion-checkbox
+            name="satisfaction{{ i }}"
+            disabled
+            [ngModel]="ds.satisfaction"
+            ngModel
+          ></ion-checkbox>
+        </td>
+        <td>
+          <input
+            disabled
+            [ngModel]="ds.observation"
+            type="text"
+            name="observation{{ i }}"
+            ngModel
+          />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

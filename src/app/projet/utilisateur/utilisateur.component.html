@@ -1,0 +1,149 @@
+<ion-content>
+  <app-loading></app-loading>
+  <app-sidebar
+    (onClose)="showSideBar = false"
+    *ngIf="showSideBar"
+  ></app-sidebar>
+  <div
+    class="container"
+    (swiperight)="onShowSideBar($event)"
+    (swipeleft)="onHideSideBar($event)"
+  >
+    <span (click)="onRefresh()" class="side_left" style="padding: 6px"
+      >. . .
+    </span>
+    <span class="content" style="align-content: center">
+      GESTION DES UTILISATEURS
+    </span>
+    <span (click)="onLogOut()" class="side_right">
+      <ion-icon name="log-in" style="color: red"></ion-icon>
+    </span>
+  </div>
+
+  <div class="container">
+    <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onCancel()">
+      {{ errorMsg }}
+    </app-dialog>
+    <form
+      style="width: 98%;align-content: center"
+      id="form"
+      #f="ngForm"
+      (ngSubmit)="update === 1 ? onUpdateUtilisateur() : onAddUtilisateur()"
+    >
+      <table>
+        <tr class="header">
+          <th style="width: 25%">
+            USERNAME
+          </th>
+          <th style="width: 25%">
+            PROJET
+          </th>
+          <th style="width: 50%">
+            PREVILÉGE
+          </th>
+        </tr>
+        <tr
+          (click)="onAddClick()"
+          (clickOutside)="onAddClickOutside()"
+          class="inputs"
+        >
+          <td class="tdInput">
+            <input
+              (focus)="onFocusUserInput(usrs)"
+              (blur)="onBlurUserInput(usrs)"
+              type="text"
+              name="username"
+              required
+              placeholder="USERNAME"
+              ngModel
+            />
+            <div hidden class="div-list" #usrs>
+              <div
+                (click)="onSelectUser(p)"
+                *ngFor="let p of users"
+                class="div-detail"
+              >
+                {{ p.username }}
+              </div>
+            </div>
+          </td>
+          <td class="tdInput">
+            <input
+              (focus)="onFocusProjetInput(prt)"
+              (blur)="onBlurProjetInput(prt)"
+              required
+              type="text"
+              name="projet"
+              placeholder="PROJET"
+              ngModel
+            />
+            <div hidden class="div-list" #prt>
+              <div
+                (click)="onSelectProjet(p)"
+                *ngFor="let p of projets"
+                class="div-detail"
+              >
+                {{ p.abreveation }}
+              </div>
+            </div>
+          </td>
+          <td style="display: flex " class="tdInput">
+            <ion-radio-group name="role" ngModel required ngModel>
+              <ion-radio class="checkbox" value="ADMIN"></ion-radio>
+              <label class="label-radio">ADMIN</label>
+              <ion-radio class="checkbox" value="USER"></ion-radio>
+              <label class="label-radio">USER</label>
+              <ion-radio class="checkbox" value="VISITEUR"></ion-radio>
+              <label>VISITEUR</label>
+            </ion-radio-group>
+          </td>
+        </tr>
+        <!--*****************************************************************************************************-->
+        <!--*****************************************************************************************************-->
+        <!--*****************************************************************************************************-->
+
+        <tr
+          class="stock-content"
+          *ngFor="let user of userWithRoles; let i = index"
+        >
+          <td colspan="3">
+            <div>
+              <div class="categorie" (click)="onShowshowDetail(i)">
+                {{ user.username }}
+              </div>
+              <div #detail *ngIf="showDetails[i]">
+                <div
+                  *ngFor="let item of user.roles; let j = index"
+                  class="cont_div"
+                >
+                  <span class="border-case" style="width: 25%"> </span>
+                  <span class="border-case" style="width: 25%">
+                    {{ item.projet }}
+                  </span>
+                  <span class="border-case" style="width: 50%">
+                    <ion-radio-group
+                      [(ngModel)]="item.role"
+                      name="role{{ i }}"
+                      required
+                      ngModel
+                    >
+                      <ion-radio class="checkbox" value="ADMIN"></ion-radio>
+                      <label class="label-radio">ADMIN</label>
+                      <ion-radio class="checkbox" value="USER"></ion-radio>
+                      <label class="label-radio">USER</label>
+                      <ion-radio class="checkbox" value="VISITEUR"></ion-radio>
+                      <label>VISITEUR</label>
+                    </ion-radio-group>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <div class="container">
+    <app-utilisateur-form style=" width: 80% "></app-utilisateur-form>
+  </div>
+</ion-content>

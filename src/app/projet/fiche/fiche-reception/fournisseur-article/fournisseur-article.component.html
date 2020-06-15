@@ -1,0 +1,158 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <app-tab
+    headerTitle="LISTE DES FOURNISSEURs"
+    [showHeader]="true"
+    [column]="culumn"
+  >
+    <tr
+      id="{{ four.id }}"
+      #fournisseur
+      *ngFor="let four of fournisseursAsso; let i = index"
+    >
+      <td>
+        <div>
+          <div
+            [ngStyle]="{
+              'background-color':
+                this.fourIndex == four.id ? 'rgba(255, 0, 0, 0.1)' : '',
+              'font-weight': four.isAssoWithProjet ? 'bold' : 'normal'
+            }"
+            class="cont_div"
+            (clickOutside)="onClickedOutside(four.id)"
+            (click)="onClick(four.id)"
+            style=" padding-top: 2px;
+            padding-bottom: 2px;"
+          >
+            <span
+              (press)="OnDeleteFournisseur(four)"
+              (dblclick)="onAssoFourToProjet(four.id)"
+              style="width: 85%;text-align: left"
+            >
+              {{ four.fournisseurNom }}
+            </span>
+            <span (click)="onShowCategories(i)" style="font-style: oblique">
+              {{ descFr[i] }}
+              <span [innerHTML]="showCategorie[i] ? '>' : '<'"></span>
+            </span>
+          </div>
+          <ng-container *ngIf="showCategorie[i]">
+            <ng-container *ngFor="let cat of four.categories; let j = index">
+              <div
+                (dblclick)="assoCategorieFournisseurToProjet(four.id, cat.id)"
+                (press)="
+                  deleteAssoCategorieFournisseur(
+                    four.id,
+                    cat.id,
+                    four.fournisseurNom,
+                    cat.categorie
+                  )
+                "
+                [ngStyle]="
+                  cat.isAssoWithProjet
+                    ? { 'font-weight': 'bold' }
+                    : { 'font-weight': 'normal' }
+                "
+                style="  padding-top: 2px;
+                padding-bottom: 2px; border: 1px solid rgba(235, 231, 231, 0.651);
+            "
+                class="cont_div"
+              >
+                <span style=" width: 80%;text-align: left ; padding-left: 20px">
+                  {{ cat.categorie }}
+                </span>
+                <span style="font-style: oblique" (click)="onShowDetails(cat)">
+                  {{ descCat[i][j] }}
+                  <span [innerHTML]="cat.show ? '>' : '<'"></span>
+                </span>
+              </div>
+
+              <div #detail *ngIf="cat.show">
+                <div
+                  (dblclick)="assoArticleFournisseurToProjet(four.id, art.id)"
+                  style="background-color: rgba(184, 184, 184, 0.5)"
+                  [ngStyle]="
+                    art.isAssoWithProjet
+                      ? { 'font-weight': 'bold' }
+                      : { 'font-weight': 'normal' }
+                  "
+                  (press)="
+                    deleteAssoArticleFournisseur(
+                      four.id,
+                      art.id,
+                      four.fournisseurNom,
+                      art.designation
+                    )
+                  "
+                  *ngFor="let art of cat.articles"
+                  class="cont_div"
+                >
+                  <span class="case-left"> {{ art.designation }} </span>
+                  <span class="case-right">
+                    {{ art.unite }}
+                  </span>
+                </div>
+              </div>
+            </ng-container>
+
+            <div>
+              <input
+                class="input-search"
+                (input)="OnSearch(inputSrch.value, i)"
+                type="text"
+                (focus)="onFocusInputSearch(i, list)"
+                (blur)="onListBlur(list, inputSrch)"
+                placeholder="DESIGNATION"
+                #inputSrch
+              />
+              <div #list hidden="false" class="div-list">
+                <div
+                  class="div-detail"
+                  *ngFor="let art of arts"
+                  style="width : 100%"
+                >
+                  <span
+                    (click)="OnAssoArticleToFournisseur(four.id, art.id)"
+                    class="span-detail"
+                    style="width:80%"
+                  >
+                    {{ art.designation }}
+                  </span>
+                  <span
+                    (click)="OnAssoArticleToFournisseur(four.id, art.id)"
+                    class="span-detail"
+                    style="width:20% ; text-align: center;"
+                  >
+                    {{ art.unite }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </td>
+    </tr>
+    <tr (clickOutside)="OnaddFounisseur(fourInput)">
+      <input
+        class="tdInput"
+        type="text"
+        style="width : 100%;"
+        placeholder="FOURNISSEUR"
+        (focus)="list.hidden = false"
+        (blur)="onBlurAddFr(list)"
+        #fourInput
+      />
+      <div #list hidden="false" class="div-list">
+        <div *ngFor="let item of fournisseursNonAsso" style="width : 100%">
+          <span
+            (click)="onselectFournisseur(item.fournisseurNom, fourInput)"
+            style=" display: inline-block; border: 1px solid rgba(0, 0, 0, 0.781);width:100%"
+            >{{ item.fournisseurNom }}</span
+          >
+        </div>
+      </div>
+    </tr>
+  </app-tab>
+</div>

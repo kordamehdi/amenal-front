@@ -1,0 +1,159 @@
+<ion-content>
+  <app-loading></app-loading>
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <app-sidebar
+    (onClose)="showSideBar = false"
+    *ngIf="showSideBar"
+  ></app-sidebar>
+  <div (onclick)="click()" class="container">
+    <div
+      class="container-header"
+      (swiperight)="onShowSideBar($event)"
+      (swipeleft)="onHideSideBar($event)"
+    >
+      <span (click)="onRefresh()" class="side_left" style="padding: 6px"
+        >. . .
+      </span>
+      <span class="content" style="align-content: center">
+        GESTION DES PROJETS
+      </span>
+      <span (click)="onLogOut()" class="side_right">
+        <ion-icon name="log-in" style="color: red"></ion-icon>
+      </span>
+    </div>
+
+    <form
+      id="form"
+      #f="ngForm"
+      (ngSubmit)="isUpdate == 1 ? onUpdateProjet() : onAddProjet()"
+    >
+      <table>
+        <tr class="header">
+          <th style="width: 25%">
+            INTITULE
+          </th>
+          <th style="width: 15%">
+            ABREVEATION
+          </th>
+
+          <th style="width: 5%">
+            DEBUT
+          </th>
+          <th style="width: 15%">
+            FIN
+          </th>
+          <th style="width: 35%">
+            DESCRIPTION
+          </th>
+          <th style="width: 5%">
+            <ion-icon name="reverse-camera"></ion-icon>
+          </th>
+        </tr>
+        <tr
+          (click)="onAddClick()"
+          (clickOutside)="onAddClickOutside()"
+          class="inputs"
+        >
+          <td class="tdInput">
+            <input
+              type="text"
+              name="intitule"
+              placeholder="INTITULE"
+              required
+              ngModel
+            />
+          </td>
+          <td class="tdInput">
+            <input
+              type="text"
+              name="abreveation"
+              placeholder="ABREVEATION"
+              required
+              ngModel
+            />
+          </td>
+          <td class="tdInput">
+            <input
+              type="time"
+              name="debut"
+              placeholder="DEBUT"
+              ngModel
+              #dateFin
+            />
+          </td>
+          <td class="tdInput"></td>
+          <td class="tdInput">
+            <input
+              type="text"
+              name="description"
+              placeholder="DESCRIPTION"
+              ngModel
+            />
+          </td>
+          <td class="tdInput"></td>
+        </tr>
+        <!--*****************************************************************************************************-->
+        <tr
+          (press)="onDelete(item.id)"
+          *ngFor="let item of projets; let i = index"
+        >
+          <td>
+            <input
+              type="text"
+              [ngModel]="item.intitule"
+              name="intitule{{ i }}"
+              placeholder="INTITULE"
+              required
+              ngModel
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              [ngModel]="item.abreveation"
+              name="abreveation{{ i }}"
+              placeholder="ABREVEATION"
+              required
+              ngModel
+            />
+          </td>
+          <td>
+            <input
+              readonly
+              type="date"
+              [value]="item.debut"
+              name="debut{{ i }}"
+              placeholder="DEBUT"
+            />
+          </td>
+          <td>
+            <ng-container *ngIf="item.fin !== null; else elseTemplate">
+              <input
+                readonly
+                type="date"
+                [ngModel]="item.fin"
+                name="fin{{ i }}"
+                placeholder="FIN"
+              />
+            </ng-container>
+            <ng-template #elseTemplate>
+              <input type="text" value="en cours..." readonly />
+            </ng-template>
+          </td>
+          <td>
+            <input
+              type="text"
+              [ngModel]="item.description"
+              name="description{{ i }}"
+              placeholder="DESCRIPTION"
+              ngModel
+            />
+          </td>
+          <td></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</ion-content>

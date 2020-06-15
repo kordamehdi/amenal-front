@@ -2,7 +2,7 @@ export interface OuvrierModel {
   id: number;
   cin: string;
   nom: string;
-  prenom: String;
+  prenom: string;
   qualification: String;
   dateNaissance: Date;
   dateRecrutement: Date;

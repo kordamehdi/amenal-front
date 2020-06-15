@@ -1,0 +1,17 @@
+<div class="container">
+  <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
+    <ng-container *ngIf="!isValid; else elseTemplate">
+      <app-livraison-designation></app-livraison-designation>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <app-livraison-designation-valid></app-livraison-designation-valid>
+    </ng-template>
+  </ng-container>
+  <ng-template #elseTmp>
+    <app-livraison-designation-valid></app-livraison-designation-valid>
+  </ng-template>
+
+  <div *ngIf="role === 'ADMIN' || isRoot" class="separate">
+    <app-destination></app-destination>
+  </div>
+</div>

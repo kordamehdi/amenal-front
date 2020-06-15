@@ -1,0 +1,18 @@
+<div class="container">
+  <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
+    <ng-container *ngIf="!isValid; else elseTemplate">
+      <app-designation-reception></app-designation-reception>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <app-designation-reception-valid></app-designation-reception-valid>
+    </ng-template>
+  </ng-container>
+  <ng-template #elseTmp>
+    <app-designation-reception-valid></app-designation-reception-valid>
+  </ng-template>
+
+  <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
+    <app-liste-article style="margin-right: 50px"></app-liste-article>
+    <app-fournisseur-article></app-fournisseur-article>
+  </div>
+</div>

@@ -1,0 +1,132 @@
+ion-content {
+  --background: #fff url("../../../../assets/bg2.png") no-repeat center center /
+    cover;
+  font-size: 12px;
+}
+/***/
+.container-header {
+  display: flex;
+  width: 98%;
+  justify-content: center;
+  font-size: 17px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.side_left {
+  padding-top: 5px;
+  width: 10%;
+  border-bottom-left-radius: 23px;
+  border-top-left-radius: 23px;
+}
+.side_right {
+  padding-top: 5px;
+  width: 10%;
+  border-bottom-right-radius: 23px;
+  border-top-right-radius: 23px;
+}
+ion-icon {
+  font-size: 20px;
+  margin: 3px;
+  color: black;
+}
+span {
+  vertical-align: baseline;
+  padding: 2px;
+  height: 40px;
+  display: inline-block;
+  margin-left: 2px;
+  margin-right: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.content {
+  padding-top: 12px;
+  width: 80%;
+  font-weight: bold;
+  align-content: center;
+}
+
+@media only screen and (max-width: 379px) {
+  /* For mobile phones: */
+  span {
+    vertical-align: baseline;
+    padding: 2px;
+    height: 50px;
+    display: inline-block;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/***/
+.container {
+  margin-top: 20px;
+  width: 98%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 12px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  font-size: 13px;
+}
+
+th {
+  width: 10%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+td {
+  border-left: 1px rgba(255, 255, 255, 0.5);
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+}
+.inputs {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.tdInput {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+tr {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(235, 231, 231, 0.651);
+  text-align: center;
+}
+
+input {
+  text-align: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+}
+
+.header {
+  background-color: rgba(0, 0, 0, 0.233);
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border: 2px solid rgba(235, 231, 231, 0.651);
+  text-align: center;
+}
+.header-nav {
+  height: 25px;
+  width: 80%;
+  display: inline-block;
+
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding-bottom: 10px;
+}

@@ -1,0 +1,100 @@
+.container {
+  margin-top: 20px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 12px;
+  max-height: 177px;
+  overflow: scroll;
+  padding-bottom: 20px;
+}
+.cont_div {
+  display: flex;
+  font-style: italic;
+  border-top: 1px solid rgb(255, 255, 255);
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+}
+.div-list {
+  background-color: white;
+  position: absolute;
+  z-index: 1;
+  height: 70px;
+  overflow: auto;
+}
+input {
+  text-align: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding-left: 5px;
+}
+
+.tdInput {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.384);
+}
+.border-case {
+  border: 1px solid rgb(255, 255, 255);
+  display: inline-block;
+  //padding-top: 2px;
+  // padding-bottom: 2px;
+}
+.border-case-black {
+  border: 1px solid rgb(0, 0, 0);
+  display: inline-block;
+  //padding-top: 2px;
+  // padding-bottom: 2px;
+}
+
+.categorie {
+  font-weight: bold;
+  border-top: 1px solid rgb(255, 255, 255);
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  text-align: left;
+  padding-left: 5px;
+}
+
+tr {
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.cont_div {
+  display: flex;
+  border-top: 1px solid rgb(255, 255, 255);
+  background-color: rgba(216, 210, 210, 0.39);
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  margin: 0px;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  font-size: 12px;
+}
+
+th {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.header {
+  background-color: rgba(0, 0, 0, 0.233);
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border: 2px solid rgba(235, 231, 231, 0.651);
+  text-align: center;
+}

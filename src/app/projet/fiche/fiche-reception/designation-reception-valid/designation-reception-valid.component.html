@@ -1,0 +1,72 @@
+<div (onclick)="click()" class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <table>
+    <tr>
+      <th style="width: 25%">
+        DESIGNATION
+      </th>
+      <th style="width: 10%">
+        UNITÉ
+      </th>
+      <th style="width: 15%">
+        QUANTIÉ
+      </th>
+      <th style="width: 20%">
+        FOURNISSEUR
+      </th>
+      <th style="width: 20%">
+        OBSERVATION
+      </th>
+      <th style="width: 10%">
+        <ion-icon name="reverse-camera"></ion-icon>
+      </th>
+    </tr>
+
+    <ng-container *ngIf="categories.length > 0; else elseTemplate">
+      <tr *ngFor="let cat of categories; let i = index">
+        <td colspan="6">
+          <div>
+            <div
+              class="categorie"
+              (click)="onShowshowDetail(i)"
+              style="font-weight:bold"
+            >
+              {{ cat.categorie }}
+            </div>
+            <div style="font-style: italic" #detail *ngIf="showDetails[i]">
+              <div
+                *ngFor="let ds of cat.receptionDesignation; let j = index"
+                class="cont_div"
+              >
+                <span class="border-case" style="width: 25%">
+                  {{ ds.designation }}
+                </span>
+                <span class="border-case" style="width: 10%">
+                  {{ ds.unite }}
+                </span>
+                <span class="border-case" style="width: 15%">
+                  {{ ds.quantite }}
+                </span>
+                <span class="border-case" style="width: 20%">
+                  {{ ds.fournisseurNom }}
+                </span>
+                <span class="border-case" style="width: 20%">
+                  {{ ds.observation }}
+                </span>
+                <span class="border-case" style="width: 10%"> </span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr style="text-align: center ; font-style: italic">
+        <td colspan="6">rien a signaler</td>
+      </tr></ng-template
+    >
+  </table>
+</div>

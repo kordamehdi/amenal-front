@@ -1,0 +1,46 @@
+<ion-content>
+  <div class="container">
+    <br /><br /><br /><br /><br /><br /><br />
+    <div class="div" style="font-size: 20px; padding: 15px">
+      BIENVENUE SUR AMENAL
+    </div>
+    <br /><br />
+    <div class="div">
+      <form (submit)="toPassword()">
+        <input
+          id="email"
+          type="text"
+          name="username"
+          placeholder="Nom d'utilisateur"
+          style="width: 80%; padding: 5px; text-align: center"
+          #usr
+        />
+      </form>
+      <form (submit)="signe()">
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Mot de passe"
+          #pswd
+          style="padding: 5px; width: 80%; text-align: center"
+        />
+      </form>
+      <div *ngIf="isErr">
+        <span style="font-size: 18px; color: #a80000">
+          {{ msg }}
+        </span>
+      </div>
+
+      <ion-button color="danger" (click)="login(usr.value, pswd.value)">
+        <span *ngIf="load === true">
+          <ion-spinner name="dots"></ion-spinner>
+        </span>
+        <span *ngIf="load === false">
+          Connexion
+        </span>
+      </ion-button>
+    </div>
+    <br /><br /><br /><br /><br /><br /><br />
+  </div>
+</ion-content>

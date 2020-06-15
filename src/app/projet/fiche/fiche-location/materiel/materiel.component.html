@@ -1,0 +1,67 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="isUpdate ? OnUpdateMateriel() : OnaddDesignation()"
+    #f="ngForm"
+  >
+    <div class="header-nav">
+      <label for="file" class="left"
+        ><ion-icon name="download">
+          <input
+            type="file"
+            id="file"
+            (change)="getFile($event)"
+            style="visibility: hidden;"
+          />
+        </ion-icon>
+      </label>
+
+      <span class="middle">LISTE DES MATERIELS </span>
+
+      <span class="left" (click)="OnCancel()">
+        <ion-icon name="arrow-round-up"></ion-icon>
+      </span>
+    </div>
+    <table>
+      <tr class="header" (clickOutside)="this.typeAsc = ''">
+        <th>MATERIEL</th>
+      </tr>
+      <tr
+        (press)="OnDeleteMateriel(materiel.id)"
+        (click)="dsInput.disabled = false"
+        (clickOutside)="dsInput.disabled = true"
+        *ngFor="let materiel of materiels"
+        [ngStyle]="{
+          'background-color':
+            this.matIndex == materiel.id ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+      >
+        <td>
+          <input
+            [disabled]="true"
+            type="text"
+            (blur)="OnUpdateMateriel(dsInput.value, materiel.id)"
+            name="ds{{ materiel.id }}"
+            [ngModel]="materiel.designation"
+            ngModel
+            #dsInput
+          />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input
+            class="tdInput"
+            type="text"
+            name="ds"
+            (blur)="OnAddMateriel(matDsInput)"
+            placeholder="DESIGNATION"
+            #matDsInput
+          />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

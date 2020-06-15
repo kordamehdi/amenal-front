@@ -1,0 +1,19 @@
+<ion-content class="content">
+  <app-loading></app-loading>
+  <app-sidebar
+    (onClose)="showSideBar = false"
+    *ngIf="showSideBar"
+  ></app-sidebar>
+  <div (swiperight)="onShowSideBar($event)" (swipeleft)="onHideSideBar($event)">
+    <app-header></app-header>
+    <app-nav></app-nav>
+  </div>
+  <div
+    style="margin-bottom: 200px"
+    (swipedown)="onSwipeDown($event)"
+    (swipeleft)="onSwipeLeft()"
+    (swiperight)="onSwipeRight()"
+  >
+    <router-outlet></router-outlet>
+  </div>
+</ion-content>

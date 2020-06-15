@@ -1,3 +1,4 @@
+import { FicheOuvrierService } from "./../../projet/fiche/fiche-ouvrier/fiche-ouvrier.service";
 import { Store } from "@ngrx/store";
 import { Component, OnInit, Input } from "@angular/core";
 import * as App from "../../store/app.reducers";
@@ -15,11 +16,14 @@ export class TabComponent implements OnInit {
   showHeader: Boolean = false;
   @Input()
   headerTitle = "title1";
-  constructor(private store: Store<App.AppState>) {}
+  constructor(
+    private store: Store<App.AppState>,
+    private ficheOuvrierService: FicheOuvrierService
+  ) {}
 
   ngOnInit() {}
 
   OnCancel() {
-    this.store.dispatch(new fromFicheAction.ListerOuvrier(false));
+    this.store.dispatch(new fromFicheAction.Lister(false));
   }
 }

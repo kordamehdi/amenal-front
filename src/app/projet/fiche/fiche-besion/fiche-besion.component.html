@@ -1,0 +1,13 @@
+<div>
+  <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
+    <ng-container *ngIf="!isValid; else elseTemplate">
+      <app-fiche-besion-designation></app-fiche-besion-designation>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <app-fiche-bosoin-designation-valid></app-fiche-bosoin-designation-valid>
+    </ng-template>
+  </ng-container>
+  <ng-template #elseTmp>
+    <app-fiche-bosoin-designation-valid></app-fiche-bosoin-designation-valid>
+  </ng-template>
+</div>

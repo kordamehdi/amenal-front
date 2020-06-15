@@ -7,9 +7,11 @@ export const START_REMOVE_OUVRIER = "START_REMOVE_OUVRIER";
 export const CANCEL_OUVRIER = "CANCEL_OUVRIER";
 export const ADD_OUVRIER = "ADD_OUVRIER";
 export const GET_OUVRIER = "GET_OUVRIER";
-export const SHOW_ALERT = "SHOW_ALERT";
+export const SHOW_ALERT_OUVRIER = "SHOW_ALERT_OUVRIER";
 export const ALERT_YES = "ALERT_YES";
 export const FINISH_REMOVE_OUVRIER = "FINISH_REMOVE_OUVRIER";
+export const GET_DESIGNATIONS = "GET_DESIGNATIONS";
+export const IS_UPDATE = "IS_UPDATE";
 
 export class AddOuvrier implements Action {
   readonly type = ADD_OUVRIER;
@@ -22,6 +24,13 @@ export class GetOuvrier implements Action {
   readonly type = GET_OUVRIER;
   payload: OuvrierModel[];
   constructor(payload: OuvrierModel[]) {
+    this.payload = payload;
+  }
+}
+export class GetDesignations implements Action {
+  readonly type = GET_DESIGNATIONS;
+  payload: String[];
+  constructor(payload: String[]) {
     this.payload = payload;
   }
 }
@@ -58,20 +67,29 @@ export class CancelOuvrier implements Action {
 }
 
 export class ShowAlert implements Action {
-  readonly type = SHOW_ALERT;
+  readonly type = SHOW_ALERT_OUVRIER;
   payload: {
     showAlert: boolean;
     msg: string;
+    typeDialog: string;
   };
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+
+export class AlertYes implements Action {
+  readonly type = ALERT_YES;
+  payload: Boolean;
 
   constructor(payload) {
     this.payload = payload;
   }
 }
-export class AlertYes implements Action {
-  readonly type = ALERT_YES;
-  payload: Boolean;
 
+export class IsUpdate implements Action {
+  readonly type = IS_UPDATE;
+  payload: number;
   constructor(payload) {
     this.payload = payload;
   }
@@ -86,4 +104,6 @@ export type FicheAction =
   | GetOuvrier
   | ShowAlert
   | AlertYes
-  | FinishRemovingOuvrier;
+  | FinishRemovingOuvrier
+  | GetDesignations
+  | IsUpdate;

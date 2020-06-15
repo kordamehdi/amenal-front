@@ -3,8 +3,13 @@
     class="nav-left"
     style="border-bottom-left-radius: 23px;
   border-top-left-radius: 23px;width: 11%"
+    (click)="onLongPrevious()"
+    (press)="onBegin()"
   >
-    <ion-icon name="rewind"></ion-icon>
+    <ion-icon
+      [ngStyle]="{ color: leftIsEnding ? 'grey' : 'black' }"
+      name="rewind"
+    ></ion-icon>
   </span>
   <span (click)="onPrevious()" style="width: 11%">
     <ion-icon
@@ -12,10 +17,7 @@
       name="arrow-dropleft"
     ></ion-icon>
   </span>
-  <span
-    (click)="listerOuvrier()"
-    style="width: 20% ; border-bottom: 2px solid blue"
-  >
+  <span (click)="lister()" style="width: 20% ; border-bottom: 2px solid blue">
     <ion-icon name="copy"></ion-icon>
   </span>
   <span style="width: 8% ;padding: 11px">
@@ -38,7 +40,12 @@
     class="nav_right"
     style="border-bottom-right-radius: 23px;
   border-top-right-radius: 23px;width: 11%"
+    (click)="onLongNext()"
+    (press)="onEnd()"
   >
-    <ion-icon name="fastforward"></ion-icon>
+    <ion-icon
+      [ngStyle]="{ color: rightIsEnding ? 'grey' : 'black' }"
+      name="fastforward"
+    ></ion-icon>
   </span>
 </div>

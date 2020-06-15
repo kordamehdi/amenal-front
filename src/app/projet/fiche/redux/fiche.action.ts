@@ -6,16 +6,35 @@ import { OuvrierModel } from "../../models/ouvrier.model";
 export const SEARCH_BY_DATE = "SEARCH-BY-DATE";
 export const SEARCH_BY_DATE_DONE = "SEARCH_BY_DATE_DONE";
 export const SELECT_FICHE_TYPE = "SELECT_FICHE_TYPE";
-export const LISTER_OUVRIER = "LISTER_OUVRIER";
+export const REFRESH_FICHE = "REFRESH_FICHE";
+
+export const LISTER = "LISTER";
 export const SELECT_PROJET = "SELECT_PROJET";
 export const SET_FICHES = "SET_FICHES";
 export const PREVIOUS_FICHE = "PREVIOUS_FICHE";
 export const NEXT_FICHE = "NEXT_FICHE";
+export const SET_FICHE_POSITION = "SET_FICHE_POSITION";
+
 export const GET_OUVRIER_BY_PROJET = "GET_OUVRIER_BY_PROJET";
 export const SHOW_ALERT = "SHOW_ALERT";
 export const START_REMOVE_DS = "START_REMOVE_DS";
 export const FINISH_REMOVE_DS = "FINISH_REMOVE_DS";
 export const VALIDER_FICHE = "VALIDER_FICHE";
+export const LIST_ALL = "LIST_ALL";
+
+export const PREVIOUS_DAY_FICHE = "PREVIOUS_DAY_FICHE";
+export const NEXT_DAY_FICHE = "NEXT_DAY_FICHE";
+
+export const FILTER_BY_DATE = "FILTER_BY_DATE";
+
+export class SetFichePosition implements Action {
+  readonly type = SET_FICHE_POSITION;
+  payload: any;
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+
 export class SearchByDateAction implements Action {
   readonly type = SEARCH_BY_DATE;
   payload: any;
@@ -29,13 +48,20 @@ export class SearchByDateActionDone implements Action {
 }
 export class SelectFicheType implements Action {
   readonly type = SELECT_FICHE_TYPE;
-  payload: String;
-  constructor(payload: String) {
+  payload: { fiches: FicheModel[]; type: String };
+  constructor(payload) {
     this.payload = payload;
   }
 }
-export class ListerOuvrier implements Action {
-  readonly type = LISTER_OUVRIER;
+export class RefreshFiche implements Action {
+  readonly type = REFRESH_FICHE;
+  payload: { fiche: FicheModel; type: String };
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+export class Lister implements Action {
+  readonly type = LISTER;
   payload: Boolean;
   constructor(payload: Boolean) {
     this.payload = payload;
@@ -68,22 +94,33 @@ export class NextFiche implements Action {
 
   constructor() {}
 }
+export class NextDayFiche implements Action {
+  readonly type = NEXT_DAY_FICHE;
+
+  constructor() {}
+}
 
 export class PreviousFiche implements Action {
   readonly type = PREVIOUS_FICHE;
 
   constructor() {}
 }
+export class PreviousDayFiche implements Action {
+  readonly type = PREVIOUS_DAY_FICHE;
+
+  constructor() {}
+}
 export class ValiderFiche implements Action {
   readonly type = VALIDER_FICHE;
-  payload: boolean;
-  constructor(payload: boolean) {
+  payload: any;
+  constructor(payload: any) {
     this.payload = payload;
   }
 }
-export class ShowAlert implements Action {
+export class ShowFicheAlert implements Action {
   readonly type = SHOW_ALERT;
   payload: {
+    type: string;
     showAlert: boolean;
     msg: string;
   };
@@ -103,17 +140,39 @@ export class FinishRemovingDs implements Action {
   readonly type = FINISH_REMOVE_DS;
   constructor() {}
 }
+export class listAll implements Action {
+  readonly type = LIST_ALL;
+  payload: boolean;
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+
+export class filterByDate implements Action {
+  readonly type = FILTER_BY_DATE;
+  payload: any;
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
 export type FicheAction =
   | SearchByDateAction
   | SearchByDateActionDone
   | SelectFicheType
-  | ListerOuvrier
+  | Lister
   | SelectProjet
   | setFiches
   | NextFiche
   | PreviousFiche
   | GetOuvrierByProjet
-  | ShowAlert
+  | ShowFicheAlert
   | StartRemovingDs
   | FinishRemovingDs
-  | ValiderFiche;
+  | ValiderFiche
+  | SetFichePosition
+  | listAll
+  | PreviousDayFiche
+  | NextDayFiche
+  | PreviousDayFiche
+  | filterByDate
+  | RefreshFiche;

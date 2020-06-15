@@ -18,9 +18,7 @@ export class DialogComponent implements OnInit {
   onContinuer() {
     this.OnCtn.emit(null);
   }
-  onCaancel() {
-    console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-
+  onCancel() {
     this.Cancel.emit(true);
   }
 }

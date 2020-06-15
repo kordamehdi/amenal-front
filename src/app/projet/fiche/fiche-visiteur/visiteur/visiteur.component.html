@@ -1,0 +1,79 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <div class="header-title">
+    <label for="file" class="left"
+      ><ion-icon name="download">
+        <input
+          type="file"
+          id="file"
+          (change)="getFile($event)"
+          style="visibility: hidden;"
+        />
+      </ion-icon>
+    </label>
+
+    <span class="middle">LISTE VISITEUR</span>
+
+    <span class="left" (click)="OnCancel()">
+      <ion-icon name="arrow-round-up"></ion-icon>
+    </span>
+  </div>
+  <table>
+    <tr class="header">
+      <th style="width: 50%">
+        NOM & PRENOM
+      </th>
+      <th style="width: 50%">
+        ORGANISME
+      </th>
+    </tr>
+    <tr
+      (click)="onAddClick()"
+      (clickOutside)="onAddClickOutside(nom, org)"
+      class="inputs"
+    >
+      <td class="tdInput">
+        <input type="text" name="nom" placeholder="NOM & PRENOM" #nom />
+      </td>
+      <td class="tdInput">
+        <input type="text" name="org" placeholder="ORGANISME" #org />
+      </td>
+    </tr>
+    <!--*****************************************************************************************************-->
+    <tr
+      [ngStyle]="{
+        'font-weight': item.isAsso ? 'bold' : 'normal',
+        'background-color': vstSelectedIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
+      }"
+      (dblclick)="onAssoVisiteurWithProjet(item.id)"
+      (press)="onDelete(item.id)"
+      (click)="onUpdateClick(nomU, orgU, i)"
+      (clickOutside)="onUpdateClickOutside(nomU, orgU, item.id, i)"
+      *ngFor="let item of visiteurs; let i = index"
+    >
+      <td>
+        <input
+          disabled
+          type="text"
+          name="nom{{ i }}"
+          [ngModel]="item.nom"
+          placeholder="NOM & PRENOM"
+          #nomU
+        />
+      </td>
+      <td>
+        <input
+          disabled
+          type="text"
+          [ngModel]="item.organisme"
+          name="org{{ i }}"
+          placeholder="ORGANISME"
+          #orgU
+        />
+      </td>
+    </tr>
+  </table>
+</div>

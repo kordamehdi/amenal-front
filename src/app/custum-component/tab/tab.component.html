@@ -1,5 +1,14 @@
 <div *ngIf="showHeader" class="header">
-  <span class="left"><ion-icon name="arrow-round-up"></ion-icon> </span>
+  <label for="file" class="left"
+    ><ion-icon name="download">
+      <input
+        type="file"
+        id="file"
+        (change)="getFile($event)"
+        style="visibility: hidden;"
+      />
+    </ion-icon>
+  </label>
 
   <span class="middle">{{ headerTitle }}</span>
 

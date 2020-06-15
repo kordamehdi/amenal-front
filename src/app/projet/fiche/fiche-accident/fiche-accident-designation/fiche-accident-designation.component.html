@@ -1,0 +1,116 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <table>
+    <tr class="header">
+      <th style="width: 80%">
+        OBJET
+      </th>
+      <th style="width: 10%">
+        HEURE
+      </th>
+      <th style="width: 10%">
+        <ion-icon name="reverse-camera"></ion-icon>
+      </th>
+    </tr>
+    <!--**********************************************************************************-->
+    <ng-container *ngIf="!isValid; else elseTemplate">
+      <tr
+        (click)="OnAddClick()"
+        (clickOutside)="OnAddClickOutside(objet, heure)"
+      >
+        <td class="tdInput">
+          <input type="text" name="objet" placeholder="OBJET" ngModel #objet />
+        </td>
+        <td class="tdInput">
+          <input
+            style="text-align: center"
+            type="time"
+            name="heure"
+            ngModel
+            #heure
+          />
+        </td>
+        <td class="tdInput"></td>
+      </tr>
+      <!--**********************************************************************************-->
+      <tr
+        (press)="onDelete(objetUpdate.value, item.id)"
+        (click)="OnUpdateClick(objetUpdate, heureUpdate, i)"
+        (clickOutside)="
+          OnUpdateClickOutside(objetUpdate, heureUpdate, item.id, i)
+        "
+        *ngFor="let item of designation$; let i = index"
+        [ngStyle]="{
+          'background-color': this.selectedDs == i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+      >
+        <td>
+          <input
+            disabled
+            type="text"
+            name="objet"
+            placeholder="OBJET"
+            [ngModel]="item.objet"
+            #objetUpdate
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            style="text-align: center"
+            type="time"
+            name="heure"
+            [ngModel]="item.heure"
+            #heureUpdate
+          />
+        </td>
+        <td></td>
+      </tr>
+      <!--**********************************************************************************-->
+    </ng-container>
+    <ng-template #elseTemplate>
+      <!--**********************************************************************************-->
+
+      <ng-container *ngIf="designation$.length === 0; else elseTemplatee">
+        <tr style="text-align: center ; font-style: italic">
+          <td colspan="3">rien a signaler</td>
+        </tr>
+      </ng-container>
+      <ng-template #elseTemplatee>
+        <tr
+          *ngFor="let item of designation$; let i = index"
+          [ngStyle]="{
+            'background-color':
+              this.selectedDs == i ? 'rgba(255, 0, 0, 0.1)' : ''
+          }"
+        >
+          <td>
+            <input
+              readonly
+              type="text"
+              name="objet"
+              placeholder="OBJET"
+              [ngModel]="item.objet"
+              #objetUpdate
+            />
+          </td>
+          <td>
+            <input
+              readonly
+              style="text-align: center"
+              type="time"
+              name="heure"
+              [ngModel]="item.heure"
+              #heureUpdate
+            />
+          </td>
+          <td></td>
+        </tr>
+      </ng-template>
+
+      <!--**********************************************************************************-->
+    </ng-template>
+  </table>
+</div>

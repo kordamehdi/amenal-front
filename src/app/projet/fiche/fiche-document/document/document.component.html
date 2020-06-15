@@ -1,0 +1,74 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <div class="header-nav">
+    <label for="file" class="left"
+      ><ion-icon name="download">
+        <input
+          type="file"
+          id="file"
+          (change)="getFile($event)"
+          style="visibility: hidden;"
+        />
+      </ion-icon>
+    </label>
+
+    <span class="middle">LISTE DES DOCUMENTS</span>
+
+    <span class="left" (click)="OnCancel()">
+      <ion-icon name="arrow-round-up"></ion-icon>
+    </span>
+  </div>
+  <table>
+    <tr class="header">
+      <th style="width: 35%">
+        <input
+          style="text-align: center"
+          (focus)="onFilterFocus(int)"
+          (input)="onFilter(int.value, 'intitule')"
+          (blur)="onFilterBur(int)"
+          type="text"
+          value="INTITULE"
+          placeholder="INTITULE"
+          #int
+        />
+      </th>
+    </tr>
+    <tr
+      (click)="onAddClick()"
+      (clickOutside)="onAddClickOutside(intitule)"
+      class="inputs"
+    >
+      <td class="tdInput">
+        <input type="text" name="intitule" placeholder="INTITULE" #intitule />
+      </td>
+    </tr>
+    <!--*****************************************************************************************************-->
+    <tr
+      (dblclick)="onAssoDocumentWithProjet(item.id)"
+      (click)="onUpdateClick(inputUpdate, i)"
+      (clickOutside)="onUpdateClickOutside(inputUpdate, item.id, i)"
+      (press)="onDelete(item.id)"
+      *ngFor="let item of documents; let i = index"
+    >
+      <td
+        [ngStyle]="{
+          'font-weight': item.isAsso ? 'bold' : 'normal',
+          'background-color':
+            docSelectedIndex == i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+      >
+        <input
+          disabled
+          type="text"
+          name="intitule"
+          [ngModel]="item.intitule"
+          placeholder="INTITULE"
+          #inputUpdate
+        />
+      </td>
+    </tr>
+  </table>
+</div>

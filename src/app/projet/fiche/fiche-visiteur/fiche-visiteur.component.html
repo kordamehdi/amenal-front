@@ -1,0 +1,17 @@
+<div class="container">
+  <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
+    <ng-container *ngIf="!isValid; else elseTemplate">
+      <app-visiteur-designation></app-visiteur-designation>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <app-visiteur-designation-valid></app-visiteur-designation-valid>
+    </ng-template>
+  </ng-container>
+  <ng-template #elseTmp>
+    <app-visiteur-designation-valid></app-visiteur-designation-valid>
+  </ng-template>
+
+  <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
+    <app-visiteur></app-visiteur>
+  </div>
+</div>

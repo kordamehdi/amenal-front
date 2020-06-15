@@ -1,0 +1,170 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="
+      update === 1
+        ? OnUpdateVisiteurDesignation(id)
+        : OnAddVisiteurDesignation()
+    "
+    #f="ngForm"
+  >
+    <table>
+      <tr class="header">
+        <th style="width: 20%">
+          NOM & PRENOM
+        </th>
+        <th style="width: 20%">
+          ORGANISME
+        </th>
+        <th style="width: 30%">
+          OBJET
+        </th>
+        <th style="width: 15%">
+          ARIVÉE
+        </th>
+        <th style="width: 15%">
+          DEPART
+        </th>
+      </tr>
+      <tr
+        (click)="onAddClick()"
+        (clickOutside)="onAddClickOutside(nom, org)"
+        class="inputs"
+      >
+        <td class="tdInput">
+          <input
+            type="text"
+            required
+            name="nom"
+            placeholder="NOM & PRENOM"
+            ngModel
+            (focus)="onFocusAddInputVisiteur(vistList)"
+            (blur)="onBlurAddInputVisiteur(vistList)"
+            (input)="onSearchVisiteur(vst.value)"
+            #vst
+          />
+          <input type="text" value="-1" hidden name="visiteurId" ngModel />
+          <div hidden #vistList style="width :39%" class="div-list">
+            <div
+              *ngFor="let item of visiteursAsso"
+              (click)="OnVisiteurSelected(item)"
+            >
+              <span class="border-case-black" style="width: 50%">{{
+                item.nom
+              }}</span>
+              <span class="border-case-black" style="width: 50%">{{
+                item.organisme
+              }}</span>
+            </div>
+          </div>
+        </td>
+        <td class="tdInput">
+          <input type="text" name="organisme" placeholder="ORGANISME" ngModel />
+        </td>
+        <td class="tdInput">
+          <input type="text" name="objet" placeholder="OBJET" ngModel />
+        </td>
+        <td class="tdInput">
+          <input
+            type="date"
+            name="arivee"
+            [(ngModel)]="now"
+            placeholder="ARIVEÉ"
+            ngModel
+          />
+        </td>
+        <td class="tdInput">
+          <input type="date" name="depart" placeholder="DEPART" ngModel />
+        </td>
+      </tr>
+      <!--*****************************************************************************************************-->
+      <tr
+        [ngStyle]="{
+          'background-color':
+            selectedDsIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+        (press)="onDelete(item.id)"
+        (click)="onUpdateClick(i, item.id)"
+        (clickOutside)="onUpdateClickOutside(i)"
+        *ngFor="let item of designation$; let i = index"
+      >
+        <td>
+          <input
+            disabled
+            type="text"
+            name="nom{{ i }}"
+            [ngModel]="item.nom"
+            placeholder="NOM & PRENOM"
+            (input)="onSearchVisiteur(vstU.value)"
+            ngModel
+            (focus)="onFocusUpdateInputVisiteur(vistListU, item.nom)"
+            (blur)="onBlurUpdateInputVisiteur(vistListU)"
+            #vstU
+          />
+          <input
+            type="text"
+            [ngModel]="item.visiteurId"
+            hidden
+            name="visiteurId{{ i }}"
+            ngModel
+          />
+          <div hidden #vistListU style="width :49%" class="div-list">
+            <div
+              *ngFor="let item of visiteursAsso; let j = index"
+              (click)="OnVisiteurSelectedUpdate(item, i)"
+            >
+              <span class="border-case-black" style="width: 50%">{{
+                item.nom
+              }}</span>
+              <span class="border-case-black" style="width: 50%">{{
+                item.organisme
+              }}</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            [ngModel]="item.organisme"
+            name="organisme{{ i }}"
+            placeholder="ORGANISME"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            name="objet{{ i }}"
+            [ngModel]="item.objet"
+            placeholder="OBJET"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            [type]="selectedDsIndex === i ? 'date' : 'text'"
+            [ngModel]="item.arivee"
+            name="arivee{{ i }}"
+            placeholder="ARIVEÉ"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            [type]="selectedDsIndex === i ? 'date' : 'text'"
+            [ngModel]="item.depart"
+            name="depart{{ i }}"
+            placeholder="DEPART"
+            ngModel
+          />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

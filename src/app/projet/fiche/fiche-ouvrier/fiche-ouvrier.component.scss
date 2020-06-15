@@ -2,12 +2,12 @@ td {
   width: 20x;
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.5);
-  border-left: 1px rgba(255, 255, 255, 0.5);
-  border-right-width: 1px;
-  border-right-style: solid;
-  border-right-color: rgba(255, 255, 255, 0.5);
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
 }
 .tdInput {
+  border-left: 1px rgba(255, 255, 255, 0.5);
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
   background-color: rgba(255, 0, 0, 0.1);
 }
 
@@ -37,6 +37,32 @@ input {
 .select_options :after {
   background: transparent;
 }
+
 [hidden] {
   display: none !important;
+}
+
+.div-list {
+  width: 10.8%;
+  background-color: white;
+  border: 1px solid rgb(15, 13, 13);
+  position: absolute;
+  z-index: 1;
+  border: 1px solid;
+  height: 70px;
+  overflow: auto;
+}
+.span-detail {
+  border: 1px solid gray;
+  display: inline-block;
+}
+.div-detail {
+  border: 1px solid gray;
+}
+.div-detail:hover {
+  border: 1px solid gray;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+.separate {
+  margin-top: 40px;
 }

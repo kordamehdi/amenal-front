@@ -1,0 +1,268 @@
+<div class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="
+      isUpdate == 1
+        ? OnUpdateLivraisonDesignation()
+        : OnAddLivraisonDesignation()
+    "
+    #f="ngForm"
+  >
+    <table>
+      <tr class="header">
+        <th style="width: 30%">
+          DESIGNATION
+        </th>
+        <th style="width: 9%">
+          UNITÉ
+        </th>
+        <th style="width: 9%">
+          QUANTIÉ
+        </th>
+        <th style="width: 12%">
+          VERS
+        </th>
+        <th style="width: 31%">
+          OBSERVATION
+        </th>
+        <th style="width: 9%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
+      <tr (clickOutside)="onAddClickOutside()" (click)="onAddClick()">
+        <td class="tdInput" style="width: 30%">
+          <input
+            placeholder="DESIGNATION"
+            type="text"
+            (focus)="onFocusArtInputSearch(artAddList)"
+            (blur)="onBlurArtInputSearch(artAddList)"
+            (input)="OnSearchArticle(artSrchInput)"
+            name="designation"
+            ngModel
+            #artSrchInput
+          />
+          <div hidden #artAddList style="width: 45.7%" class="div-list">
+            <div
+              *ngFor="let item of stockDispo"
+              (click)="onSelectArticleAdd(item)"
+            >
+              <span class="border-case-black" style="width: 62%">{{
+                item.designation
+              }}</span>
+              <span class="border-case-black" style="width: 19%">{{
+                item.unite
+              }}</span>
+              <span class="border-case-black" style="width: 19%">{{
+                item.quantite
+              }}</span>
+            </div>
+          </div>
+          <input hidden type="text" required name="articleId" ngModel />
+        </td>
+        <td class="tdInput" style="width: 9%">
+          <input
+            readonly
+            placeholder="UNITÉ"
+            type="text"
+            name="unite"
+            disabled
+            ngModel
+          />
+        </td>
+        <td class="tdInput" style="width: 9%">
+          <input
+            type="number"
+            placeholder="QUANTITE"
+            min="1"
+            step="0.01"
+            max="{{ max }}"
+            name="quantite"
+            required
+            ngModel
+          />
+        </td>
+        <td class="tdInput" style="width: 12%">
+          <input
+            placeholder="DESTINATION"
+            type="text"
+            name="destination"
+            ngModel
+            (focus)="onFocusDestInputSearch(dstAddList)"
+            (blur)="onBlurDestInputSearch(dstAddList)"
+            (input)="OnSearchDest(dstSrchInput)"
+            #dstSrchInput
+          />
+          <div hidden #dstAddList class="div-list" style="width:11.2%">
+            <div
+              *ngFor="let item of destinations"
+              (click)="onSelectDstAdd(item)"
+              class="div-detail"
+            >
+              <span class="border-case" style="width: 100%">{{
+                item.destination
+              }}</span>
+            </div>
+          </div>
+          <input hidden required type="text" name="destinationId" ngModel />
+        </td>
+        <td class="tdInput" style="width: 31%">
+          <input
+            placeholder="OBSERVATION"
+            type="text"
+            name="observation"
+            ngModel
+          />
+        </td>
+        <td class="tdInput" style="width: 9%"></td>
+      </tr>
+      <tr
+        class="stock-content"
+        *ngFor="let livStck of livraisonDesignation; let i = index"
+      >
+        <td colspan="6">
+          <div class="categorie" (click)="onShowshowDetail(i)">
+            {{ livStck.categorie }}
+          </div>
+          <div #detail *ngIf="showDetails[i]">
+            <div
+              [ngStyle]="{
+                'background-color':
+                  this.dsSelected == transIJ(i, j) ? 'rgba(255, 0, 0, 0.1)' : ''
+              }"
+              (press)="deleteLivraisonDesignation(i, j)"
+              (clickOutside)="onUpdateClickOutside(i, j)"
+              (click)="onUpdateClick(i, j, ds.id)"
+              class="cont_div"
+              *ngFor="
+                let ds of livStck.livraisonDesignationPresentations;
+                let j = index
+              "
+            >
+              <span style="width: 30%" class="border-case">
+                <input
+                  type="text"
+                  name="designation{{ i }}_{{ j }}"
+                  [ngModel]="ds.designation"
+                  (focus)="onFocusArtInputUpdateSearch(artUpdateList)"
+                  (blur)="onBlurArtInputUpdateSearch(artUpdateList, i, j)"
+                  (input)="OnSearchArticle(artUpdateSrchInput)"
+                  #artUpdateSrchInput
+                  disabled
+                  ngModel
+                />
+                <div
+                  hidden
+                  #artUpdateList
+                  style="width: 45.5%"
+                  class="div-list"
+                >
+                  <div
+                    (click)="artUpdateList.hidden = true"
+                    style="font-weight:bold;font-style:italic"
+                  >
+                    <span class="border-case-black " style="width: 62%">{{
+                      ds.designation
+                    }}</span>
+                    <span class="border-case-black " style="width: 19%">{{
+                      ds.unite
+                    }}</span>
+                    <span class="border-case-black " style="width: 19%">{{
+                      max
+                    }}</span>
+                  </div>
+                  <div
+                    *ngFor="let item of stockDispo"
+                    (click)="onSelectArticleUpdate(item, i, j)"
+                  >
+                    <span class="border-case-black " style="width: 62%">{{
+                      item.designation
+                    }}</span>
+                    <span class="border-case-black " style="width: 19%">{{
+                      item.unite
+                    }}</span>
+                    <span class="border-case-black " style="width: 19%">{{
+                      item.quantite
+                    }}</span>
+                  </div>
+                </div>
+                <input
+                  hidden
+                  type="text"
+                  required
+                  name="articleId{{ i }}_{{ j }}"
+                  [ngModel]="ds.articleId"
+                  ngModel
+                />
+              </span>
+              <span style="width: 9%" class="border-case">
+                <input
+                  type="text"
+                  name="unite{{ i }}_{{ j }}"
+                  [ngModel]="ds.unite"
+                  readonly
+                  ngModel
+                />
+              </span>
+              <span style="width: 9%" class="border-case">
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  max="{{ max }}"
+                  name="quantite{{ i }}_{{ j }}"
+                  [ngModel]="ds.quantite"
+                  disabled
+                  ngModel
+                />
+              </span>
+              <span style="width: 12%" class="border-case">
+                <input
+                  placeholder="DESTINATION"
+                  type="text"
+                  name="destination{{ i }}_{{ j }}"
+                  [ngModel]="ds.destinationNom"
+                  ngModel
+                  (focus)="onFocusDestInputUpdateSearch(dstUpdateList)"
+                  (blur)="onBlurDestInputUpdateSearch(dstUpdateList, i, j)"
+                  (input)="OnSearchDest(dstSrchInput)"
+                  #dstSrchInput
+                />
+                <div hidden #dstUpdateList class="div-list" style="width:11.2%">
+                  <div
+                    *ngFor="let item of destinations"
+                    (click)="onSelectDstUpdate(i, j, item)"
+                    class="div-detail"
+                  >
+                    <span class="border-case-black" style="width: 100%">{{
+                      item.destination
+                    }}</span>
+                  </div>
+                </div>
+                <input
+                  hidden
+                  required
+                  type="text"
+                  name="destinationId{{ i }}_{{ j }}"
+                  [ngModel]="ds.destinationId"
+                  ngModel
+                />
+              </span>
+              <span style="width: 31%" class="border-case">
+                <input
+                  type="text"
+                  placeholder="OBSERVATION"
+                  [ngModel]="ds.observation"
+                  name="observation{{ i }}_{{ j }}"
+                  ngModel
+                />
+              </span>
+              <span class="border-case" style="width: 9%"></span>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

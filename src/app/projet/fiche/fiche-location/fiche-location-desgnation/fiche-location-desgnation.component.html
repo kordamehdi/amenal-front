@@ -1,0 +1,294 @@
+<div (onclick)="click()" class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="
+      isUpdate == 1 ? OnUpdateLocationDesignation() : OnAddLocationDesignation()
+    "
+    #f="ngForm"
+  >
+    <table>
+      <tr class="header">
+        <th style="width: 29.1%">
+          DESIGNATION
+        </th>
+        <th style="width: 6%">
+          UNITE
+        </th>
+        <th style="width: 7%">
+          DEBUT
+        </th>
+        <th style="width: 7%">
+          FIN
+        </th>
+        <th style="width: 8%">
+          QUANTITE
+        </th>
+        <th style="width: 20%">
+          FOURNISSEUR
+        </th>
+        <th style="width: 18%">
+          OBSERVATION
+        </th>
+        <th style="width: 4.1%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
+      <tr (clickOutside)="onAddClickOutside()" (click)="onAddClick()">
+        <td class="tdInput">
+          <input
+            (input)="OnSearch(inputSrch.value)"
+            type="text"
+            style="width : 100%"
+            name="libelle"
+            (focus)="onFocusInputSearch(list)"
+            (blur)="onBlurInputSearch(list)"
+            placeholder="DESIGNATION"
+            required
+            #inputSrch
+            ngModel
+          />
+          <div hidden="true" #list class="div-list" style="width:28.7%">
+            <div
+              class="div-detail"
+              (click)="OnSelectMateriel(mat)"
+              *ngFor="let mat of materielsShow; let j = index"
+            >
+              <span class="span-detail">
+                {{ mat.designation }}
+              </span>
+              <input
+                hidden
+                name="idArticle"
+                list="fournisseurs"
+                [value]="mat.id"
+                ngModel
+              />
+            </div>
+          </div>
+        </td>
+        <td class="tdInput">
+          <input readonly type="text" name="unite" ngModel />
+        </td>
+
+        <td class="tdInput">
+          <input
+            type="time"
+            name="tempsDebut"
+            placeholder="debut"
+            (input)="OnInputDate(tempsDebut.value, tempsFin.value)"
+            ngModel
+            required
+            #tempsDebut
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            type="time"
+            name="tempsFin"
+            (input)="OnInputDate(tempsDebut.value, tempsFin.value)"
+            placeholder="fin"
+            ngModel
+            #tempsFin
+          />
+        </td>
+        <td class="tdInput">
+          <input
+            type="text"
+            name="quantite"
+            readonly
+            placeholder="quantite"
+            ngModel
+          />
+        </td>
+
+        <td class="tdInput">
+          <input
+            disabled
+            placeholder="FOURNISSEUR"
+            name="fournisseurNom"
+            required
+            ngModel
+            (input)="OnSearchFournisseur(matFrInputAdd.value)"
+            (focus)="listfr.hidden = false"
+            (blur)="onBlurAddFr(listfr)"
+            type="text"
+            #matFrInputAdd
+          />
+          <div #listfr hidden="false" class="div-list-fr">
+            <div
+              (click)="onSelectAddFr(fournisseur.fournisseurNom)"
+              *ngFor="let fournisseur of fournisseurs"
+              style="border: 1px solid rgb(0, 0, 0);
+            ;width : 100%"
+            >
+              <span>{{ fournisseur.fournisseurNom }}</span>
+            </div>
+          </div>
+        </td>
+        <td class="tdInput">
+          <input
+            type="text"
+            name="observation"
+            placeholder="observation"
+            ngModel
+          />
+        </td>
+        <td class="tdInput"></td>
+      </tr>
+      <!--**************************************************************************************************************************************-->
+      <ng-container
+        *ngIf="FicheLocation.designations?.length > 0; else elseTemplate"
+      >
+        <tr
+          [ngStyle]="{
+            'background-color': this.dsIndex == i ? 'rgba(255, 0, 0, 0.1)' : '',
+            'border-bottom': locDs.tempsFin ? null : '2px solid red'
+          }"
+          (press)="OnDeleteDs(locDs.id)"
+          *ngFor="let locDs of FicheLocation?.designations; let i = index"
+          (clickOutside)="onUpdateClickedOutside(i)"
+          (click)="onUpdateClick(i, inputUpdateSrch.value, locDs)"
+        >
+          <td>
+            <input
+              disabled
+              [ngModel]="locDs.libelle"
+              [value]="locDs.libelle"
+              (input)="OnSearchUpdate(inputUpdateSrch.value)"
+              type="text"
+              style="width : 100%;"
+              name="libelle{{ i }}"
+              (focus)="onFocusUpdateInputSearch(listUpdate, locDs.libelle)"
+              (blur)="onBlurUpdateInputSearch(listUpdate, i)"
+              placeholder="DESIGNATION"
+              required
+              #inputUpdateSrch
+              ngModel
+            />
+            <div #listUpdate hidden class="div-list" style="width:28.7%">
+              <div
+                class="div-detail"
+                (click)="listUpdate.hidden = true"
+                style="font-weight:bold;font-style:italic"
+              >
+                <span class="span-detail">
+                  {{ locDs.libelle }}
+                </span>
+              </div>
+              <div
+                class="div-detail"
+                (click)="OnSelectUpdate(mat, i)"
+                *ngFor="let mat of materielsShow; let j = index"
+              >
+                <span class="span-detail">
+                  {{ mat.designation }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <input
+              [ngModel]="locDs.unite"
+              disabled
+              readonly
+              type="text"
+              name="unite{{ i }}"
+              ngModel
+            />
+          </td>
+          <td>
+            <input
+              disabled
+              [ngModel]="locDs.tempsDebut"
+              (input)="OnInputDate(tempsDebutUpt.value, tempsFinUpt.value, i)"
+              (focus)="isUpdate = false"
+              type="time"
+              name="tempsDebut{{ i }}"
+              placeholder="debut"
+              required
+              ngModel
+              #tempsDebutUpt
+            />
+          </td>
+          <td>
+            <input
+              disabled
+              (input)="OnInputDate(tempsDebutUpt.value, tempsFinUpt.value, i)"
+              [ngModel]="locDs.tempsFin"
+              (focus)="isUpdate = false"
+              type="time"
+              name="tempsFin{{ i }}"
+              placeholder="fin"
+              ngModel
+              #tempsFinUpt
+            />
+          </td>
+          <td>
+            <input
+              readonly
+              (focus)="isUpdate = false"
+              [ngModel]="locDs.travailleLocString"
+              type="text"
+              name="quantite{{ i }}"
+              placeholder="quantite"
+              ngModel
+            />
+          </td>
+
+          <td>
+            <input
+              placeholder="FOURNISSEUR"
+              name="fournisseurNom{{ i }}"
+              (focus)="
+                onUpdateFournisseurFocus(inputUpdateSrch.value, listfrUpdate)
+              "
+              (input)="OnSearchFournisseur(matFrInput.value)"
+              [ngModel]="locDs.fournisseurNom"
+              (blur)="onUpdateFournisseurBlur(listfrUpdate)"
+              type="text"
+              disabled
+              required
+              ngModel
+              #matFrInput
+            />
+            <div #listfrUpdate hidden="false" class="div-list-fr">
+              <div
+                (click)="listfrUpdate.hidden = true"
+                style="font-weight:bold;font-style:italic;width : 100% ; border: 1px solid rgb(0, 0, 0)"
+              >
+                <span>{{ locDs.fournisseurNom }}</span>
+              </div>
+              <div
+                (click)="onSelectUpdateFr(fournisseur.fournisseurNom, i)"
+                *ngFor="let fournisseur of fournisseurs"
+                style="border: 1px solid rgb(0, 0, 0);
+              ;width : 100%"
+              >
+                <span>{{ fournisseur.fournisseurNom }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <input
+              disabled
+              [ngModel]="locDs.observation"
+              (focus)="isUpdate = false"
+              type="text"
+              name="observation{{ i }}"
+              placeholder="observation"
+              ngModel
+            />
+          </td>
+          <td></td>
+        </tr>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <tr style="text-align: center ; font-style: italic">
+          <td colspan="8">rien a signaler jusqu'au moment</td>
+        </tr>
+      </ng-template>
+    </table>
+  </form>
+</div>

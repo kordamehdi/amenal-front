@@ -1,0 +1,374 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onCancel()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form style="width: 100%" id="form" #f="ngForm">
+    <table>
+      <tr class="header">
+        <th style="width: 60%">
+          DESIGNATION
+        </th>
+        <th style="width: 20%">
+          UNITE
+        </th>
+        <th style="width: 20%">
+          QUT.ESTIMER
+        </th>
+      </tr>
+      <!--*****************************************************************************************************-->
+      <!--*****************************************************************************************************-->
+      <!--*****************************************************************************************************-->
+
+      <tr class="stock-content" *ngFor="let lot of lots; let i = index">
+        <td colspan="3">
+          <div
+            (press)="OnDeleteLot(lot.id, lot.designation)"
+            (dblclick)="onAssoLotToProjet(lot.id)"
+            (click)="onClickLot(i, lotUpt)"
+            (clickOutside)="onClickOutsideLot(i, lotUpt)"
+            [ngStyle]="{
+              'background-color':
+                selectedLot == i ? 'rgba(225, 181, 116, 0.8)' : '',
+              'font-weight': lot.isAsso ? 'bold' : 'normal'
+            }"
+            class="categorie"
+          >
+            <span
+              style="padding :0px"
+              (click)="onShowshowDetail(i)"
+              [class]="showSousLot[i] ? 'rotate' : 'no-rotate'"
+              >></span
+            >
+            <input
+              disabled
+              (blur)="onUpdateLotBlur(lotUpt, lot)"
+              type="text"
+              name="lot{{ i }}"
+              [ngModel]="lot.designation"
+              ngModel
+              #lotUpt
+            />
+          </div>
+          <div #detailLot *ngIf="showSousLot[i]">
+            <div
+              (click)="onClickSousLot(i, j)"
+              (clickOutside)="onClickOutsideSousLot(i, j)"
+              *ngFor="let sLot of lot.sousLots; let j = index"
+              [ngStyle]="{ 'font-weight': sLot.isAsso ? 'bold' : 'normal' }"
+            >
+              <div
+                (dblclick)="onAssoSousLotToProjet(sLot.id)"
+                (press)="OnDeleteSousLot(sLot.id, sLot.designation)"
+                [ngStyle]="{
+                  'background-color':
+                    i == selectedLot
+                      ? 'rgba(225, 181, 116, 0.5)'
+                      : selectedSousLot === transI_J(i, j)
+                      ? 'rgba(225, 181, 116, 0.8)'
+                      : ''
+                }"
+                (click)="onUpdateSousLotClick(i, j)"
+                (clickOutside)="onUpdateSousLotClickOutside(sLot, lot, i, j)"
+                class="cont_div"
+              >
+                <span class="border-case" style="width: 60%">
+                  <span
+                    (click)="onShowshowDetailOfdetail(i, j)"
+                    style="margin-left: 2.5%;padding: 0px"
+                    [class]="showDetailsSousLot[i][j] ? 'rotate' : 'no-rotate'"
+                    >></span
+                  >
+                  <input
+                    disabled
+                    type="text"
+                    name="slotName{{ i }}_{{ j }}"
+                    [ngModel]="sLot.designation"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 20%">
+                  <input
+                    disabled
+                    style="text-align: center"
+                    type="text"
+                    (focus)="onFocusUnitUpdate(unitUpdt)"
+                    (blur)="onBlurUnitUpdate(unitUpdt)"
+                    name="slotUnite{{ i }}_{{ j }}"
+                    [ngModel]="sLot.unite"
+                    ngModel
+                  />
+                </span>
+
+                <span class="border-case" style="width: 20%"> </span>
+              </div>
+              <div
+                hidden
+                #unitUpdt
+                style="width :20%;left:60%"
+                class="div-list"
+              >
+                <div
+                  *ngFor="let unite of unites"
+                  (click)="onSelectUniteUpdate(i, j, unite)"
+                >
+                  <span class="border-case-black" style="width: 100%">{{
+                    unite
+                  }}</span>
+                </div>
+              </div>
+              <div #detailSousLot *ngIf="showDetailsSousLot[i][j]">
+                <!--ENTREE PAR SOUS LOT-->
+                <div
+                  [ngStyle]="{
+                    'background-color':
+                      selectedSousLot === transI_J(i, j)
+                        ? 'rgba(225, 181, 116, 0.5)'
+                        : ''
+                  }"
+                  *ngFor="let entree of sLot.entrees; let k = index"
+                >
+                  <div
+                    (press)="OnDeleteEntree(entree.id, entree.entreeNom)"
+                    (clickOutside)="onUpdateEntreeClickOutside(i, j, k, entree)"
+                    (click)="onUpdateEntreeClick(i, j, k)"
+                    class="cont_div"
+                  >
+                    <span class="border-case" style="width: 60%">
+                      <input
+                        disabled
+                        style="padding-left: 6.5%"
+                        type="text"
+                        (focus)="onFocusEntreeUpdate(entreeListUpdt, sLot)"
+                        (blur)="
+                          onBlurEntreeUpdate(entreeListUpdt, entree, i, j, k)
+                        "
+                        (input)="OnSearchEntree(entreeUpdt.value)"
+                        name="entreeNom{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.entreeNom"
+                        ngModel
+                        #entreeUpdt
+                      />
+                    </span>
+                    <span class="border-case" style="width: 20%">
+                      <input
+                        readonly
+                        style="text-align: center"
+                        type="text"
+                        name="unite{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.unite"
+                        ngModel
+                      />
+                      <input
+                        hidden
+                        name="entreeId{{ i }}_{{ j }}_{{ k }}"
+                        type="text"
+                        ngModel
+                        [ngModel]="entree.idEntree"
+                      />
+                      <input
+                        hidden
+                        name="type{{ i }}_{{ j }}_{{ k }}"
+                        type="text"
+                        ngModel
+                        [ngModel]="entree.type"
+                      />
+                    </span>
+
+                    <span class="border-case" style="width: 20%"
+                      ><input
+                        disabled
+                        style="text-align: center"
+                        type="number"
+                        min="0"
+                        name="quantiteEstimer{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.quantiteEstimer"
+                        ngModel
+                      />
+                    </span>
+                  </div>
+                  <div
+                    hidden
+                    #entreeListUpdt
+                    style="width :78%"
+                    class="div-list"
+                  >
+                    <div
+                      style="font-weight:bold;font-style:italic"
+                      (click)="entreeListUpdt.hidden = false"
+                    >
+                      <span class="border-case-black" style="width: 75%">{{
+                        entree.entreeNom
+                      }}</span>
+                      <span class="border-case-black" style="width: 25%">{{
+                        entree.unite
+                      }}</span>
+                    </div>
+                    <div
+                      *ngFor="let item of listEntree"
+                      (click)="onSelectUpdateEntree(item, i, j, k)"
+                    >
+                      <span class="border-case-black" style="width: 75%">{{
+                        item.entreeNom
+                      }}</span>
+                      <span class="border-case-black" style="width: 25%">{{
+                        item.unite
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+                <!--ENTREE PAR SOUS LOT-->
+                <!--ENTREE DEBUT -->
+
+                <div
+                  class="cont_div"
+                  (clickOutside)="onAddEntreeClickOutside(i, j, sLot.id)"
+                  (click)="onAddEntreeClick(i, j)"
+                >
+                  <span
+                    class="border-case"
+                    style="width: 60%;background-color: rgba(255, 0, 0, 0.1);"
+                  >
+                    <input
+                      style="padding-left: 6.5%"
+                      type="text"
+                      (focus)="onFocusEntreeAdd(EntreeList, sLot)"
+                      (input)="OnSearchEntree(entreeAdd.value)"
+                      (blur)="onBlurEntreeAdd(EntreeList)"
+                      placeholder="ENTREE DESIGNATION"
+                      name="entreeNom{{ i }}_{{ j }}"
+                      ngModel
+                      #entreeAdd
+                    />
+                    <input
+                      hidden
+                      name="entreeId{{ i }}_{{ j }}"
+                      type="text"
+                      ngModel
+                    />
+                    <input
+                      hidden
+                      name="type{{ i }}_{{ j }}"
+                      type="text"
+                      ngModel
+                    />
+                  </span>
+                  <span
+                    class="border-case"
+                    style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+                  >
+                    <input
+                      readonly
+                      style="text-align: center"
+                      type="text"
+                      name="unite{{ i }}_{{ j }}"
+                      placeholder="UNITE"
+                      ngModel
+                    />
+                  </span>
+
+                  <span
+                    class="border-case"
+                    style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+                  >
+                    <input
+                      style="text-align: center"
+                      type="number"
+                      min="0"
+                      name="quantiteEstimer{{ i }}_{{ j }}"
+                      placeholder="QUANTITE ESTIMER"
+                      ngModel
+                    />
+                  </span>
+                </div>
+                <div hidden #EntreeList style="width :78%" class="div-list">
+                  <ng-container
+                    *ngIf="listEntree.length > 0; else elseTemplate"
+                  >
+                    <div
+                      (click)="onSelectAddEntree(item, i, j)"
+                      *ngFor="let item of listEntree"
+                    >
+                      <span class="border-case-black" style="width: 75%">{{
+                        item.entreeNom
+                      }}</span>
+                      <span class="border-case-black" style="width: 25%">{{
+                        item.unite
+                      }}</span>
+                    </div>
+                  </ng-container>
+                  <ng-template #elseTemplate>
+                    <div class="border-case-black" style="width: 100%">
+                      Entree Introuvable
+                    </div>
+                  </ng-template>
+                </div>
+                <!--ENTREE FIN-->
+              </div>
+            </div>
+            <!-- AJOUT DES SOUS LOTS -->
+            <div
+              (click)="onAddSousLotClick(lot.id)"
+              (clickOutside)="onAddSousLotClickOutside(slot, slotUnt, lot)"
+              class="cont_div"
+            >
+              <span
+                class="border-case"
+                style="width: 60%;background-color: rgba(255, 0, 0, 0.1);"
+              >
+                <input
+                  style="padding-left: 3%"
+                  type="text"
+                  placeholder="SOUS LOT"
+                  name="slotName{{ i }}"
+                  ngModel
+                  #slot
+                />
+              </span>
+              <span
+                class="border-case"
+                style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+              >
+                <input
+                  style="text-align: center"
+                  type="text"
+                  (focus)="onFocusUnitAdd(unitAdd)"
+                  (blur)="onBlurUnitAdd(unitAdd)"
+                  name="slotUnite{{ i }}"
+                  placeholder="UNITE"
+                  ngModel
+                  #slotUnt
+                />
+              </span>
+              <span class="border-case" style="width: 20%"> </span>
+            </div>
+            <div hidden #unitAdd style="width :20%;left:60%" class="div-list">
+              <div
+                *ngFor="let unite of unites"
+                (click)="onSelectUniteAdd(i, unite)"
+              >
+                <span class="border-case-black" style="width: 100%">{{
+                  unite
+                }}</span>
+              </div>
+            </div>
+            <!-- AJOUT DES SOUS LOTS -->
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="tdInput" colspan="3">
+          <input
+            type="text"
+            (blur)="OnAddLotBlur(lot)"
+            name="lot"
+            placeholder="LOT"
+            #lot
+          />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+<!--
+  
+-->

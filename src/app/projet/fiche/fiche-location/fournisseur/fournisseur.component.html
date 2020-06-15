@@ -1,0 +1,111 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <app-tab
+    headerTitle="LISTE DES FOURNISSEUR"
+    [showHeader]="true"
+    [column]="culumn"
+  >
+    <tr
+      id="{{ four.id }}"
+      #fournisseur
+      *ngFor="let four of fournisseurs; let i = index"
+    >
+      <td
+        [ngStyle]="{
+          'background-color':
+            this.fourIndex == four.id ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+      >
+        <div>
+          <div
+            (press)="OnDeleteFournisseur(four.id, i)"
+            class="cont_div"
+            (clickOutside)="onClickedOutside(fourUpdateInput, four.id)"
+            (click)="onClick(fourUpdateInput, four.id)"
+          >
+            <span
+              (dblclick)="onAssoFourToProjet(four.id)"
+              [ngStyle]="
+                four.isAssoWithProjet
+                  ? { 'font-weight': 'bold' }
+                  : { 'font-weight': 'normal' }
+              "
+              style="width: 85%;text-align: left "
+            >
+              <input
+                disabled
+                (blur)="OnaUpdateFounisseur(fourUpdateInput, four)"
+                type="text"
+                [ngModel]="four.fournisseurNom"
+                #fourUpdateInput
+              />
+            </span>
+            <span style="font-style: oblique" (click)="onShowDetails(i)">
+              {{ calculNumber(i) }}
+              <span [innerHTML]="showDetails[i] ? '>' : '<'"></span>
+            </span>
+          </div>
+          <div #detail *ngIf="showDetails[i]">
+            <div
+              (dblclick)="onAssoMaterielToProjet(four.id, mat.id)"
+              style="  background-color: rgba(184, 184, 184, 0.5)"
+              [ngStyle]="
+                mat.isAssoWithProjet
+                  ? { 'font-weight': 'bold' }
+                  : { 'font-weight': 'normal' }
+              "
+              *ngFor="let mat of four.materiels; let i = index"
+              class="cont_div"
+              (press)="OnDesAssoMaterielToFournisseur(four.id, mat.id)"
+            >
+              <span class="case-left"> {{ mat.designation }} </span>
+              <span class="case-right">
+                {{ mat.unite }}
+              </span>
+            </div>
+            <input
+              (input)="OnSearch(inputSrch.value, i)"
+              class="tdInput"
+              type="text"
+              style=" padding-left: 20px; width : 100%;"
+              (focus)="onFocusInputSearch(i, list)"
+              (blur)="onListBlur(list)"
+              placeholder="DESIGNATION"
+              #inputSrch
+            />
+            <!-- DropDown -->
+            <div #list hidden="false" class="div-list">
+              <div
+                class="div-detail"
+                *ngFor="let mat of materielsShow"
+                style="width : 100%"
+                (click)="OnAssoMaterielToFournisseur(four.id, mat.id)"
+              >
+                <span class="span-detail" style="width:80%">
+                  {{ mat.designation }}
+                </span>
+                <span
+                  class="span-detail"
+                  style="width:20% ; text-align: center;"
+                >
+                  {{ mat.unite }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <input
+        class="tdInput"
+        (blur)="OnaddFounisseur(fourInput)"
+        type="text"
+        placeholder="FOURNISSEUR"
+        #fourInput
+      />
+    </tr>
+  </app-tab>
+</div>

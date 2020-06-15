@@ -1,5 +1,5 @@
 <div (onclick)="click()" class="container">
-  <app-dialog (OnCtn)="onDelete()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
   <form
@@ -9,24 +9,99 @@
     "
     #f="ngForm"
   >
-    <app-tab [column]="columnDesignation">
-      <tr>
+    <div class="header-nav">
+      <span class="left" (click)="onPrevious()"
+        ><ion-icon name="arrow-dropleft"></ion-icon>
+      </span>
+
+      <span class="middle">{{ position }}/{{ size }}</span>
+
+      <span class="left" (click)="onNext()">
+        <ion-icon name="arrow-dropright"></ion-icon>
+      </span>
+    </div>
+
+    <table>
+      <tr class="header">
+        <th style="width: 22.8%">
+          <input
+            (focus)="onFilterFocus(sNom, 'NOM & PRENOM')"
+            (input)="onFilter(sNom.value, 'nom')"
+            (blur)="onFilterBur(sNom, 'NOM & PRENOM')"
+            type="text"
+            value="NOM & PRENOM"
+            placeholder="NOM & PRENOM"
+            #sNom
+            style="width: 80%"
+          />
+          <ion-icon
+            [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
+            (click)="onSort()"
+          ></ion-icon>
+        </th>
+        <th style="width: 14.5%">
+          CIN
+        </th>
+        <th style="width: 20%">
+          QUALIFICATION
+        </th>
+        <th style="width: 7%">
+          DEBUT
+        </th>
+        <th style="width: 7%">
+          FIN
+        </th>
+        <th style="width: 8.5%">
+          TRAVAIL
+        </th>
+        <th style="width: 5%">
+          JOUR
+        </th>
+        <th style="width: 5%">
+          H.SUP
+        </th>
+        <th style="width: 5%">
+          EPI
+        </th>
+        <th style="width: 5%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
+      <tr
+        class="inputs"
+        (clickOutside)="onClickAddOutside()"
+        (click)="onClickAdd()"
+      >
         <td class="tdInput">
-          <select
-            (focus)="isUpdate = false"
-            name="ouvID"
-            class="Select_options"
-            (change)="onSelect($event.target.value)"
+          <input
+            type="text"
+            name="ouv"
+            (input)="onSearch()"
+            placeholder="OUVRIER"
+            required
             ngModel
-          >
-            <option value="" selected></option>
-            <option
-              [value]="item.id"
-              *ngFor="let item of projetSelectionner.ouvriers"
-              >{{ item.nom }} {{ item.prenom }}</option
+            (focus)="onFocusSelectOuvrier(ouvadd)"
+            (blur)="onBlurSelectOuvrier(ouvadd)"
+          />
+          <input hidden type="text" name="ouvID" required ngModel />
+          <div hidden #ouvadd style="width :57%" class="div-list">
+            <div
+              *ngFor="let item of OuvrierToSelect"
+              (click)="onAddSelectOuvrier(item)"
             >
-          </select>
+              <span class="border-case-black" style="width: 39.5%"
+                >{{ item.nom }} {{ item.prenom }}</span
+              >
+              <span class="border-case-black" style="width: 25.5%">{{
+                item.cin
+              }}</span>
+              <span class="border-case-black" style="width: 35%">{{
+                item.qualification
+              }}</span>
+            </div>
+          </div>
         </td>
+
         <td class="tdInput">
           {{ ouvrierCin }}
         </td>
@@ -35,83 +110,54 @@
           {{ ouvrierQualification }}
         </td>
         <td class="tdInput">
-          <input
-            (focus)="isUpdate = false"
-            type="time"
-            name="debut"
-            placeholder="debut"
-            (blur)="onBlur($event)"
-            required
-            ngModel
-            #dateDebut
-          />
+          <input type="time" name="debut" required ngModel #dateDebut />
+        </td>
+        <td class="tdInput">
+          <input type="time" name="fin" ngModel #dateFin />
         </td>
         <td class="tdInput">
           <input
-            (focus)="isUpdate = false"
-            type="time"
-            name="fin"
-            (blur)="onBlur($event)"
-            placeholder="fin"
-            required
-            ngModel
-            #dateFin
-          />
-        </td>
-        <td class="tdInput">
-          <input
-            (focus)="isUpdate = false"
-            disabled
             type="text"
+            readonly
             name="travail"
-            (blur)="onBlur($event)"
-            placeholder="travail"
-            required
             ngModel
             [ngModel]="calculTravail(dateDebut.value, dateFin.value)"
           />
         </td>
         <td class="tdInput">
           <input
-            (focus)="isUpdate = false"
-            type="text"
+            type="number"
+            min="0"
+            max="1"
+            step="0.1"
             name="jour"
-            (blur)="onBlur($event)"
             placeholder="jour"
-            required
             ngModel
           />
         </td>
         <td class="tdInput">
-          <input
-            (focus)="isUpdate = false"
-            type="text"
-            name="hSup"
-            (blur)="onBlur($event)"
-            placeholder="hSup"
-            required
-            ngModel
-          />
+          <input type="number" name="hSup" placeholder="hSup" ngModel />
         </td>
         <td class="tdInput">
           <input
             [ngModel]="false"
-            (focus)="isUpdate = false"
             type="checkbox"
             name="epi"
-            (blur)="onBlur($event)"
             placeholder="epi"
             ngModel
             #epiInput
           />
         </td>
+        <td class="tdInput"></td>
       </tr>
 
       <!--****************************************************************************************************************************-->
       <!--****************************************************************************************************************************-->
       <!--****************************************************************************************************************************-->
 
-      <ng-container *ngIf="FicheOuvrier?.ouvrierDesignations.length > 0">
+      <ng-container
+        *ngIf="FicheOuvrier?.designations.length > 0; else elseTemplate"
+      >
         <tr
           [ngStyle]="{
             'background-color':
@@ -125,29 +171,92 @@
               ? ''
               : '2px solid red'
           }"
-          long-press
-          (onLongPress)="onLongPress(ouvDs.id)"
-          *ngFor="let ouvDs of FicheOuvrier?.ouvrierDesignations; let i = index"
+          (press)="onLongPress(ouvDs.id)"
+          *ngFor="let ouvDs of designationOuvrier; let i = index"
+          (clickOutside)="onClickedOutside(i)"
+          (click)="onClick(i)"
         >
-          <td tabindex="1" (focus)="onFocus(i)">
-            {{ ouvDs.nom }}
+          <td tabindex="1">
+            <input
+              disabled
+              type="text"
+              name="ouv{{ i }}"
+              (input)="onSearchUpdate(i)"
+              placeholder="OUVRIER"
+              [ngModel]="ouvDs.nom"
+              required
+              ngModel
+              (focus)="onFocusSelectOuvrierUpdate(ouvUpdate)"
+              (blur)="onBlurSelectOuvrierUpdate(ouvUpdate, i, ouvDs)"
+            />
+            <input
+              hidden
+              type="text"
+              name="ouvID{{ i }}"
+              [ngModel]="ouvDs.idOuvrier"
+              required
+              ngModel
+            />
+            <div hidden #ouvUpdate style="width :57%" class="div-list">
+              <div
+                (click)="ouvUpdate.hidden = true"
+                style="font-weight:bold;font-style:italic"
+              >
+                <span class="border-case-black" style="width: 39.5%">
+                  {{ ouvDs.nom }}
+                </span>
+                <span class="border-case-black" style="width: 25.5%">{{
+                  ouvDs.cin
+                }}</span>
+                <span class="border-case-black" style="width: 35%">{{
+                  ouvDs.qualification
+                }}</span>
+              </div>
+              <div
+                *ngFor="let item of OuvrierToSelect"
+                (click)="onAddSelectOuvrierUpdate(item, i)"
+              >
+                <span class="border-case-black" style="width: 39.5%"
+                  >{{ item.nom }} {{ item.prenom }}</span
+                >
+                <span class="border-case-black" style="width: 25.5%">{{
+                  item.cin
+                }}</span>
+                <span class="border-case-black" style="width: 35%">{{
+                  item.qualification
+                }}</span>
+              </div>
+            </div>
           </td>
 
-          <td tabindex="1" (focus)="onFocus(i)">
-            {{ ouvDs.cin }}
+          <td tabindex="1">
+            <input
+              readonly
+              type="text"
+              name="cin{{ i }}"
+              [ngModel]="ouvDs.cin"
+              required
+              ngModel
+            />
           </td>
 
-          <td tabindex="1" (focus)="onFocus(i)">
-            {{ ouvDs.qualification }}
+          <td tabindex="1">
+            <input
+              readonly
+              type="text"
+              name="qualification{{ i }}"
+              [ngModel]="ouvDs.qualification"
+              required
+              ngModel
+            />
           </td>
           <td>
             <input
-              (focus)="onFocus(i)"
               [ngModel]="ouvDs.tempsDebut"
               type="time"
+              disabled
               name="debut{{ i }}"
               placeholder="debut"
-              (blur)="onUpdateBlur($event)"
               required
               ngModel
               #tempsDebut
@@ -155,27 +264,21 @@
           </td>
           <td>
             <input
-              (focus)="onFocus(i)"
+              disabled
               [ngModel]="ouvDs.tempsFin"
               type="time"
               name="fin{{ i }}"
-              (blur)="onUpdateBlur($event)"
               placeholder="fin"
-              required
               ngModel
               #tempsFin
             />
           </td>
           <td>
             <input
-              div
-              (focus)="onFocus(i)"
               readonly
               type="text"
               name="travail{{ i }}"
-              (blur)="onUpdateBlur($event)"
               placeholder="travail"
-              required
               ngModel
               [ngModel]="calculTravail(tempsDebut.value, tempsFin.value)"
               #trv
@@ -183,43 +286,47 @@
           </td>
           <td>
             <input
-              (focus)="onFocus(i)"
+              disabled
               [ngModel]="ouvDs.jour"
-              type="text"
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
               name="jour{{ i }}"
-              (blur)="onUpdateBlur($event)"
               placeholder="jour"
-              required
               ngModel
               #jour
             />
           </td>
           <td>
             <input
-              (focus)="onFocus(i)"
+              disabled
               [ngModel]="ouvDs.hsup"
-              type="text"
+              type="number"
               name="hSup{{ i }}"
-              (blur)="onUpdateBlur($event)"
               placeholder="hSup"
-              required
               ngModel
               #hSup
             />
           </td>
           <td>
             <input
-              (focus)="onFocus(i)"
+              disabled
               type="checkbox"
               name="epi{{ i }}"
-              (blur)="onUpdateBlur($event)"
               placeholder="epi"
               [ngModel]="ouvDs.epi"
               ngModel
             />
           </td>
+          <td></td>
         </tr>
       </ng-container>
-    </app-tab>
+      <ng-template #elseTemplate>
+        <tr style="text-align: center ; font-style: italic">
+          <td colspan="10">rien a signaler jusqu'au moment</td>
+        </tr>
+      </ng-template>
+    </table>
   </form>
 </div>

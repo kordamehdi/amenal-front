@@ -1,0 +1,276 @@
+<div (onclick)="click()" class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    (ngSubmit)="isUpdate == 1 ? onUpdateDesignation() : onAddDesignation()"
+    #f="ngForm"
+  >
+    <table>
+      <tr>
+        <th style="width: 25%">
+          DESIGNATION
+        </th>
+        <th style="width: 10%">
+          UNITÉ
+        </th>
+        <th style="width: 15%">
+          QUANTIÉ
+        </th>
+        <th style="width: 20%">
+          FOURNISSEUR
+        </th>
+        <th style="width: 20%">
+          OBSERVATION
+        </th>
+        <th style="width: 10%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
+
+      <tr
+        (clickOutside)="onClickedAddOutside()"
+        (click)="onClickAdd()"
+        style="background-color: rgba(255, 0, 0, 0.1);"
+      >
+        <td colspan="6">
+          <div class="cont_div">
+            <span class="border-case" style="width: 25%">
+              <input
+                (input)="onSearchAddArticle(inputAddArticle.value)"
+                type="text"
+                placeholder="ARTICLE DESIGNATION"
+                (focus)="onFocusArticleAdd(list)"
+                (blur)="onBlurArticleAdd(list)"
+                name="designation"
+                #inputAddArticle
+                ngModel
+              />
+              <input name="idArticle" type="text" hidden ngModel />
+              <div #list hidden="false" class="div-list-article">
+                <div
+                  *ngFor="let ar of ArticleToSelect; let i = index"
+                  style="width : 100%"
+                >
+                  <span class="select-span" (click)="OnSelectArticleAdd(i)">{{
+                    ar.designation
+                  }}</span>
+                </div>
+              </div>
+            </span>
+            <span class="border-case" style="width: 10%">
+              <input
+                name="unite"
+                readonly
+                type="text"
+                ngModel
+                placeholder="UNITE"
+              />
+            </span>
+            <span class="border-case" style="width: 15%">
+              <input
+                type="number"
+                placeholder="QUANTITE"
+                min="1"
+                step="0.01"
+                required
+                name="quantite"
+                ngModel
+              />
+            </span>
+
+            <span class="border-case" style="width: 20%">
+              <input
+                placeholder="FOUNISSEUR"
+                type="text"
+                (input)="onSearchAddFourniseur(frAdd.value)"
+                (focus)="onFocusFournisseurAdd(listFr)"
+                (blur)="onBlurFournisseurAdd(listFr)"
+                name="fournisseur"
+                ngModel
+                #frAdd
+              />
+              <input name="idFournisseur" type="text" hidden ngModel />
+              <div #listFr hidden="false" class="div-list-fournisseur">
+                <div
+                  *ngFor="let item of founisseurToSelect; let j = index"
+                  style="width : 100%"
+                >
+                  <span class="select-span" (click)="OnSelectFournisseur(j)">
+                    {{ item?.fournisseurNom }}
+                  </span>
+                </div>
+              </div>
+            </span>
+
+            <span class="border-case" style="width: 20%">
+              <input
+                type="text"
+                placeholder="OBSERVATION"
+                name="observation"
+                ngModel
+              />
+            </span>
+            <span class="border-case" style="width: 10%"> </span>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngFor="let cat of categories; let i = index">
+        <td colspan="6">
+          <div>
+            <div
+              class="categorie"
+              (click)="onShowshowDetail(i)"
+              style="font-weight:bold"
+            >
+              {{ cat.categorie }}
+            </div>
+            <div style="font-style: italic" #detail *ngIf="showDetails[i]">
+              <div
+                (press)="OnDeleteDs(ds.id)"
+                [ngStyle]="{
+                  'background-color':
+                    this.dsSelected === transIJ(i, j)
+                      ? 'rgba(255, 0, 0, 0.1)'
+                      : ''
+                }"
+                (click)="onClickUpdate(i, j)"
+                (clickOutside)="onclickOutsideUpdate(i, j)"
+                *ngFor="let ds of cat.receptionDesignation; let j = index"
+                class="cont_div"
+              >
+                <span class="border-case" style="width: 25%">
+                  <input
+                    disabled
+                    (input)="onSearchAddArticle(inputUpdateArticle.value)"
+                    type="text"
+                    placeholder="DESIGNATION"
+                    [ngModel]="ds.designation"
+                    [value]="ds.designation"
+                    (focus)="
+                      onFocusArticleUpdate(listUpdate, inputUpdateArticle.value)
+                    "
+                    (blur)="onBlurArticleUpdate(listUpdate, i, j)"
+                    name="designation{{ i }}_{{ j }}"
+                    #inputUpdateArticle
+                    ngModel
+                  />
+                  <input
+                    name="idArticle{{ i }}_{{ j }}"
+                    type="text"
+                    hidden
+                    ngModel
+                  />
+
+                  <div #listUpdate hidden="false" class="div-list-article">
+                    <div
+                      style="width : 100% ;font-weight:bold;font-style:italic"
+                    >
+                      <span class="select-span" (click)="list.hidden = true">{{
+                        ds.designation
+                      }}</span>
+                    </div>
+                    <div
+                      *ngFor="let ar of ArticleToSelect; let k = index"
+                      style="width : 100%"
+                    >
+                      <span
+                        class="select-span"
+                        (click)="OnSelectArticleUpdate(k, i, j)"
+                        >{{ ar.designation }}</span
+                      >
+                    </div>
+                  </div>
+                </span>
+                <span class="border-case" style="width: 10%">
+                  <input
+                    readonly
+                    placeholder="UNITÉ"
+                    [ngModel]="ds.unite"
+                    [value]="ds.unite"
+                    type="text"
+                    name="unite{{ i }}_{{ j }}"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 15%">
+                  <input
+                    disabled
+                    placeholder="QUANTITE"
+                    [ngModel]="
+                      ds.quantite === -1 ? 'Pas encore fixé' : ds.quantite
+                    "
+                    min="1"
+                    step="0.01"
+                    required
+                    type=" ds.quantite === -1 ? 'text' : 'number'"
+                    name="quantite{{ i }}_{{ j }}"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 20%">
+                  <input
+                    disabled
+                    placeholder="FOURNISSEUR"
+                    [ngModel]="ds.fournisseurNom"
+                    [value]="ds.fournisseurNom"
+                    placeholder="FOUNISSEUR"
+                    type="text"
+                    name="fournisseurNom{{ i }}_{{ j }}"
+                    ngModel
+                    (input)="onSearchAddFourniseur(frUpdt.value)"
+                    (focus)="onFocusFournisseurUpdate(listFru, i, j)"
+                    (blur)="onBlurFournisseurUpdate(listFru, i, j)"
+                    name="fournisseur"
+                    #frUpdt
+                  />
+                  <input
+                    name="idFournisseur{{ i }}_{{ j }}"
+                    type="text"
+                    hidden
+                    ngModel
+                  />
+                  <div #listFru hidden="false" class="div-list-fournisseur">
+                    <div
+                      style="width : 100% ;font-weight:bold;font-style:italic"
+                    >
+                      <span
+                        class="select-span"
+                        (click)="listFru.hidden = true"
+                        >{{ ds.fournisseurNom }}</span
+                      >
+                    </div>
+                    <div
+                      *ngFor="let item of founisseurToSelect; let k = index"
+                      style="width : 100%"
+                    >
+                      <span
+                        class="select-span"
+                        (click)="OnSelectFournisseurUpdate(i, j, k)"
+                      >
+                        {{ item?.fournisseurNom }}
+                      </span>
+                    </div>
+                  </div>
+                </span>
+                <span class="border-case" style="width: 20%">
+                  <input
+                    disabled
+                    placeholder="OBSERVATION"
+                    [ngModel]="ds.observation"
+                    [value]="ds.observation"
+                    type="text"
+                    name="observation{{ i }}_{{ j }}"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 10%"> </span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

@@ -1,0 +1,51 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onCancel()">
+    {{ errorMsg }}
+  </app-dialog>
+  <table>
+    <tr class="header">
+      <th style="width: 35%">
+        USERNAME
+      </th>
+      <th style="width: 35%">
+        PASSWORD
+      </th>
+    </tr>
+    <tr
+      (click)="onAddClick()"
+      (clickOutside)="onAddClickOutside(user, pwd)"
+      class="inputs"
+    >
+      <td class="tdInput">
+        <input type="text" name="username" placeholder="USERNAME" #user />
+      </td>
+      <td class="tdInput">
+        <input type="text" name="password" placeholder="PASSWORD" #pwd />
+      </td>
+    </tr>
+    <!--*****************************************************************************************************-->
+    <tr
+      (press)="onDelete(item.username, item.id)"
+      *ngFor="let item of users; let i = index"
+    >
+      <td>
+        <input
+          disabled
+          type="text"
+          name="username{{ i }}"
+          [ngModel]="item.username"
+          #userUpdate
+        />
+      </td>
+      <td>
+        <input
+          disabled
+          type="password"
+          name="password{{ i }}"
+          [ngModel]="item.password"
+          #pwdUpdate
+        />
+      </td>
+    </tr>
+  </table>
+</div>

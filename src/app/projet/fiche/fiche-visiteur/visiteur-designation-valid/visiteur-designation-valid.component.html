@@ -1,0 +1,97 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <table>
+    <tr class="header">
+      <th style="width: 20%">
+        NOM & PRENOM
+      </th>
+      <th style="width: 20%">
+        ORGANISME
+      </th>
+      <th style="width: 30%">
+        OBJET
+      </th>
+      <th style="width: 15%">
+        ARIVÉE
+      </th>
+      <th style="width: 15%">
+        DEPART
+      </th>
+    </tr>
+
+    <!--*****************************************************************************************************-->
+    <ng-container *ngIf="designation$.length > 0; else elseTemplate">
+      <tr
+        [ngStyle]="{
+          'background-color':
+            selectedDsIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+        (press)="onDelete(item.id)"
+        (click)="onUpdateClick(i)"
+        (clickOutside)="onUpdateClickOutside(i)"
+        *ngFor="let item of designation$; let i = index"
+      >
+        <td>
+          <input
+            disabled
+            type="text"
+            name="nom{{ i }}"
+            [ngModel]="item.nom"
+            placeholder="NOM & PRENOM"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            [ngModel]="item.organisme"
+            name="organisme{{ i }}"
+            placeholder="ORGANISME"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            name="objet{{ i }}"
+            [ngModel]="item.objet"
+            placeholder="OBJET"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            [ngModel]="item.arivee"
+            name="arivee{{ i }}"
+            placeholder="ARIVEÉ"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            [ngModel]="item.depart"
+            name="depart{{ i }}"
+            placeholder="DEPART"
+            ngModel
+          />
+        </td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr
+        class="stock-content"
+        style="text-align: center ; font-style: italic "
+      >
+        <td colspan="5">rien a signaler</td>
+      </tr>
+    </ng-template>
+  </table>
+</div>

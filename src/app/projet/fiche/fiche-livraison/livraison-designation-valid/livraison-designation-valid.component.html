@@ -1,0 +1,112 @@
+<div class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+  <table>
+    <tr class="header">
+      <th style="width: 30%">
+        DESIGNATION
+      </th>
+      <th style="width: 9%">
+        UNITÉ
+      </th>
+      <th style="width: 9%">
+        QUANTIÉ
+      </th>
+      <th style="width: 12%">
+        VERS
+      </th>
+      <th style="width: 31%">
+        OBSERVATION
+      </th>
+      <th style="width: 9%">
+        <ion-icon name="reverse-camera"></ion-icon>
+      </th>
+    </tr>
+    <ng-container *ngIf="livraisonDesignation.length === 0; else elseTemplate">
+      <tr
+        class="stock-content"
+        *ngFor="let livStck of livraisonDesignation; let i = index"
+      >
+        <td colspan="6">
+          <div class="categorie" (click)="onShowshowDetail(i)">
+            {{ livStck.categorie }}
+          </div>
+          <div #detail *ngIf="showDetails[i]">
+            <div
+              [ngStyle]="{
+                'background-color':
+                  this.dsSelected == transIJ(i, j) ? 'rgba(255, 0, 0, 0.1)' : ''
+              }"
+              (clickOutside)="onClickOutside(i, j)"
+              (click)="onClick(i, j)"
+              class="cont_div"
+              *ngFor="
+                let ds of livStck.livraisonDesignationPresentations;
+                let j = index
+              "
+            >
+              <span style="width: 30%" class="border-case">
+                <input
+                  type="text"
+                  name="designation{{ i }}_{{ j }}"
+                  [ngModel]="ds.designation"
+                  #artUpdateSrchInput
+                  disabled
+                />
+              </span>
+              <span style="width: 9%" class="border-case">
+                <input
+                  type="text"
+                  name="unite{{ i }}_{{ j }}"
+                  [ngModel]="ds.unite"
+                  readonly
+                />
+              </span>
+              <span style="width: 9%" class="border-case">
+                <input
+                  type="number"
+                  name="quantite{{ i }}_{{ j }}"
+                  [ngModel]="ds.quantite"
+                  disabled
+                  ngModel
+                />
+              </span>
+              <span style="width: 12%" class="border-case">
+                <input
+                  placeholder="DESTINATION"
+                  type="text"
+                  name="destination{{ i }}_{{ j }}"
+                  [ngModel]="ds.destinationNom"
+                />
+
+                <input
+                  hidden
+                  required
+                  type="text"
+                  name="destinationId{{ i }}_{{ j }}"
+                  [ngModel]="ds.destinationId"
+                  ngModel
+                />
+              </span>
+              <span style="width: 31%" class="border-case">
+                <input
+                  type="text"
+                  placeholder="OBSERVATION"
+                  [ngModel]="ds.observation"
+                  name="observation{{ i }}_{{ j }}"
+                />
+              </span>
+              <span class="border-case" style="width: 9%"></span>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr style="text-align: center ; font-style: italic">
+        <td colspan="6">rien a signaler</td>
+      </tr>
+    </ng-template>
+  </table>
+</div>

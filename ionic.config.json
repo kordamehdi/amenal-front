@@ -1,5 +1,8 @@
 {
   "name": "amenalConst",
-  "integrations": {},
+  "integrations": {
+    "cordova": {},
+    "capacitor": {}
+  },
   "type": "angular"
 }

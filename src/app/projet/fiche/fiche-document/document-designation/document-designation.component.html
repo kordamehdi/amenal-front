@@ -1,0 +1,53 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form
+    id="form"
+    #f="ngForm"
+    (ngSubmit)="isUpdate == 1 ? onUpdateProjet() : onAddProjet()"
+  >
+    <table>
+      <tr class="header">
+        <th style="width: 75%">
+          INTITULE
+        </th>
+        <th style="width: 25%">
+          DISPONIBILITE
+        </th>
+      </tr>
+      <ng-container *ngIf="designation$.length === 0; else elseTemplate">
+        <tr style="text-align: center ; font-style: italic">
+          <td colspan="2">pas de document jusqu' au moment</td>
+        </tr>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <tr
+          [ngStyle]="{
+            'background-color': selectedDs == i ? 'rgba(255, 0, 0, 0.1)' : ''
+          }"
+          (click)="onClick(i)"
+          (clickOutside)="onClickOutside(item.id, i, disop.value)"
+          *ngFor="let item of designation$; let i = index"
+        >
+          <td>
+            <input
+              readonly
+              type="text"
+              name="INTITULE{{ i }}"
+              [ngModel]="item.intitule"
+              placeholder="INTITULE"
+            />
+          </td>
+          <td>
+            <ion-checkbox
+              name="disponibilite{{ i }}"
+              [ngModel]="item.disponibilite"
+              #disop
+            ></ion-checkbox>
+          </td>
+        </tr>
+      </ng-template>
+    </table>
+  </form>
+</div>

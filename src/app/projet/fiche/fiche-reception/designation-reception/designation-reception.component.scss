@@ -1,0 +1,83 @@
+.scrol_cont {
+  max-height: 177px;
+  overflow: scroll;
+  padding-bottom: 20px;
+}
+
+.container {
+  width: 98%;
+  margin: auto;
+  text-align: center;
+}
+.cont_div {
+  display: flex;
+  border-top: 1px solid rgb(255, 255, 255);
+  background-color: rgba(216, 210, 210, 0.39);
+  width: 100%;
+}
+
+.border-case {
+  border-left: 1px solid rgb(255, 255, 255);
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.border-case > input {
+  padding-left: 20px;
+}
+.categorie {
+  border-top: 1px solid rgb(255, 255, 255);
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  text-align: left;
+  padding-left: 5px;
+}
+.select-span {
+  border: 1px solid rgb(104, 100, 100);
+  width: 100%;
+  height: 15px;
+  display: inline-block;
+}
+.div-list-article {
+  width: 24.5%;
+  background-color: rgb(250, 250, 250);
+  position: absolute;
+  z-index: 1;
+  border: 1px solid white;
+  height: 50px;
+  overflow: auto;
+}
+.div-list-fournisseur {
+  width: 19.5%;
+  background-color: rgb(250, 250, 250);
+  position: absolute;
+  z-index: 1;
+  border: 1px solid white;
+  height: 50px;
+  overflow: auto;
+}
+input {
+  width: 100%;
+  background: transparent;
+  text-align: center;
+  border: none;
+}
+table {
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  margin: 0px;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  font-size: 12px;
+}
+
+th {
+  border-left: 1px solid rgba(235, 231, 231, 0.651);
+  text-align: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}

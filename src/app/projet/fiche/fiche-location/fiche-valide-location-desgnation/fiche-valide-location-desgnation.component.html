@@ -1,0 +1,75 @@
+<div (onclick)="click()" class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <table>
+    <tr class="header">
+      <th style="width: 29.1%">
+        DESIGNATION
+      </th>
+      <th style="width: 6%">
+        UNITE
+      </th>
+      <th style="width: 7%">
+        DEBUT
+      </th>
+      <th style="width: 7%">
+        FIN
+      </th>
+      <th style="width: 8%">
+        QUANTITE
+      </th>
+      <th style="width: 20%">
+        FOURNISSEUR
+      </th>
+      <th style="width: 18%">
+        OBSERVATION
+      </th>
+      <th style="width: 4.1%">
+        <ion-icon name="reverse-camera"></ion-icon>
+      </th>
+    </tr>
+    <!--**************************************************************************************************************************************-->
+    <ng-container
+      *ngIf="FicheLocation.designations?.length > 0; else elseTemplate"
+    >
+      <tr
+        [ngStyle]="{
+          'background-color': this.dsIndex == i ? 'rgba(255, 0, 0, 0.1)' : '',
+          'border-bottom': locDs.tempsFin ? null : '2px solid red'
+        }"
+        *ngFor="let locDs of FicheLocation?.designations; let i = index"
+      >
+        <td>
+          {{ locDs.libelle }}
+        </td>
+        <td>
+          {{ locDs.unite }}
+        </td>
+        <td>
+          <input readonly [ngModel]="locDs.tempsDebut" type="time" />
+        </td>
+        <td>
+          <input readonly [ngModel]="locDs.tempsFin" type="time" />
+        </td>
+        <td>
+          {{ locDs.travailleLocString }}
+        </td>
+
+        <td>
+          {{ locDs.fournisseurNom }}
+        </td>
+        <td>
+          {{ locDs.observation }}
+        </td>
+        <td></td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr style="text-align: center ; font-style: italic">
+        <td colspan="8">rien a signaler</td>
+      </tr>
+    </ng-template>
+  </table>
+</div>

@@ -7,7 +7,7 @@ import * as fromFicheOuvrierAction from "../redux/fiche-ouvrier.action";
 import * as fromFicheAction from "../../redux/fiche.action";
 import * as App from "../../../../store/app.reducers";
 import { OuvrierModel } from "src/app/projet/models/ouvrier.model";
-import { Injectable, OnInit } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { ouvrierDesignationModel } from "src/app/projet/models/ouvrierDesignation.model";
 import { FicheService } from "../../fiche.service";
 
@@ -23,15 +23,24 @@ export class FicheOuvrierDesignationService {
     private httpClient: HttpClient,
     private ficheService: FicheService
   ) {
+    this.store
+      .select("projet")
+      .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
+
     this.store.select("fiche").subscribe(ficheState => {
       this.projetSelectionner = ficheState.projetSelectionner;
-      this.FicheSelectionner =
-        ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+
+      if (ficheState.Fiches.length > 0)
+        this.FicheSelectionner =
+          ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+
       this.OuvDsRemovingId = ficheState.DsRemovingId;
     });
   }
 
   public onGetOuvrierByProjet() {
+    console.log("onGetOuvrierByProjet");
+
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
       .get<OuvrierModel[]>(
@@ -52,8 +61,7 @@ export class FicheOuvrierDesignationService {
           this.store.dispatch(new fromFicheAction.GetOuvrierByProjet(ouvriers));
         },
         resp => {
-          console.log(resp.error.message);
-          this.store.dispatch(new fromProjetAction.IsBlack(true));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
             new fromFicheOuvrierAction.ShowAlert({
               showAlert: true,
@@ -82,7 +90,8 @@ export class FicheOuvrierDesignationService {
       },
       resp => {
         this.store.dispatch(
-          new fromFicheOuvrierAction.ShowAlert({
+          new fromFicheAction.ShowFicheAlert({
+            type: "fiche-ouvrier-ds",
             showAlert: true,
             msg: resp.error.message
           })
@@ -105,11 +114,12 @@ export class FicheOuvrierDesignationService {
     );
     this.httpClient.request(req).subscribe(
       () => {
-        this.store.dispatch(new fromProjetAction.IsBlack(false));
         this.ficheService.onGetFicheByType("OUVRIER", null);
         this.onGetOuvrierByProjet();
       },
       resp => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+
         this.store.dispatch(
           new fromFicheOuvrierAction.ShowAlert({
             showAlert: true,
@@ -121,6 +131,7 @@ export class FicheOuvrierDesignationService {
   }
 
   public OnDeleteOuvrierDesignation() {
+    console.log("OnDeleteOuvrierDesignation");
     if (this.OuvDsRemovingId !== -1) {
       this.store.dispatch(new fromProjetAction.IsBlack(true));
       const req = new HttpRequest(
@@ -139,7 +150,7 @@ export class FicheOuvrierDesignationService {
         },
         resp => {
           this.store.dispatch(
-            new fromFicheAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
               showAlert: true,
               msg: resp.error.message
             })

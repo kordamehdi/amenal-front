@@ -1,0 +1,36 @@
+<div (onclick)="click()" class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <table>
+    <tr class="header">
+      <th style="width: 75%">
+        INTITULE
+      </th>
+      <th style="width: 25%">
+        DISPONIBILITE
+      </th>
+    </tr>
+    <ng-container *ngIf="designation$.length === 0; else elseTemplate">
+      <tr style="text-align: center ; font-style: italic">
+        <td colspan="2">rien a signaler</td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr
+        [ngStyle]="{
+          'background-color': selectedDs == i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+        *ngFor="let item of designation$; let i = index"
+      >
+        <td>
+          {{ item.intitule }}
+        </td>
+        <td>
+          <ion-checkbox disabled [checked]="item.disponibilite"></ion-checkbox>
+        </td>
+      </tr>
+    </ng-template>
+  </table>
+</div>

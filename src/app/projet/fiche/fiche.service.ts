@@ -11,33 +11,63 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { Route } from "@angular/compiler/src/core";
 @Injectable()
 export class FicheService {
-  SERVER_ADDRESS = "http://localhost:8080";
+  SERVER_ADDRESS = "";
   projetSelectionner: ProjetModel;
-
+  fiches;
+  ficheSelectionnerId;
+  ficheSelectionner: FicheModel;
+  typeSelectionner;
+  listAll;
   constructor(
     private store: Store<App.AppState>,
     private httpClient: HttpClient,
     private router: Router
   ) {
+    this.store
+      .select("projet")
+      .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
+
     this.store.select("fiche").subscribe(projetState => {
       this.projetSelectionner = projetState.projetSelectionner;
+      if (projetState.Fiches.length > 0) {
+        this.fiches = projetState.Fiches;
+        this.ficheSelectionnerId =
+          projetState.Fiches[projetState.FicheSelectionnerPosition].id;
+        this.ficheSelectionner =
+          projetState.Fiches[projetState.FicheSelectionnerPosition];
+      }
+      this.listAll = projetState.listAll;
+      this.typeSelectionner = projetState.typeSelectionner;
     });
   }
 
-  validerFiche(id) {
+  validerFiche(id, type) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
-      .put<FicheModel[]>(this.SERVER_ADDRESS + "/fiches/" + id, {
+      .put<FicheModel[]>(this.SERVER_ADDRESS + "/fiches/" + type + "/" + id, {
         observe: "body",
         responseType: "json"
       })
       .subscribe(
-        () => {},
-        resp => {
-          console.log(resp.error.message);
+        () => {
+          if (this.listAll) this.onGetFicheByType("TOUS", null);
+          else this.onGetFicheByType(this.typeSelectionner, null);
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromFicheAction.ValiderFiche(""));
           this.store.dispatch(
-            new fromFicheAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
               showAlert: true,
+              type: "fiche",
+              msg: "fiche valider avec succer!"
+            })
+          );
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fiche",
               msg: resp.error.message
             })
           );
@@ -47,7 +77,10 @@ export class FicheService {
 
   onGetFicheByType(ficheType: String, route: ActivatedRoute) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
-    let params = new HttpParams().set("date", null);
+    let params;
+    if (route == null)
+      params = new HttpParams().set("date", this.ficheSelectionner.date);
+    else params = new HttpParams().set("date", null);
 
     this.httpClient
       .get<FicheModel[]>(
@@ -57,29 +90,60 @@ export class FicheService {
           "/fiche/" +
           ficheType,
         {
+          params: params,
           observe: "body",
           responseType: "json"
         }
       )
       .subscribe(
         fiches => {
-          this.store.dispatch(new fromFicheAction.setFiches(fiches));
-
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          let ficheId = this.ficheSelectionnerId;
           if (route !== null) {
-            this.router.navigate([ficheType.toLocaleLowerCase()], {
-              relativeTo: route
-            });
+            if (ficheType === "TOUS") {
+              this.store.dispatch(new fromFicheAction.setFiches(fiches));
+              this.store.dispatch(new fromFicheAction.listAll(true));
+
+              let ps = fiches.findIndex(f => f.id === ficheId);
+              if (ps > 0)
+                this.store.dispatch(new fromFicheAction.SetFichePosition(ps));
+
+              this.router.navigate(
+                [
+                  this.typeSelectionner === ""
+                    ? fiches[0].type.toLocaleLowerCase()
+                    : this.typeSelectionner.toLocaleLowerCase()
+                ],
+                {
+                  relativeTo: route
+                }
+              );
+            } else {
+              this.store.dispatch(
+                new fromFicheAction.SelectFicheType({
+                  fiches: fiches,
+                  type: ficheType
+                })
+              );
+              this.store.dispatch(new fromFicheAction.listAll(false));
+            }
+          } else {
+            this.store.dispatch(
+              new fromFicheAction.SelectFicheType({
+                fiches: fiches,
+                type: ficheType
+              })
+            );
           }
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fiche",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }

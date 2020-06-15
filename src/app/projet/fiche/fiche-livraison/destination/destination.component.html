@@ -1,0 +1,74 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+  <div class="header">
+    <label for="file" class="left"
+      ><ion-icon name="download">
+        <input
+          type="file"
+          id="file"
+          (change)="getFile($event)"
+          style="visibility: hidden;"
+        />
+      </ion-icon>
+    </label>
+
+    <span class="middle">LISTE DES OUVRIERS</span>
+
+    <span class="left" (click)="OnCancel()">
+      <ion-icon name="arrow-round-up"></ion-icon>
+    </span>
+  </div>
+  <table style="width:100%">
+    <tr (clickOutside)="this.typeAsc = ''">
+      <th>DESTINATIONS</th>
+    </tr>
+    <tr
+      (press)="OnDeleteDestination(dst.id, dst.destination)"
+      *ngFor="let dst of destinations"
+      (clickOutside)="onUpdateClickedOutside(dst.id, dsInput)"
+      (click)="onUpdateClick(dst.id, dsInput)"
+      [ngStyle]="{
+        'background-color':
+          this.dstIndex == dst.id
+            ? 'rgba(255, 0, 0, 0.1)'
+            : 'rgba(255, 255, 255, 0.5)'
+      }"
+      (dblclick)="OnAssoDstToProjet(dst.id)"
+    >
+      <td
+        [ngStyle]="
+          dst.isAsso ? { 'font-weight': 'bold' } : { 'font-weight': 'normal' }
+        "
+      >
+        <input
+          [disabled]="true"
+          type="text"
+          name="nom{{ dst.id }}"
+          [ngModel]="dst.destination"
+          required
+          ngModel
+          #dsInput
+        />
+      </td>
+    </tr>
+    <tr
+      style="  background-color: rgba(255, 255, 255, 0.5);
+    "
+      (clickOutside)="onAddClickedOutside(dstInput)"
+      (click)="onAddClick()"
+    >
+      <td>
+        <input
+          class="tdInput"
+          type="text"
+          name="ds"
+          placeholder="DESTINATION"
+          #dstInput
+          required
+        />
+      </td>
+    </tr>
+  </table>
+</div>

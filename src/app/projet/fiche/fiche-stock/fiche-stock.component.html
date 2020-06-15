@@ -1,0 +1,63 @@
+<div class="container">
+  <table>
+    <tr>
+      <th style="width: 60%">
+        DESIGNATION
+      </th>
+      <th style="width: 20%">
+        UNITÉ
+      </th>
+      <th style="width: 20%">
+        QUANTITÉ
+      </th>
+    </tr>
+    <ng-container *ngIf="stocks.length > 0; else elseTemplate">
+      <tr class="stock-content" *ngFor="let stock of stocks; let i = index">
+        <td colspan="3">
+          <div>
+            <div class="categorie" (click)="onShowshowDetail(i)">
+              {{ stock.categorie }}
+              <div
+                *ngIf="!stock.stockable"
+                style="position: relative; left: 5px; top: 3px; width: 7px; height: 7px; background-color: red;border-radius: 40px;"
+              ></div>
+            </div>
+            <div #detail *ngIf="showDetails[i]">
+              <div
+                [ngStyle]="{
+                  'background-color':
+                    this.dsSelected == transIJ(i, j)
+                      ? 'rgba(255, 0, 0, 0.1)'
+                      : '',
+                  color: !item.stockable ? 'red' : ''
+                }"
+                (clickOutside)="onClickedOutside(i, j)"
+                (click)="onFocus(i, j)"
+                *ngFor="let item of stock.stockDesignations; let j = index"
+                class="cont_div"
+              >
+                <span class="border-case" style="width: 60%">
+                  {{ item.designation }}
+                </span>
+                <span class="border-case" style="width: 20%">
+                  {{ item.unite }}
+                </span>
+                <span class="border-case" style="width: 20%">
+                  {{ item.quantite }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <tr
+        class="stock-content"
+        style="text-align: center ; font-style: italic "
+      >
+        <td colspan="3">rien a signaler</td>
+      </tr>
+    </ng-template>
+  </table>
+</div>

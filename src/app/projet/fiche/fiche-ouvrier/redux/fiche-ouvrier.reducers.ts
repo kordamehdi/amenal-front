@@ -8,9 +8,11 @@ export interface ficheOuvrierState {
   columnDesignation: String[];
   columnOuvrier: String[];
   qualifications: String[];
-  showAlert: Boolean;
-  errorMsg: string;
+  showOuvAlert: Boolean;
+  errorOuvMsg: string;
+  typeOuvDialog: string;
   AlertCtn: Boolean;
+  isOuvrierUpdate: number;
 }
 
 const InitialState: ficheOuvrierState = {
@@ -29,37 +31,52 @@ const InitialState: ficheOuvrierState = {
     "EPI"
   ],
   columnOuvrier: [
-    "cin",
-    "nom",
-    "prenom",
-    "qualification",
-    "age",
-    "ancienter",
-    "J_TRV",
+    "appreciation",
     "tele",
-    "appreciation"
+    "J_TRV",
+    "ancienter",
+    "age",
+    "qual",
+    "prenom",
+    "nom",
+    "cin"
   ],
-  qualifications: ["Macon", "Boiseur", "Ingenieur"],
-  showAlert: false,
+  qualifications: [],
+  showOuvAlert: false,
   AlertCtn: false,
-  errorMsg: ""
+  errorOuvMsg: "",
+  typeOuvDialog: "",
+  isOuvrierUpdate: -1
 };
 export function OuvrierReducer(
   state = InitialState,
   action: fromFicheOuvrierAction.FicheAction
 ) {
   switch (action.type) {
+    case fromFicheOuvrierAction.IS_UPDATE: {
+      return {
+        ...state,
+        isOuvrierUpdate: action.payload
+      };
+    }
     case fromFicheOuvrierAction.GET_OUVRIER: {
       return {
         ...state,
         ouvriers: action.payload
       };
     }
-    case fromFicheOuvrierAction.SHOW_ALERT: {
+    case fromFicheOuvrierAction.GET_DESIGNATIONS: {
       return {
         ...state,
-        showAlert: action.payload.showAlert,
-        errorMsg: action.payload.msg
+        qualifications: action.payload
+      };
+    }
+    case fromFicheOuvrierAction.SHOW_ALERT_OUVRIER: {
+      return {
+        ...state,
+        showOuvAlert: action.payload.showAlert,
+        errorOuvMsg: action.payload.msg,
+        typeOuvDialog: action.payload.typeDialog
       };
     }
     case fromFicheOuvrierAction.ALERT_YES: {
@@ -71,17 +88,19 @@ export function OuvrierReducer(
     case fromFicheOuvrierAction.START_REMOVE_OUVRIER: {
       return {
         ...state,
-        showAlert: true,
-        errorMsg: "Vous Etes sure de vouloire supprimer cet ouvrier?",
+        showOuvAlert: true,
+        errorOuvMsg: "Vous Etes sure de vouloire supprimer cet ouvrier?",
+        typeOuvDialog: "fiche-ouvrier",
         ouvrierRemovingId: action.payload
       };
     }
     case fromFicheOuvrierAction.FINISH_REMOVE_OUVRIER: {
       return {
         ...state,
-        showAlert: false,
-        errorMsg: "",
-        ouvrierRemovingId: -1
+        showOuvAlert: false,
+        errorOuvMsg: "",
+        ouvrierRemovingId: -1,
+        typeOuvDialog: "fiche-ouvrier"
       };
     }
     default:

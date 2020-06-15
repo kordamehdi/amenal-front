@@ -51,6 +51,10 @@ export class LongPress {
 
     this.loop(event);
   }
+  @HostListener("mouseup")
+  onMouseUp() {
+    this.endPress();
+  }
 
   @HostListener("mousemove", ["$event"])
   onMouseMove(event) {
@@ -77,10 +81,5 @@ export class LongPress {
     this.longPressing = false;
     this.pressing = false;
     this.onLongPressEnd.emit(true);
-  }
-
-  @HostListener("mouseup")
-  onMouseUp() {
-    this.endPress();
   }
 }

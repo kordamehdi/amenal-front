@@ -1,0 +1,59 @@
+.container {
+  margin-top: 20px;
+  width: 98%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 12px;
+}
+.cont_div {
+  display: flex;
+  font-style: italic;
+  border-top: 1px solid rgb(255, 255, 255);
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+}
+
+.border-case {
+  border-left: 1px solid rgb(255, 255, 255);
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.categorie {
+  font-weight: bold;
+  border-top: 1px solid rgb(255, 255, 255);
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  text-align: left;
+  padding-left: 5px;
+}
+
+tr {
+  background-color: rgba(0, 0, 0, 0.13);
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.stock-content {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  margin: 0px;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  font-size: 12px;
+}
+
+th {
+  background-color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}

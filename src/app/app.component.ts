@@ -1,9 +1,11 @@
 import { DataStorageService } from "./projet/service/data-storage.service";
 import { Component } from "@angular/core";
+import { ScreenOrientation } from "@ionic-native/screen-orientation/ngx";
 
 import { Platform } from "@ionic/angular";
 import { SplashScreen } from "@ionic-native/splash-screen/ngx";
 import { StatusBar } from "@ionic-native/status-bar/ngx";
+import { LoginService } from "./login/login.service";
 
 @Component({
   selector: "app-root",
@@ -25,16 +27,20 @@ export class AppComponent {
   ];
 
   constructor(
+    private loginService: LoginService,
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private dataStorageService: DataStorageService
+    private dataStorageService: DataStorageService,
+    private screenOrientation: ScreenOrientation
   ) {
+    this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
+
     this.initializeApp();
   }
   ngOnInit() {
-    console.log("éééééééééééééééééé");
-    this.dataStorageService.testConnection();
+    this.loginService.getUser();
+    //this.dataStorageService.testConnection();
   }
 
   initializeApp() {

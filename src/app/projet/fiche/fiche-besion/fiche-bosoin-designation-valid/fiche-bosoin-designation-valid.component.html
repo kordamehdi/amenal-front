@@ -1,0 +1,107 @@
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+    {{ errorMsg }}
+  </app-dialog>
+
+  <table>
+    <tr class="header">
+      <th style="width: 20%">
+        DESIGNATION
+      </th>
+      <th style="width: 8%">
+        UNITÉ
+      </th>
+      <th style="width: 8%">
+        QUANTITÉ
+      </th>
+      <th style="width: 12%">
+        DEMANDÉ LE
+      </th>
+      <th style="width: 14%">
+        PRÉVU LE
+      </th>
+      <th style="width: 8%">
+        RETARD
+      </th>
+      <th style="width: 10%">
+        SATISFAIT
+      </th>
+      <th style="width: 20%">
+        OBSERVATION
+      </th>
+    </tr>
+    <tr
+      [ngStyle]="{
+        'background-color': selectedDsIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
+      }"
+      (click)="onUpdateClick(i, ds.id)"
+      (clickOutside)="onUpdateClickOutside(i)"
+      class="stock-content"
+      *ngFor="let ds of designation$; let i = index"
+    >
+      <td>
+        <input
+          readonly
+          [ngModel]="ds.designation"
+          required
+          type="text"
+          name="designation{{ i }}"
+          placeholder="DESIGNATION"
+        />
+      </td>
+      <td>
+        <input readonly type="text" [ngModel]="ds.unite" name="unite{{ i }}" />
+      </td>
+      <td>
+        <input
+          readonly
+          [ngModel]="ds.quantite"
+          type="number"
+          name="quantite{{ i }}"
+        />
+      </td>
+      <td>
+        <input
+          readonly
+          type="text"
+          [ngModel]="ds.dateDemande"
+          name="dateDemande{{ i }}"
+        />
+      </td>
+      <td>
+        <input
+          readonly
+          [ngModel]="ds.datePrevu"
+          type="date"
+          [type]="text"
+          name="datePrevu{{ i }}"
+        />
+      </td>
+
+      <td>
+        <input
+          readonly
+          [ngModel]="ds.retard"
+          type="number"
+          name="retard{{ i }}"
+        />
+      </td>
+      <td>
+        <ion-checkbox
+          name="satisfaction{{ i }}"
+          disabled
+          [ngModel]="ds.satisfaction"
+          ngModel
+        ></ion-checkbox>
+      </td>
+      <td>
+        <input
+          readonly
+          [ngModel]="ds.observation"
+          type="text"
+          name="observation{{ i }}"
+        />
+      </td>
+    </tr>
+  </table>
+</div>

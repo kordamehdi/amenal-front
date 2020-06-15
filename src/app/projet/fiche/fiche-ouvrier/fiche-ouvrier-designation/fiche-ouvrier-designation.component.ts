@@ -1,7 +1,15 @@
+import { OuvrierModel } from "src/app/projet/models/ouvrier.model";
+
 import { FicheService } from "./../../fiche.service";
 import { nextFiche, validerFiche } from "./../../nav/nav.selector";
 import { ProjetModel } from "./../../../models/projet.model";
-import { Component, OnInit, ViewChild, OnChanges } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  OnChanges,
+  OnDestroy
+} from "@angular/core";
 import { Store } from "@ngrx/store";
 import { FicheOuvrierDesignationService } from "./fiche-ouvrier-designation.service";
 import * as App from "../../../../store/app.reducers";
@@ -10,13 +18,15 @@ import * as fromFicheAction from "../../redux/fiche.action";
 import { ouvrierDesignationModel } from "src/app/projet/models/ouvrierDesignation.model";
 import { NgForm } from "@angular/forms";
 import * as moment from "moment";
+import { refresh } from "../../header/head.selector";
+import { untilDestroyed } from "ngx-take-until-destroy";
 
 @Component({
   selector: "app-fiche-ouvrier-designation",
   templateUrl: "./fiche-ouvrier-designation.component.html",
   styleUrls: ["./fiche-ouvrier-designation.component.scss"]
 })
-export class FicheOuvrierDesignationComponent implements OnInit {
+export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   @ViewChild("f", { static: false })
   form: NgForm;
 
@@ -26,13 +36,36 @@ export class FicheOuvrierDesignationComponent implements OnInit {
   ouvrierCin: String;
   ouvrierQualification: String;
   ouvDsSlIndex: number;
-  formNames = ["ouvID", "debut", "fin", "travail", "epi", "hSup", "jour"];
-  formNamesOnUpdate = ["debut", "fin", "travail", "epi", "hSup", "jour"];
+  formNames = [
+    "ouv",
+    "ouvID",
+    "debut",
+    "fin",
+    "travail",
+    "epi",
+    "hSup",
+    "jour"
+  ];
+  formNamesOnUpdate = ["ouv", "debut", "fin", "travail", "epi", "hSup", "jour"];
+
+  designationOuvrier = [];
+  designationOuvrier$ = [];
+  //ascendant
+  ascendant = true;
+  OuvrierToSelect: OuvrierModel[];
+  OuvrierToSelect$: OuvrierModel[];
+
+  isSelected = false;
   isUpdate;
   showAlert: Boolean = false;
   errorMsg = "Erreur!";
   Trv: string;
-
+  dateFinMax;
+  dateAgeMax;
+  DateAcntMax;
+  navPas = 5;
+  position = 1;
+  size;
   constructor(
     private ficheService: FicheService,
     private ficheOuvrierDesignationService: FicheOuvrierDesignationService,
@@ -41,38 +74,86 @@ export class FicheOuvrierDesignationComponent implements OnInit {
 
   ngOnInit() {
     this.ficheOuvrierDesignationService.onGetOuvrierByProjet();
-    this.store.select("ficheOuvrier").subscribe(state => {
-      this.columnDesignation = state.columnDesignation;
-    });
+    this.store
+      .select("ficheOuvrier")
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.columnDesignation = state.columnDesignation;
+      });
 
-    this.store.select("fiche").subscribe(state => {
-      this.errorMsg = state.errorMsg;
-      this.showAlert = state.showAlert;
-      this.projetSelectionner = { ...state.projetSelectionner };
-      this.FicheOuvrier = { ...state.Fiches[state.FicheSelectionnerPosition] };
-    });
-    this.store.select(nextFiche).subscribe(state => {
-      this.ouvrierQualification = this.ouvrierCin = "";
-      if (this.form != null) this.form.reset();
-    });
-    this.store.select(validerFiche).subscribe(state => {
-      if (state) this.ficheService.validerFiche(this.FicheOuvrier.id);
-    });
+    this.store
+      .select("fiche")
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        if (state.type === "fiche-ouvrier-ds" || state.type === "fiche") {
+          this.errorMsg = state.errorMsg;
+          this.showAlert = state.showAlert;
+        }
+        this.projetSelectionner = { ...state.projetSelectionner };
+
+        this.OuvrierToSelect = this.projetSelectionner.ouvriers;
+        this.OuvrierToSelect$ = this.projetSelectionner.ouvriers;
+
+        this.FicheOuvrier = {
+          ...state.Fiches[state.FicheSelectionnerPosition]
+        };
+
+        if (this.FicheOuvrier.designations.length !== 0) {
+          this.designationOuvrier$ = this.FicheOuvrier.designations;
+          this.designationOuvrier = this.FicheOuvrier.designations.slice(
+            0,
+            this.navPas
+          );
+          this.size = Math.trunc(
+            this.FicheOuvrier.designations.length / this.navPas
+          );
+          if (this.size < this.FicheOuvrier.designations.length / this.navPas)
+            this.size = this.size + 1;
+        }
+      });
+
+    this.store
+      .select(nextFiche)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.ouvrierQualification = this.ouvrierCin = "";
+        if (this.form != null) this.form.reset();
+      });
+
+    this.store
+      .select(validerFiche)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        if (state === "OUVRIER" || state === "fiche") {
+          this.ficheService.validerFiche(this.FicheOuvrier.id, "ouvriers");
+          this.store.dispatch(new fromFicheAction.ValiderFiche(""));
+        }
+      });
+    this.store
+      .select(refresh)
+      .pipe(untilDestroyed(this))
+      .subscribe(type => {
+        if (type.refresh === "OUVRIER") {
+          this.ficheOuvrierDesignationService.onGetOuvrierByProjet();
+          this.ficheService.onGetFicheByType("OUVRIER", null);
+        }
+      });
   }
 
-  onSelect(id) {
-    this.ouvrierCin = {
-      ...this.projetSelectionner.ouvriers.find(ouv => {
-        return ouv.id == id;
-      })
-    }.cin;
-    this.ouvrierQualification = {
-      ...this.projetSelectionner.ouvriers.find(ouv => ouv.id == id)
-    }.qualification;
-    console.log("ssss", id, "dddd", this.ouvrierCin);
+  onAddSelectOuvrier(item: OuvrierModel) {
+    this.isSelected = true;
+
+    this.form.controls["ouvID"].setValue(item.id);
+    this.form.controls["ouv"].setValue(item.nom.concat(" ", item.prenom));
+    this.ouvrierCin = item.cin;
+    this.ouvrierQualification = item.qualification;
   }
 
   OnAddOuvrierDesignation() {
+    var jour = this.form.value["jour"];
+    var hsup = this.form.value["hSup"];
+    // calculate total duration
+
     const ouvDs: ouvrierDesignationModel = {
       id: null,
       idOuvrier: this.form.value["ouvID"],
@@ -82,7 +163,7 @@ export class FicheOuvrierDesignationComponent implements OnInit {
       cin: "",
       tempsDebut: this.form.value["debut"],
       tempsFin: this.form.value["fin"],
-      travail: this.form.value["travail"],
+      travail: jour === "" && hsup === "" ? 0 : (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi"],
       hsup: this.form.value["hSup"],
       jour: this.form.value["jour"],
@@ -96,23 +177,29 @@ export class FicheOuvrierDesignationComponent implements OnInit {
     };
 
     this.ficheOuvrierDesignationService.OnSaveOuvrierDesignation(ouvDs);
-    this.form.reset();
     this.ouvrierQualification = this.ouvrierCin = "";
+    this.isSelected = false;
+    this.formNames.forEach((key: any) => {
+      this.form.controls[key].reset();
+    });
   }
 
   OnUpdateOuvrierDesignation() {
+    var jour = this.form.value["jour".concat(this.ouvDsSlIndex.toString())];
+    var hsup = this.form.value["hSup".concat(this.ouvDsSlIndex.toString())];
+
+    // calculate total duration
     const ouvDs: ouvrierDesignationModel = {
       id: null,
-      idOuvrier: this.FicheOuvrier.ouvrierDesignations[this.ouvDsSlIndex]
-        .idOuvrier,
-      nom: this.FicheOuvrier.ouvrierDesignations[this.ouvDsSlIndex].nom,
+      idOuvrier: this.form.value["ouvID".concat(this.ouvDsSlIndex.toString())],
+      nom: this.FicheOuvrier.designations[this.ouvDsSlIndex].nom,
       prenom: "",
-      qualification: this.FicheOuvrier.ouvrierDesignations[this.ouvDsSlIndex]
+      qualification: this.FicheOuvrier.designations[this.ouvDsSlIndex]
         .qualification,
-      cin: this.FicheOuvrier.ouvrierDesignations[this.ouvDsSlIndex].cin,
+      cin: this.FicheOuvrier.designations[this.ouvDsSlIndex].cin,
       tempsDebut: this.form.value["debut".concat(this.ouvDsSlIndex.toString())],
       tempsFin: this.form.value["fin".concat(this.ouvDsSlIndex.toString())],
-      travail: this.form.value["travail".concat(this.ouvDsSlIndex.toString())],
+      travail: jour === "" && hsup === "" ? 0 : (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi".concat(this.ouvDsSlIndex.toString())],
       hsup: this.form.value["hSup".concat(this.ouvDsSlIndex.toString())],
       jour: this.form.value["jour".concat(this.ouvDsSlIndex.toString())],
@@ -127,69 +214,151 @@ export class FicheOuvrierDesignationComponent implements OnInit {
 
     this.ficheOuvrierDesignationService.OnUpdateOuvrierDesignation(
       ouvDs,
-      this.FicheOuvrier.ouvrierDesignations[this.ouvDsSlIndex].id
+      this.FicheOuvrier.designations[this.ouvDsSlIndex].id
     );
-    this.form.reset();
+    this.isSelected = false;
+    this.ouvDsSlIndex = -1;
     this.ouvrierQualification = this.ouvrierCin = "";
   }
 
-  onBlur(event) {
-    const myInput = this.form.controls[event.target.name];
-
-    if (myInput.invalid) {
-      this.store.dispatch(new fromProjetAction.IsBlack(true));
-      this.store.dispatch(new fromFicheAction.ShowAlert(true));
-    } else {
-      let submit = true;
-      this.formNames.forEach((key: any) => {
-        if (this.form.controls[key].invalid) {
-          submit = false;
-        }
+  /***************** */
+  onSearch() {
+    let vv = this.form.value["ouv"].trim().toUpperCase();
+    if (vv !== "")
+      this.OuvrierToSelect = this.OuvrierToSelect$.filter(d => {
+        return d.nom.concat(" ", d.prenom).includes(vv);
       });
-
-      if (submit) this.form.ngSubmit.emit();
-    }
+    else this.OuvrierToSelect = this.OuvrierToSelect$;
   }
-  onUpdateBlur(event) {
-    const myInput = this.form.controls[
-      event.target.attributes.getNamedItem("ng-reflect-name").value
-    ];
+  onSearchUpdate(i) {
+    let vv = this.form.value["ouv".concat(i)].trim().toUpperCase();
+    if (vv !== "")
+      this.OuvrierToSelect = this.OuvrierToSelect$.filter(d => {
+        return d.nom.concat(" ", d.prenom).includes(vv);
+      });
+    else this.OuvrierToSelect = this.OuvrierToSelect$;
+  }
+  onBlurSelectOuvrier(ouvadd) {
+    setTimeout(() => {
+      ouvadd.hidden = true;
+      let id = this.form.value["ouvID"];
+      let ouv = this.OuvrierToSelect$.find(
+        o => o.nom.concat(" ", o.prenom) === this.form.value["ouv"].trim()
+      );
+      if (ouv == null) {
+        this.ouvrierQualification = "";
+        this.ouvrierCin = "";
+        this.isSelected = false;
+      } else if (id !== ouv.id) {
+        this.ouvrierQualification = "";
+        this.ouvrierCin = "";
+        this.isSelected = false;
+      }
+    }, 100);
+  }
+  onFocusSelectOuvrier(ouvadd) {
+    ouvadd.hidden = false;
+    let vv = this.form.value["ouv"].trim().toUpperCase();
+    if (vv !== "")
+      this.OuvrierToSelect = this.OuvrierToSelect$.filter(d => {
+        return d.nom.concat(" ", d.prenom).includes(vv);
+      });
+  }
+  onClickAdd() {
+    this.isUpdate = 0;
+  }
 
-    if (this.form.dirty) {
-      if (myInput.invalid) {
-        this.store.dispatch(new fromProjetAction.IsBlack(true));
-        this.store.dispatch(new fromFicheAction.ShowAlert(true));
+  onClickAddOutside() {
+    if (this.isUpdate === 0 && (this.form.dirty || this.isSelected)) {
+      let submit = true;
+      let debut = this.form.controls["debut"].value;
+      let fin = this.form.controls["fin"].value;
+      if (!this.calculeDiff(debut, fin)) {
+        this.isUpdate = -1;
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            showAlert: true,
+            type: "fiche-ouvrier-ds",
+            msg: "Date debut doit etre inferieure a la date de Fin!"
+          })
+        );
       } else {
-        let submit = true;
-        this.formNamesOnUpdate.forEach((key: any) => {
+        this.formNames.forEach((key: any) => {
           if (this.form.controls[key].invalid) {
-            submit = true;
+            submit = false;
+            this.isUpdate = -1;
+            this.store.dispatch(
+              new fromFicheAction.ShowFicheAlert({
+                showAlert: true,
+                type: "fiche-ouvrier-ds",
+                msg: "le champs [ " + key + "] est invalide!"
+              })
+            );
           }
         });
-
-        if (submit) this.form.ngSubmit.emit();
+        if (submit) {
+          this.isSelected = false;
+          this.form.ngSubmit.emit();
+        }
       }
     }
   }
-  onFocus(fID) {
-    this.isUpdate = true;
-    this.ouvDsSlIndex = fID;
+  /***************** */
+
+  onBlurSelectOuvrierUpdate(ouvadd, i, ds) {
+    setTimeout(() => {
+      ouvadd.hidden = true;
+      let id = this.form.value["ouvID".concat(i)];
+      let ouv = this.OuvrierToSelect$.find(
+        o =>
+          o.nom.concat(" ", o.prenom) ===
+          this.form.value["ouv".concat(i)].trim()
+      );
+      if (ouv == null) {
+        this.form.controls["ouvID".concat(i)].setValue(ds.idOuvrier);
+        this.form.controls["ouv".concat(i)].setValue(ds.nom);
+        this.form.controls["cin".concat(i)].setValue(ds.cin);
+        this.form.controls["qualification".concat(i)].setValue(
+          ds.qualification
+        );
+        this.isSelected = false;
+      } else if (id !== ouv.id) {
+        this.form.controls["ouvID".concat(i)].setValue(ds.idOuvrier);
+        this.form.controls["ouv".concat(i)].setValue(ds.nom);
+        this.form.controls["cin".concat(i)].setValue(ds.cin);
+        this.form.controls["qualification".concat(i)].setValue(
+          ds.qualification
+        );
+        this.isSelected = false;
+      }
+    }, 100);
+  }
+  onFocusSelectOuvrierUpdate(ouvadd) {
+    ouvadd.hidden = false;
   }
 
+  onAddSelectOuvrierUpdate(item: OuvrierModel, i) {
+    this.isSelected = true;
+
+    this.form.controls["ouvID".concat(i)].setValue(item.id);
+    this.form.controls["ouv".concat(i)].setValue(
+      item.nom.concat(" ", item.prenom)
+    );
+    this.form.controls["cin".concat(i)].setValue(item.cin);
+    this.form.controls["qualification".concat(i)].setValue(item.qualification);
+  }
+  /*********** */
   onLongPress(ouvDsId) {
     this.store.dispatch(new fromFicheAction.StartRemovingDs(ouvDsId));
   }
   onDelete() {
     this.store.dispatch(
-      new fromFicheAction.ShowAlert({
+      new fromFicheAction.ShowFicheAlert({
         showAlert: false,
         msg: ""
       })
     );
     this.ficheOuvrierDesignationService.OnDeleteOuvrierDesignation();
-  }
-  onHideAlert() {
-    this.store.dispatch(new fromFicheAction.FinishRemovingDs());
   }
 
   calculTravail(dateDebut, dateFin) {
@@ -204,16 +373,195 @@ export class FicheOuvrierDesignationComponent implements OnInit {
 
     // duration in minutes
     var minutes = duration.asMinutes() % 60;
+
     return Math.trunc(hours) + "H " + minutes + "M";
   }
 
   timeException(dateDebut, dateFin, hsup, jour) {
+    if (dateFin === null || dateFin === "") {
+      return false;
+    }
     var startTime = moment(dateDebut, "HH:mm:ss");
     var endTime = moment(dateFin, "HH:mm:ss");
-
     // calculate total duration
     var duration = moment.duration(endTime.diff(startTime)).asHours();
     if (duration < 0 || +duration + 2 > +jour * 9 + +hsup) return false;
     else return true;
+  }
+  onClickedOutside(i) {
+    if (
+      this.ouvDsSlIndex === i &&
+      this.isUpdate == 1 &&
+      (this.form.dirty || this.isSelected)
+    ) {
+      let submit = true;
+      let debut = this.form.controls["debut".concat(i.toString())].value;
+      let fin = this.form.controls["fin".concat(i.toString())].value;
+
+      if (!this.calculeDiff(debut, fin)) {
+        this.isUpdate = -1;
+        this.rollBack(i);
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            showAlert: true,
+            type: "fiche-ouvrier-ds",
+            msg: "Date Debut debut doit etre inferieure a la date de Fin!"
+          })
+        );
+      } else {
+        this.formNamesOnUpdate.forEach((key: any) => {
+          if (this.form.controls[key.concat(i.toString())].invalid) {
+            submit = false;
+            this.store.dispatch(
+              new fromFicheAction.ShowFicheAlert({
+                showAlert: true,
+                type: "fiche-ouvrier-ds",
+                msg: "le champs " + key + " est invalide!"
+              })
+            );
+          }
+        });
+        if (submit) this.form.ngSubmit.emit();
+        else {
+          this.ouvDsSlIndex = -1;
+        }
+      }
+      this.formNamesOnUpdate.forEach((key: any) => {
+        this.form.controls[key.concat(i.toString())].disable();
+      });
+    }
+  }
+  /*** */
+
+  calculeDiff(debut, fin) {
+    var startTime = moment(debut, "HH:mm:ss");
+    var endTime = moment(fin, "HH:mm:ss");
+
+    // calculate total duration
+    var duration = moment.duration(endTime.diff(startTime)).asHours();
+
+    if (duration < 0) return false;
+    else return true;
+  }
+  rollBack(i) {
+    this.form.controls["debut".concat(i.toString())].setValue(
+      this.FicheOuvrier.designations[i]["tempsDebut"]
+    );
+    this.form.controls["fin".concat(i.toString())].setValue(
+      this.FicheOuvrier.designations[i]["tempsFin"]
+    );
+    this.form.controls["hSup".concat(i.toString())].setValue(
+      this.FicheOuvrier.designations[i]["hsup"]
+    );
+    this.form.controls["jour".concat(i.toString())].setValue(
+      this.FicheOuvrier.designations[i]["jour"]
+    );
+  }
+
+  /*******/
+  onHideAlert() {
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        showAlert: false,
+        type: "fiche-ouvrier-ds"
+      })
+    );
+  }
+
+  onTrsDoubleToDate(min: number, u) {
+    if (u === "H") {
+      var hours = Math.floor(min / 60);
+      var minutes = (min % 60) / 60;
+      return hours + minutes;
+    } else return min;
+  }
+
+  onClick(i) {
+    this.isUpdate = true;
+    this.ouvDsSlIndex = i;
+    setTimeout(() => {
+      this.formNamesOnUpdate.forEach((key: any) => {
+        this.form.controls[key.concat(i.toString())].enable();
+      });
+    }, 10);
+  }
+
+  onPrevious() {
+    if (this.position - 1 > 0) {
+      this.position = this.position - 1;
+      let a = this.navPas * this.position;
+      let b = a - this.navPas;
+      this.designationOuvrier = this.designationOuvrier$.slice(b, a);
+    }
+  }
+  onNext() {
+    if (this.position + 1 <= this.size) {
+      let b = this.navPas * this.position;
+      this.position = this.position + 1;
+      let a = b + this.navPas;
+      this.designationOuvrier = this.designationOuvrier$.slice(b, a);
+    }
+  }
+
+  onFilterFocus(input, type) {
+    input.disabled = false;
+    if (input.value === type) input.value = "";
+  }
+  onFilterBur(input, type) {
+    if (input.value.trim() === "") {
+      input.value = type;
+      this.designationOuvrier$ = this.FicheOuvrier.designations;
+      this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
+      this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
+      if (this.size < this.designationOuvrier$.length / this.navPas)
+        this.size = this.size + 1;
+    }
+  }
+
+  onFilter(value, type) {
+    if (value.trim() == "") {
+      this.designationOuvrier$ = this.FicheOuvrier.designations;
+    } else {
+      this.designationOuvrier$ = this.FicheOuvrier.designations.filter(d => {
+        return d[type].includes(value.toUpperCase());
+      });
+    }
+
+    this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
+    this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
+    if (this.size < this.designationOuvrier$.length / this.navPas)
+      this.size = this.size + 1;
+  }
+
+  /*********** */
+
+  /********** */
+
+  onSort() {
+    // descending order z->a
+    this.ascendant = !this.ascendant;
+    if (!this.ascendant)
+      this.designationOuvrier = this.designationOuvrier.sort((a, b) => {
+        if (a.nom > b.nom) {
+          return -1;
+        }
+        if (b.nom > a.nom) {
+          return 1;
+        }
+        return 0;
+      });
+    if (this.ascendant)
+      this.designationOuvrier = this.designationOuvrier.sort((a, b) => {
+        if (a.nom < b.nom) {
+          return -1;
+        }
+        if (b.nom < a.nom) {
+          return 1;
+        }
+        return 0;
+      });
+  }
+  ngOnDestroy() {
+    // To protect you, we'll throw an error if it doesn't exist.
   }
 }

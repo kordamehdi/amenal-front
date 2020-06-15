@@ -1,0 +1,55 @@
+td {
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+tr {
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+input {
+  text-align: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+}
+.tdInput {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.container {
+  width: 98%;
+  margin: auto;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.Select_options {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  background: transparent;
+  border: none;
+}
+.select_options :after {
+  background: transparent;
+}
+.case-left {
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding-left: 20px;
+  width: 90%;
+}
+.case-right {
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  width: 10%;
+}
+.cont_div {
+  display: flex;
+  width: 100%;
+}
+.separate {
+  margin-top: 40px;
+}
