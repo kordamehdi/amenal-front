@@ -13,10 +13,26 @@ export class dateDiffPipe implements PipeTransform {
     var years = moment().diff(ValueDate, "year");
     ValueDate.add(years, "years");
 
+    let y;
+    if (years.toString().length == 1) y = "0" + years.toString();
+    else y = years.toString();
+
     var months = moment().diff(ValueDate, "months");
     ValueDate.add(months, "months");
+    let m;
+    if (months.toString().length == 1) m = "0" + months.toString();
+    else m = months.toString();
 
     var days = moment().diff(ValueDate, "days");
-    return years + "Y " + months + "M " + days + "D";
+    let d;
+    if (days.toString().length == 1) d = "0" + days.toString();
+    else d = days.toString();
+
+    if (y === "00") {
+      if (m === "00") return +d + "J";
+      else return m + "M " + d + "J";
+    }
+
+    return y + "A " + m + "M " + d + "J";
   }
 }

@@ -27,9 +27,9 @@ export class DesignationReceptionValidComponent implements OnInit, OnDestroy {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        this.FicheReception = {
-          ...state.Fiches[state.FicheSelectionnerPosition]
-        };
+        if (state.ficheSelectionner !== null)
+          this.FicheReception = state.ficheSelectionner;
+
         if (this.FicheReception.categories !== undefined) {
           this.categories = this.FicheReception.categories;
         } else this.categories = [];

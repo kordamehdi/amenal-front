@@ -11,7 +11,26 @@
     <table>
       <tr class="header">
         <th style="width: 29.1%">
-          DESIGNATION
+          <input
+            (input)="onFilter()"
+            (blur)="onFilterBur(sds, 'DESIGNATION')"
+            type="text"
+            placeholder="DESIGNATION"
+            name="libelle$"
+            ngModel
+            style="width: 80%"
+          />
+          <ion-icon
+            [ngStyle]="{
+              color: typeAsc === 'libelle' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+            }"
+            [name]="
+              ascendant['libelle'] == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort('libelle')"
+          ></ion-icon>
         </th>
         <th style="width: 6%">
           UNITE
@@ -26,7 +45,29 @@
           QUANTITE
         </th>
         <th style="width: 20%">
-          FOURNISSEUR
+          <input
+            (input)="onFilter()"
+            (blur)="onFilterBur('FOURNISSEUR')"
+            type="text"
+            placeholder="FOURNISSEUR"
+            name="fournisseurNom$"
+            ngModel
+            style="width: 80%"
+          />
+          <ion-icon
+            [ngStyle]="{
+              color:
+                typeAsc === 'fournisseurNom'
+                  ? 'black'
+                  : 'rgba(61, 61, 61, 0.815)'
+            }"
+            [name]="
+              ascendant['fournisseurNom'] == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort('fournisseurNom')"
+          ></ion-icon>
         </th>
         <th style="width: 18%">
           OBSERVATION
@@ -49,7 +90,7 @@
             #inputSrch
             ngModel
           />
-          <div hidden="true" #list class="div-list" style="width:28.7%">
+          <div hidden="true" #list class="div-list">
             <div
               class="div-detail"
               (click)="OnSelectMateriel(mat)"
@@ -138,16 +179,14 @@
         <td class="tdInput"></td>
       </tr>
       <!--**************************************************************************************************************************************-->
-      <ng-container
-        *ngIf="FicheLocation.designations?.length > 0; else elseTemplate"
-      >
+      <ng-container *ngIf="designtions?.length > 0; else elseTemplate">
         <tr
           [ngStyle]="{
             'background-color': this.dsIndex == i ? 'rgba(255, 0, 0, 0.1)' : '',
             'border-bottom': locDs.tempsFin ? null : '2px solid red'
           }"
           (press)="OnDeleteDs(locDs.id)"
-          *ngFor="let locDs of FicheLocation?.designations; let i = index"
+          *ngFor="let locDs of designtions; let i = index"
           (clickOutside)="onUpdateClickedOutside(i)"
           (click)="onUpdateClick(i, inputUpdateSrch.value, locDs)"
         >
@@ -167,7 +206,7 @@
               #inputUpdateSrch
               ngModel
             />
-            <div #listUpdate hidden class="div-list" style="width:28.7%">
+            <div #listUpdate hidden class="div-list">
               <div
                 class="div-detail"
                 (click)="listUpdate.hidden = true"

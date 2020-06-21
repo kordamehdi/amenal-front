@@ -1,4 +1,7 @@
 <div class="container">
+  <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
+    {{ errorMsg }}
+  </app-dialog>
   <span (click)="onRefresh()" class="side_left" style="padding: 6px"
     >. . .
   </span>

@@ -41,9 +41,8 @@ export class FicheValideLocationDesgnationComponent
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        this.FicheLocation = {
-          ...state.Fiches[state.FicheSelectionnerPosition]
-        };
+        if (state.ficheSelectionner !== null)
+          this.FicheLocation = state.ficheSelectionner;
 
         this.FicheLocation.designations.forEach(
           (d: locationDesignationModel, i) => {

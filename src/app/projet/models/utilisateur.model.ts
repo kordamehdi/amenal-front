@@ -1,4 +1,5 @@
 export interface UtilisateurModel {
+  id: number;
   username: string;
   password: string;
   isRoot: boolean;

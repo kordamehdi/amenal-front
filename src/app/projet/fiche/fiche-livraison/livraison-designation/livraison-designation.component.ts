@@ -76,9 +76,9 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       .select("fiche")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
-        this.FicheLivraison = {
-          ...state.Fiches[state.FicheSelectionnerPosition]
-        };
+        if (state.ficheSelectionner !== null)
+          this.FicheLivraison = state.ficheSelectionner;
+
         this.livraisonDesignation = this.FicheLivraison.categorieLivraisons;
         if (state.type === "livDs" || state.type === "fiche") {
           this.errorMsg = state.errorMsg;

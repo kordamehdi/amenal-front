@@ -21,7 +21,7 @@ export class FicheReceptionComponent implements OnInit {
     });
     this.store.select("fiche").subscribe(state => {
       this.lister = state.listerOuvrier;
-      this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 }

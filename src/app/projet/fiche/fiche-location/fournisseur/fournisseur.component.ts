@@ -5,6 +5,7 @@ import { FicheLocationService } from "../fiche-location.service";
 import { Store } from "@ngrx/store";
 import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
+import { ElementSchemaRegistry } from "@angular/compiler";
 
 @Component({
   selector: "app-fournisseur",
@@ -13,6 +14,8 @@ import * as fromFicheAction from "../../redux/fiche.action";
 })
 export class FournisseurComponent implements OnInit {
   fournisseurs: FournisseurModel[] = [];
+  fournisseurs$: FournisseurModel[] = [];
+  filterType;
   fourIndex = -1;
   fourDeleteID: number;
   culumn = ["Fournisseur"];
@@ -24,6 +27,7 @@ export class FournisseurComponent implements OnInit {
   materiels: MaterielModel[];
   materielsShow: MaterielModel[];
   showDetails = [];
+  isSearch = false;
 
   constructor(
     private store: Store<App.AppState>,
@@ -34,7 +38,7 @@ export class FournisseurComponent implements OnInit {
     this.ficheLocationService.onGetFournisseurs();
     this.store.select("ficheLocation").subscribe(locState => {
       this.materiels = locState.materiels;
-      this.fournisseurs = locState.fournisseurs.sort((f1, f2) => {
+      this.fournisseurs$ = locState.fournisseurs.sort((f1, f2) => {
         if (f1.fournisseurNom < f2.fournisseurNom) {
           return -1;
         }
@@ -43,6 +47,7 @@ export class FournisseurComponent implements OnInit {
         }
         return 0;
       });
+      this.fournisseurs = this.slice(this.fournisseurs$);
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "fournisseur") {
@@ -203,6 +208,54 @@ export class FournisseurComponent implements OnInit {
       })
     );
   }
+
+  OnFilterBlur(input) {
+    let v = input.value.trim();
+    if (v === "") input.value = "FROUNISSEURS";
+    this.isSearch = false;
+  }
+
+  onFilterFocus(input) {
+    let v = input.value.trim();
+    if (v === "FROUNISSEURS") input.value = "";
+    this.isSearch = true;
+  }
+
+  onFilterByFournisseur(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() !== "FROUNISSEURS")
+      if (keyWord.trim() === "")
+        this.fournisseurs = this.slice(this.fournisseurs$);
+      else {
+        this.fournisseurs = this.fournisseurs$.filter(f => {
+          if (f.fournisseurNom.includes(word)) return true;
+          else return false;
+        });
+      }
+  }
+  onFilterByMateriel(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() !== "FROUNISSEURS")
+      if (keyWord.trim() === "") {
+        this.fournisseurs = this.slice(this.fournisseurs$);
+      } else {
+        let ff = this.slice(this.fournisseurs$);
+        this.fournisseurs = ff.filter(f => {
+          let isMateriel = false;
+          f.materiels.forEach(m => {
+            if (m.designation.includes(word)) {
+              isMateriel = true;
+            }
+          });
+          if (isMateriel) return true;
+          else return false;
+        });
+        this.fournisseurs.forEach(f => {
+          f.materiels = f.materiels.filter(m => m.designation.includes(word));
+        });
+      }
+  }
+
   onHideAlert() {
     this.fourDeleteID = -1;
 
@@ -214,6 +267,15 @@ export class FournisseurComponent implements OnInit {
         msg: ""
       })
     );
+  }
+  slice(f1: FournisseurModel[]) {
+    let four = [...f1].map(m => JSON.parse(JSON.stringify(m)));
+
+    f1.forEach((f, i) => {
+      let mList = [...f.materiels].map(m => JSON.parse(JSON.stringify(m)));
+      four[i].materiels = [...mList];
+    });
+    return four;
   }
   onClickedOutside(dsInput, i) {
     this.fourIndex = -1;

@@ -22,7 +22,8 @@ export class FicheVisiteurComponent implements OnInit {
     });
     this.store.select("fiche").subscribe(state => {
       this.lister = state.listerOuvrier;
-      this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      if (state.ficheSelectionner !== null)
+        this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 }

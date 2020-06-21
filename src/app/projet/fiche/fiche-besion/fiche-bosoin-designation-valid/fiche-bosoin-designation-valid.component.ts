@@ -44,7 +44,7 @@ export class FicheBosoinDesignationValidComponent implements OnInit {
           this.showAlert = state.showAlert;
         }
 
-        this.ficheBsn = state.Fiches[state.FicheSelectionnerPosition];
+        this.ficheBsn = state.ficheSelectionner;
 
         this.designation$ = this.ficheBsn.designations;
       });

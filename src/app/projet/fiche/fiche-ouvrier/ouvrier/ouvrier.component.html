@@ -30,31 +30,6 @@
         <th>
           <input
             [ngStyle]="{
-              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus('cin')"
-            (input)="onFilter()"
-            type="text"
-            value="CIN"
-            name="cin$"
-            ngModel
-            placeholder="CIN"
-            #ocin
-            style="width: 80%"
-          />
-          <ion-icon
-            [ngStyle]="{
-              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
-            [name]="
-              ascendant['cin'] == true ? 'arrow-round-down' : 'arrow-round-up'
-            "
-            (click)="onSort('cin')"
-          ></ion-icon>
-        </th>
-        <th>
-          <input
-            [ngStyle]="{
               color: typeAsc === 'nom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('nom')"
@@ -107,6 +82,32 @@
         <th>
           <input
             [ngStyle]="{
+              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+            }"
+            (focus)="onFilterFocus('cin')"
+            (input)="onFilter()"
+            type="text"
+            value="CIN"
+            name="cin$"
+            ngModel
+            placeholder="CIN"
+            #ocin
+            style="width: 80%"
+          />
+          <ion-icon
+            [ngStyle]="{
+              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+            }"
+            [name]="
+              ascendant['cin'] == true ? 'arrow-round-down' : 'arrow-round-up'
+            "
+            (click)="onSort('cin')"
+          ></ion-icon>
+        </th>
+
+        <th>
+          <input
+            [ngStyle]="{
               color:
                 typeAsc === 'qualification'
                   ? 'black'
@@ -137,24 +138,8 @@
             (click)="onSort('qualification')"
           ></ion-icon>
         </th>
-        <th>
-          <input
-            [ngStyle]="{
-              color:
-                typeAsc === 'dateNaissance'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus(oage, 'AGE', 'dateNaissance')"
-            (input)="onFilter(oage.value, 'dateNaissance')"
-            type="text"
-            value="AGE"
-            name="dateNaissance$"
-            placeholder="AGE"
-            #oage
-            style="width: 80%"
-            ngModel
-          />
+        <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
+          AGE
           <ion-icon
             [ngStyle]="{
               color:
@@ -172,6 +157,20 @@
         </th>
         <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
           ANCIENTÉ
+          <ion-icon
+            [ngStyle]="{
+              color:
+                typeAsc === 'dateRecrutement'
+                  ? 'black'
+                  : 'rgba(61, 61, 61, 0.815)'
+            }"
+            [name]="
+              ascendant['dateRecrutement'] == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort('dateRecrutement')"
+          ></ion-icon>
         </th>
         <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
           J_TRV
@@ -212,17 +211,6 @@
 
       <tr (clickOutside)="onAddClickOutside()" (click)="onAddClick()">
         <td class="tdInput">
-          <input
-            type="text"
-            name="cin"
-            placeholder="CIN"
-            required
-            maxlength="7"
-            minlength="7"
-            ngModel
-          />
-        </td>
-        <td class="tdInput">
           <input type="text" name="nom" placeholder="nom" required ngModel />
         </td>
         <td class="tdInput">
@@ -234,6 +222,18 @@
             ngModel
           />
         </td>
+        <td class="tdInput">
+          <input
+            type="text"
+            name="cin"
+            placeholder="CIN"
+            required
+            maxlength="7"
+            minlength="7"
+            ngModel
+          />
+        </td>
+
         <td class="tdInput">
           <input
             (focus)="onFocusQualificationInput(detail)"
@@ -284,6 +284,7 @@
         </td>
         <td class="tdInput">
           <input
+            readonly
             (focus)="isUpdate = false"
             type="text"
             name="J_TRV"
@@ -329,18 +330,6 @@
             <input
               disabled
               type="text"
-              name="cin{{ ouv.id }}"
-              required
-              maxlength="7"
-              minlength="7"
-              [ngModel]="ouv.cin"
-              ngModel
-            />
-          </td>
-          <td class="">
-            <input
-              disabled
-              type="text"
               name="nom{{ ouv.id }}"
               [ngModel]="ouv.nom"
               placeholder="nom"
@@ -359,6 +348,19 @@
               ngModel
             />
           </td>
+          <td class="">
+            <input
+              disabled
+              type="text"
+              name="cin{{ ouv.id }}"
+              required
+              maxlength="7"
+              minlength="7"
+              [ngModel]="ouv.cin"
+              ngModel
+            />
+          </td>
+
           <td class="">
             <input
               disabled
@@ -424,6 +426,7 @@
               ngModel
             />
             <span
+              style="text-align: right ; padding-right: 10px"
               (blur)="dateRec.focus()"
               tabindex="1"
               [ngStyle]="{
@@ -435,10 +438,11 @@
           </td>
           <td class="">
             <input
-              disabled
+              style="text-align: center"
+              readonly
               type="text"
               name="J_TRV{{ ouv.id }}"
-              [ngModel]="ouv.J_TRV"
+              [ngModel]="ouv.j_trv"
               placeholder="J_TRV"
               ngModel
             />

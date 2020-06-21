@@ -21,6 +21,8 @@ export class MaterielComponent implements OnInit {
   @ViewChild("f", { static: false })
   form: NgForm;
   materiels: MaterielModel[];
+  materiels$: MaterielModel[];
+  isSearch = false;
   matIndex = -1;
   matDsIndex = -1;
   errorMsg = "";
@@ -44,6 +46,7 @@ export class MaterielComponent implements OnInit {
     this.ficheMaterielService.onGetUnite();
     this.store.select("ficheLocation").subscribe(locState => {
       this.materiels = locState.materiels;
+      this.materiels$ = locState.materiels;
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "materiel") {
@@ -82,6 +85,22 @@ export class MaterielComponent implements OnInit {
           msg: ""
         })
       );
+  }
+
+  onFilterFocus() {
+    this.isSearch = true;
+  }
+
+  onFilterByMateriel(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() === "") {
+      this.materiels = [...this.materiels$];
+    } else {
+      this.materiels = this.materiels$.filter(f => {
+        if (f.designation.includes(word)) return true;
+        else return false;
+      });
+    }
   }
 
   onHideAlert() {

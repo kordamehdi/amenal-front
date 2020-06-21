@@ -2,11 +2,69 @@
   <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
-  <app-tab
-    headerTitle="LISTE DES FOURNISSEURs"
-    [showHeader]="true"
-    [column]="culumn"
-  >
+  <div class="header-nav">
+    <label for="file" class="left"
+      ><ion-icon name="download">
+        <input
+          type="file"
+          id="file"
+          (change)="getFile($event)"
+          style="visibility: hidden;"
+        />
+      </ion-icon>
+    </label>
+
+    <span class="middle">LISTE DES FOURNISSEURS </span>
+
+    <span class="left" (click)="OnCancel()">
+      <ion-icon name="arrow-round-up"></ion-icon>
+    </span>
+  </div>
+  <table>
+    <tr class="header" (clickOutside)="this.typeAsc = ''">
+      <th>
+        <input
+          (focus)="onFilterFocus(keyWord)"
+          (blur)="OnFilterBlur(keyWord)"
+          (input)="
+            type.value === 'A'
+              ? onFilterByArticle(keyWord.value)
+              : type.value === 'C'
+              ? onFilterByCategorie(keyWord.value)
+              : onFilterByFournisseur(keyWord.value)
+          "
+          type="text"
+          value="FROUNISSEURS"
+          [placeholder]="
+            type.value === 'A'
+              ? 'ARTICLE'
+              : type.value === 'C'
+              ? 'CATEGORIE'
+              : 'FROUNISSEUR'
+          "
+          #keyWord
+          style="width: 70%"
+        />
+        <ion-radio-group
+          (ionChange)="
+            type.value === 'A'
+              ? onFilterByArticle(keyWord.value)
+              : type.value === 'C'
+              ? onFilterByCategorie(keyWord.value)
+              : onFilterByFournisseur(keyWord.value)
+          "
+          name="type"
+          #type
+        >
+          <ion-radio class="checkbox" value="A"></ion-radio>
+          <label class="label-radio">A</label>
+          <ion-radio class="checkbox" value="F"></ion-radio>
+          <label class="label-radio">F</label>
+          <ion-radio class="checkbox" value="C"></ion-radio>
+          <label class="label-radio">C</label>
+        </ion-radio-group>
+      </th>
+    </tr>
     <tr
       id="{{ four.id }}"
       #fournisseur
@@ -154,5 +212,5 @@
         </div>
       </div>
     </tr>
-  </app-tab>
+  </table>
 </div>

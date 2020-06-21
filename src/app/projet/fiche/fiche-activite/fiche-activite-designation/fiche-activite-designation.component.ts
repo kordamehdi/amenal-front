@@ -18,6 +18,7 @@ import * as App from "../../../../store/app.reducers";
 import { untilDestroyed } from "ngx-take-until-destroy";
 import { Quote } from "@angular/compiler";
 import { refresh } from "../../header/head.selector";
+import { validerFiche } from "../../nav/nav.selector";
 @Component({
   selector: "app-fiche-activite-designation",
   templateUrl: "./fiche-activite-designation.component.html",
@@ -96,7 +97,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        this.ficheActivite = state.Fiches[state.FicheSelectionnerPosition];
+        this.ficheActivite = state.ficheSelectionner;
         this.designation = this.ficheActivite.designations;
         let dd = new Array(this.designation.length);
         this.designation.forEach((v, i) => {
@@ -114,6 +115,16 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           this.ficheActiviteService.OnlistLotParProjet();
           this.ficheActiviteService.OnListEntreeDesignationNoAsso();
           this.ficheService.onGetFicheByType("ACTIVITE", null);
+        }
+      });
+
+    this.store
+      .select(validerFiche)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        if (state === "ACTIVITE" || state === "fiche") {
+          this.ficheService.validerFiche(this.ficheActivite.id, "activites");
+          this.store.dispatch(new fromFicheAction.ValiderFiche(""));
         }
       });
   }

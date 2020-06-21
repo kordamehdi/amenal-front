@@ -47,7 +47,9 @@ export class VisiteurDesignationValidComponent implements OnInit, OnDestroy {
           this.showAlert = state.showAlert;
         }
 
-        this.ficheVisiteur = state.Fiches[state.FicheSelectionnerPosition];
+        if (state.ficheSelectionner !== null)
+          this.ficheVisiteur = state.ficheSelectionner;
+
         this.isValid = this.ficheVisiteur.isValidated;
 
         this.designation$ = this.ficheVisiteur.designations;

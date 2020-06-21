@@ -1,3 +1,212 @@
-<p>
-  fiche-valid-activite-designation works!
-</p>
+<div class="container">
+  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onCancel()">
+    {{ errorMsg }}
+  </app-dialog>
+  <form style="width: 100%" id="form" #f="ngForm">
+    <table>
+      <tr class="header">
+        <th style="width: 60%">
+          DESIGNATION
+        </th>
+        <th style="width: 10%">
+          UNITE
+        </th>
+        <th style="width: 10%">
+          QUT
+        </th>
+        <th style="width: 10%">
+          %
+        </th>
+        <th style="width: 10%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
+      <!--*****************************************************************************************************-->
+      <!--*****************************************************************************************************-->
+      <!--*****************************************************************************************************-->
+      <tr class="stock-content" *ngFor="let ds of designation; let i = index">
+        <td colspan="6">
+          <div
+            (click)="onClickDesignation(i)"
+            (clickOutside)="onClickOutsideDesignation(i)"
+            [ngStyle]="{
+              'background-color':
+                selectedLot == i ? 'rgba(225, 181, 116, 0.8)' : ''
+            }"
+            class="categorie"
+          >
+            <span
+              style="padding :0px"
+              (click)="onShowshowDetail(i)"
+              [class]="showSousLot[i] ? 'rotate' : 'no-rotate'"
+              >></span
+            >
+            <input
+              readonly
+              type="text"
+              name="lot{{ i }}"
+              [ngModel]="ds.lot"
+              ngModel
+              #lotUpt
+            />
+          </div>
+
+          <div *ngIf="showSousLot[i]">
+            <div
+              (click)="onClickSousLot(ds.lot, i, j)"
+              (clickOutside)="onClickOutsideSousLot(sLot, i, j)"
+              *ngFor="
+                let sLot of ds.sousLotDesignationPresentations;
+                let j = index
+              "
+            >
+              <div
+                [ngStyle]="{
+                  'background-color':
+                    i == selectedLot
+                      ? 'rgba(225, 181, 116, 0.5)'
+                      : selectedSousLot === transI_J(i, j)
+                      ? 'rgba(225, 181, 116, 0.8)'
+                      : ''
+                }"
+                class="cont_div"
+              >
+                <span class="border-case" style="width: 60%">
+                  <span
+                    (click)="onShowshowDetailOfdetail(i, j)"
+                    style="margin-left: 2.5%;padding: 0px"
+                    [class]="showDetailsSousLot[i][j] ? 'rotate' : 'no-rotate'"
+                    >></span
+                  >
+                  <input
+                    readonly
+                    type="text"
+                    name="slotName{{ i }}_{{ j }}"
+                    [ngModel]="sLot.designation"
+                    ngModel
+                  />
+                  <input
+                    hidden
+                    name="slotId{{ i }}_{{ j }}"
+                    [ngModel]="sLot.slotid"
+                    type="text"
+                    required
+                    ngModel
+                  />
+                </span>
+                <span
+                  style="border-left: 1px solid rgb(255, 255, 255);width: 10% "
+                >
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="text"
+                    name="slotUnite{{ i }}_{{ j }}"
+                    [ngModel]="sLot.unite"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 10%">
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="number"
+                    min="0"
+                    [ngModel]="sLot.quantite"
+                    name="slotQuantite{{ i }}_{{ j }}"
+                    placeholder="QUANTITE"
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 10%">
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="number"
+                    min="0"
+                    max="100"
+                    name="avancement{{ i }}_{{ j }}"
+                    placeholder="%"
+                    [ngModel]="sLot.avancement"
+                    ngModel
+                    #slotPrct
+                  />
+                </span>
+                <span class="border-case" style="width: 10%"> </span>
+              </div>
+              <div #detailSousLot *ngIf="showDetailsSousLot[i][j]">
+                <!--ENTREE PAR SOUS LOT-->
+                <div
+                  [ngStyle]="{
+                    'background-color':
+                      selectedSousLot === transI_J(i, j)
+                        ? 'rgba(225, 181, 116, 0.5)'
+                        : ''
+                  }"
+                  *ngFor="
+                    let entree of sLot.entreeDesignationPresentations;
+                    let k = index
+                  "
+                >
+                  <div class="cont_div">
+                    <span class="border-case" style="width: 60%">
+                      <input
+                        readonly
+                        style="padding-left: 6.5%"
+                        type="text"
+                        name="entreeNom{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.entreeNom"
+                        ngModel
+                        #entreeUpdt
+                      />
+                    </span>
+                    <span class="border-case" style="width: 10%">
+                      <input
+                        readonly
+                        style="text-align: center"
+                        type="text"
+                        name="unite{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.unite"
+                        ngModel
+                      />
+                      <input
+                        hidden
+                        name="entreeId{{ i }}_{{ j }}_{{ k }}"
+                        type="text"
+                        ngModel
+                        [ngModel]="entree.idEntree"
+                      />
+                      <input
+                        hidden
+                        name="type{{ i }}_{{ j }}_{{ k }}"
+                        type="text"
+                        ngModel
+                        [ngModel]="entree.type"
+                      />
+                    </span>
+
+                    <span class="border-case" style="width: 10%"
+                      ><input
+                        readonly
+                        required
+                        style="text-align: center"
+                        type="number"
+                        name="quantite{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.quantite"
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case" style="width: 20%"></span>
+                  </div>
+
+                  <!--AJOUT SOUS LOTS-->
+                </div>
+                <!--ENTREE PAR SOUS LOT-->
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

@@ -19,7 +19,7 @@ export class FicheBesionComponent implements OnInit, OnDestroy {
       this.isRoot = state.currentUser.isRoot;
     });
     this.store.select("fiche").subscribe(state => {
-      this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 

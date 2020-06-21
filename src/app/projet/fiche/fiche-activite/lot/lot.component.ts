@@ -79,11 +79,7 @@ export class LotComponent implements OnInit, OnDestroy {
       .select("fiche")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
-        if (
-          state.type === "lot" ||
-          state.type === "fiche" ||
-          state.type === "unite"
-        ) {
+        if (state.type === "lot" || state.type === "unite") {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }

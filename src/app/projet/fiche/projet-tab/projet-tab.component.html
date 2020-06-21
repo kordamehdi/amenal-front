@@ -96,11 +96,14 @@
         </tr>
         <!--*****************************************************************************************************-->
         <tr
+          (click)="onClickUpdate(i)"
+          (clickOutside)="onClickOutsideUpdate(i, item.id)"
           (press)="onDelete(item.id)"
           *ngFor="let item of projets; let i = index"
         >
           <td>
             <input
+              disabled
               type="text"
               [ngModel]="item.intitule"
               name="intitule{{ i }}"
@@ -111,6 +114,7 @@
           </td>
           <td>
             <input
+              disabled
               type="text"
               [ngModel]="item.abreveation"
               name="abreveation{{ i }}"
@@ -144,6 +148,7 @@
           </td>
           <td>
             <input
+              disabled
               type="text"
               [ngModel]="item.description"
               name="description{{ i }}"

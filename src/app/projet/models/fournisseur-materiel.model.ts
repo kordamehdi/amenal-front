@@ -1,8 +1,8 @@
 import { MaterielModel } from "./materiel.model";
 export interface FournisseurModel {
   id: number;
-  fournisseurNom: string;
   materiel: MaterielModel;
+  fournisseurNom: string;
   materiels: MaterielModel[];
   isAssoWithProjet: Boolean;
 }

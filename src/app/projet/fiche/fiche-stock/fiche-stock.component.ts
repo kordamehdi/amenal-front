@@ -19,9 +19,9 @@ export class FicheStockComponent implements OnInit {
 
   ngOnInit() {
     this.store.select("fiche").subscribe(state => {
-      this.FicheReception = {
-        ...state.Fiches[state.FicheSelectionnerPosition]
-      };
+      if (state.ficheSelectionner !== null)
+        this.FicheReception = state.ficheSelectionner;
+
       this.stocks = this.FicheReception.stockDesignations;
     });
   }

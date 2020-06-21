@@ -38,7 +38,8 @@ export class DocumentDesignationComponent implements OnInit, OnDestroy {
           this.showAlert = state.showAlert;
         }
 
-        this.ficheLocation = state.Fiches[state.FicheSelectionnerPosition];
+        if (state.ficheSelectionner !== null)
+          this.ficheLocation = state.ficheSelectionner;
         this.isValid = this.ficheLocation.isValidated;
 
         this.designation$ = this.ficheLocation.designations;

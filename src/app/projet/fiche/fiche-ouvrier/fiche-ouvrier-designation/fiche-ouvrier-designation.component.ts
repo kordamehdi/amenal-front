@@ -95,7 +95,7 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
         this.OuvrierToSelect$ = this.projetSelectionner.ouvriers;
 
         this.FicheOuvrier = {
-          ...state.Fiches[state.FicheSelectionnerPosition]
+          ...state.ficheSelectionner
         };
 
         if (this.FicheOuvrier.designations.length !== 0) {
@@ -362,19 +362,23 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
 
   calculTravail(dateDebut, dateFin) {
-    var startTime = moment(dateDebut, "HH:mm:ss");
-    var endTime = moment(dateFin, "HH:mm:ss");
+    if (dateDebut === "" && dateFin == "") {
+      var startTime = moment(dateDebut, "HH:mm:ss");
+      var endTime = moment(dateFin, "HH:mm:ss");
 
-    // calculate total duration
-    var duration = moment.duration(endTime.diff(startTime));
+      // calculate total duration
+      var duration = moment.duration(endTime.diff(startTime));
 
-    // duration in hours
-    var hours = duration.asHours();
+      // duration in hours
+      var hours = duration.asHours();
 
-    // duration in minutes
-    var minutes = duration.asMinutes() % 60;
+      // duration in minutes
+      var minutes = duration.asMinutes() % 60;
 
-    return Math.trunc(hours) + "H " + minutes + "M";
+      return Math.trunc(hours) + "H " + minutes + "M";
+    } else {
+      return "00H 00M";
+    }
   }
 
   timeException(dateDebut, dateFin, hsup, jour) {

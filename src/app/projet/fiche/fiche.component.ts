@@ -30,12 +30,12 @@ export class FicheComponent implements OnInit {
     this.showSideBar = true;
   }
 
-  onSwipeLeft() {
+  /*onSwipeLeft() {
     this.store.dispatch(new fromFicheAction.NextFiche());
   }
   onSwipeRight() {
     this.store.dispatch(new fromFicheAction.PreviousFiche());
-  }
+  }*/
   onSwipeDown(e) {
     console.log("onSwipeDown");
 

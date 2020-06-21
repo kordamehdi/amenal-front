@@ -6,7 +6,7 @@ export interface OuvrierModel {
   qualification: String;
   dateNaissance: Date;
   dateRecrutement: Date;
-  J_TRV: number;
+  j_trv: number;
   tele: string;
   appreciation: string;
   idProjets: [];

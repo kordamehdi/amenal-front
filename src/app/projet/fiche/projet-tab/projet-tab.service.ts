@@ -50,6 +50,25 @@ export class ProjetService {
         }
       );
   }
+  modifierProjet(projet, id) {
+    this.store.dispatch(new projetAction.IsBlack(true));
+
+    this.httpClient
+      .put<ProjetModel>(this.SERVER_ADDRESS + "/projets/" + id, projet, {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        () => {
+          this.listerProjet();
+          this.store.dispatch(new projetAction.IsBlack(false));
+        },
+        resp => {
+          console.log(resp.error.message);
+          this.store.dispatch(new projetAction.IsBlack(false));
+        }
+      );
+  }
 
   listerProjet() {
     this.store.dispatch(new projetAction.IsBlack(true));

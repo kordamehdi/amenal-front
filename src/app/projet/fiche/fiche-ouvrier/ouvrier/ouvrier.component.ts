@@ -76,7 +76,7 @@ export class OuvrierComponent implements OnInit {
         this.showAlert = state.showAlert;
       }
       this.listerOuvrier = state.listerOuvrier;
-      this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 
@@ -89,7 +89,7 @@ export class OuvrierComponent implements OnInit {
       qualification: this.form.value["qual"],
       dateNaissance: this.form.value["age"],
       dateRecrutement: this.form.value["ancienter"],
-      J_TRV: this.form.value["J_TRV"],
+      j_trv: null,
       tele: this.form.value["tele"],
       appreciation: this.form.value["appreciation"],
       idProjets: []
@@ -110,7 +110,7 @@ export class OuvrierComponent implements OnInit {
       dateRecrutement: this.form.value[
         "ancienter".concat(this.ouvSl.toString())
       ],
-      J_TRV: this.form.value["J_TRV".concat(this.ouvSl.toString())],
+      j_trv: null,
       tele: this.form.value["tele".concat(this.ouvSl.toString())],
       appreciation: this.form.value[
         "appreciation".concat(this.ouvSl.toString())

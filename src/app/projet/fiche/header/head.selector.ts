@@ -6,5 +6,9 @@ export const refresh = createSelector(
 );
 export const typeChange = createSelector(
   state => state["fiche"],
-  state => state.typeSelectionner
+  state => {
+    if (state.ficheSelectionner !== null) {
+      return state.ficheSelectionner.type;
+    } else return "";
+  }
 );
