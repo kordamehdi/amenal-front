@@ -16,6 +16,8 @@ export class UtilisateurFormComponent implements OnInit {
   showAlert = false;
   selectedDsId = -1;
   users;
+  showPasswordAdd = true;
+  showPasswordUpdate = [];
   selectedDsIndex = -1;
   userWithRoles = [];
   constructor(
@@ -46,7 +48,10 @@ export class UtilisateurFormComponent implements OnInit {
     if (this.update === 0) {
       let usr = usrInpt.value;
       let pwd = pwdInpt.value;
-      if (usr.trim() === "" || pwd.trim() === "") {
+      if (
+        (usr.trim() === "" && pwd.trim() !== "") ||
+        (usr.trim() !== "" && pwd.trim() === "")
+      ) {
         this.store.dispatch(
           new fromFicheAction.ShowFicheAlert({
             showAlert: true,
@@ -54,8 +59,8 @@ export class UtilisateurFormComponent implements OnInit {
             msg: "les deux champs USERNAME et PASSWORD son obligatoire!"
           })
         );
-      } else {
-        let user: UtilisateurModel = {
+      } else if (usr.trim() !== "" && pwd.trim() !== "") {
+        let user = {
           password: pwd,
           username: usr,
           isRoot: false,
@@ -65,6 +70,39 @@ export class UtilisateurFormComponent implements OnInit {
         usrInpt.value = "";
         pwdInpt.value = "";
       }
+      this.update = -1;
+    }
+  }
+
+  onClickUpdateUser(item, usernameInput, passwdInput, i) {
+    if (item.username !== "root") {
+      this.update = 1;
+      this.selectedDsIndex = i;
+
+      usernameInput.disabled = false;
+      passwdInput.disabled = false;
+    }
+  }
+
+  OnUpdateUser(item: UtilisateurModel, usernameInput, passwdInput, i) {
+    if (this.update === 1 && this.selectedDsIndex == i) {
+      let username = usernameInput.value;
+      let passwd = passwdInput.value;
+      if (username.trim() !== "" && passwd.trim() !== "") {
+        if (item.username !== username || item.password !== passwd) {
+          let user = {
+            username: username,
+            password: passwd
+          };
+          this.UtilisateurService.onUpdateUser(user, item.id);
+        }
+      } else {
+        usernameInput.value = item.username;
+        passwdInput.value = item.password;
+      }
+
+      usernameInput.disabled = true;
+      passwdInput.disabled = true;
       this.update = -1;
     }
   }

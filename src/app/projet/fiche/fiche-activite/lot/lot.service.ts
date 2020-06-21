@@ -23,8 +23,7 @@ export class LotService {
       .select("projet")
       .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
     this.store.select("fiche").subscribe(ficheState => {
-      this.FicheSelectionner =
-        ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+      this.FicheSelectionner = ficheState.ficheSelectionner;
       this.projetSelectionner = ficheState.projetSelectionner;
     });
   }

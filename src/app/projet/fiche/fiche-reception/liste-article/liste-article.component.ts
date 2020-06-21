@@ -7,6 +7,7 @@ import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
 import { Store } from "@ngrx/store";
 import { NgForm } from "@angular/forms";
+import { configFromSession } from "@ionic/core";
 
 @Component({
   selector: "app-liste-article",
@@ -17,10 +18,12 @@ export class ListeArticleComponent implements OnInit {
   @ViewChild("f", { static: false })
   form: NgForm;
   showAlert = false;
+
   culumn = ["DESIGNATION", "UNITÉ", "STOCKABLE"];
   formName = ["designation", "unite", "stockable"];
   errorMsg = "";
   categories: categorieModel[];
+  categories$: categorieModel[];
   unites: String[] = ["H", "M3", "M2"];
   // -1 : rien ; 0 : ajouter ; 1 : modifier
   formState = -1;
@@ -33,6 +36,8 @@ export class ListeArticleComponent implements OnInit {
   CatIndex = -1;
 
   ArticleUpdateIndex = "";
+  filterStockable = false;
+  isStockable = false;
 
   showDetails = [];
 
@@ -50,6 +55,7 @@ export class ListeArticleComponent implements OnInit {
     });
     this.store.select("ficheReception").subscribe(state => {
       this.categories = state.categories;
+      this.categories$ = state.categories;
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "article" || state.type === "unite") {
@@ -275,6 +281,105 @@ export class ListeArticleComponent implements OnInit {
           " ] ?"
       })
     );
+  }
+  OnFilterBlur(input) {
+    let v = input.value.trim();
+    if (v === "") input.value = "DESIGNATION";
+  }
+
+  onFilterFocus(input) {
+    let v = input.value.trim();
+    if (v === "DESIGNATION") input.value = "";
+  }
+  onFilterByArticle(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() !== "DESIGNATION")
+      if (keyWord.trim() === "") {
+        this.categories = this.slice(this.categories$);
+      } else {
+        let ff = this.slice(this.categories$);
+        this.categories = ff.filter(f => {
+          let isMateriel = false;
+          f.articles.forEach(m => {
+            if (m.designation.includes(word)) {
+              isMateriel = true;
+            }
+          });
+          if (isMateriel) return true;
+          else return false;
+        });
+        this.categories.forEach(f => {
+          f.articles = f.articles.filter(m => m.designation.includes(word));
+        });
+      }
+  }
+
+  onFilterByCategorie(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() !== "DESIGNATION")
+      if (keyWord.trim() === "") {
+        this.categories = this.slice(this.categories$);
+      } else {
+        let ff = this.slice(this.categories$);
+        this.categories = ff.filter(c => c.categorie.includes(word));
+      }
+  }
+  onClickOutsideFilterStockable(v, type) {
+    this.isStockable = false;
+    this.filterStockable = !this.filterStockable;
+    this.filter(v, type);
+  }
+  filterStk() {
+    let ff = this.slice(this.categories);
+    this.categories = ff.filter(f => {
+      let isMateriel = false;
+      f.articles.forEach(m => {
+        if (m.stockable == this.isStockable) {
+          isMateriel = true;
+        }
+      });
+      if (isMateriel) return true;
+      else return false;
+    });
+    this.categories.forEach(f => {
+      f.articles = f.articles.filter(m => m.stockable == this.isStockable);
+    });
+  }
+  filter(vv: string, type) {
+    this.categories = this.slice(this.categories$);
+    let v = vv.trim().toUpperCase();
+    if (this.filterStockable) {
+      if (type == "A") this.onFilterByArticle(v);
+      else this.onFilterByCategorie(v);
+      this.filterStk();
+    } else {
+      if (type == "A") this.onFilterByArticle(v);
+      else this.onFilterByCategorie(v);
+    }
+  }
+  filterBox(vv: string, type) {
+    this.categories = this.slice(this.categories$);
+
+    this.isStockable = !this.isStockable;
+    let v = vv.trim().toUpperCase();
+    if (this.filterStockable) {
+      if (type == "A") this.onFilterByArticle(v);
+      else this.onFilterByCategorie(v);
+      this.filterStk();
+    } else {
+      if (type == "A") this.onFilterByArticle(v);
+      else this.onFilterByCategorie(v);
+    }
+  }
+
+  slice(c: categorieModel[]) {
+    let cat: categorieModel[] = [...c].map(m => JSON.parse(JSON.stringify(m)));
+
+    c.forEach((f, i) => {
+      let cList = [...f.articles].map(cc => JSON.parse(JSON.stringify(cc)));
+      cat[i].articles = [...cList];
+    });
+    return cat;
   }
   /*              */
   onDelete() {

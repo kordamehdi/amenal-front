@@ -30,8 +30,8 @@ export class FicheLocationService {
       .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
 
     this.store.select("fiche").subscribe(ficheState => {
-      this.FicheSelectionner =
-        ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+      if (ficheState.ficheSelectionner !== null)
+        this.FicheSelectionner = ficheState.ficheSelectionner;
       this.projetSelectionner = ficheState.projetSelectionner;
     });
   }

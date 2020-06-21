@@ -28,20 +28,7 @@ export class UtilisateurComponent implements OnInit {
   userSelected = false;
   formNames = ["username", "projet", "role"];
   errorMsg;
-  userWithRoles: UtilisateurModel[] = [
-    {
-      username: "sssss",
-      isRoot: false,
-      password: null,
-      roles: [
-        {
-          id: 1,
-          projet: "sss",
-          role: "ADMIN"
-        }
-      ]
-    }
-  ];
+  userWithRoles: UtilisateurModel[] = [];
   showDetails = [];
   showAlert;
   users;

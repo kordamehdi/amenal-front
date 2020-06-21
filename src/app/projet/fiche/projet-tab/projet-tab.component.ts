@@ -22,7 +22,8 @@ export class ProjetTabComponent implements OnInit {
 
   @ViewChild("f", { static: false })
   form: NgForm;
-
+  index = -1;
+  formNamesUpdate = ["intitule", "abreveation", "description"];
   formNames = ["intitule", "abreveation", "debut", "description"];
 
   constructor(
@@ -56,6 +57,9 @@ export class ProjetTabComponent implements OnInit {
       ouvriers: null
     };
     this.projetService.ajouterProjet(projet);
+    this.formNames.forEach(key => {
+      this.form.controls[key].reset();
+    });
   }
   onDelete(id) {
     this.projetIdToDelete = id;
@@ -89,6 +93,52 @@ export class ProjetTabComponent implements OnInit {
       });
 
       if (submit) this.form.ngSubmit.emit();
+    }
+  }
+
+  onClickUpdate(i) {
+    this.index = i;
+    this.formNamesUpdate.forEach(n => {
+      this.form.controls[n.concat(i)].enable();
+    });
+  }
+
+  onClickOutsideUpdate(i, id) {
+    if (this.index === i) {
+      this.index = -1;
+
+      let int = this.form.value["intitule".concat(i)].trim();
+      let abrv = this.form.value["abreveation".concat(i)].trim();
+      let desc = this.form.value["description".concat(i)];
+      if (int === "" || abrv === "") {
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "projet",
+            showAlert: true,
+            msg: "le champs [INTITULE] est [ABREVEATION] sont obligatoire!"
+          })
+        );
+        this.form.controls["intitule".concat(i)].setValue(
+          this.projets[i].intitule
+        );
+        this.form.controls["abreveation".concat(i)].setValue(
+          this.projets[i].abreveation
+        );
+        this.form.controls["description".concat(i)].setValue(
+          this.projets[i].description
+        );
+      } else {
+        let p = {
+          intitule: int,
+          abreveation: abrv,
+          description: desc
+        };
+        this.projetService.modifierProjet(p, id);
+      }
+
+      this.formNamesUpdate.forEach(n => {
+        this.form.controls[n.concat(i)].disable();
+      });
     }
   }
 

@@ -46,6 +46,30 @@ export class UtilisateurService {
         }
       );
   }
+  onUpdateUser(user, id) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<UtilisateurModel[]>(this.SERVER_ADDRESS + "/user/" + id, user, {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        fiches => {
+          this.onListUser();
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "userFrom",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
   onListUser() {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient

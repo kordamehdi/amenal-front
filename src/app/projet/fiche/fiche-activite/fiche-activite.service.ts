@@ -31,8 +31,7 @@ export class FicheActiviteService {
       .select("projet")
       .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
     this.store.select("fiche").subscribe(ficheState => {
-      this.FicheSelectionner =
-        ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+      this.FicheSelectionner = ficheState.ficheSelectionner;
       this.projetSelectionner = ficheState.projetSelectionner;
     });
     this.store.select(typeChange).subscribe(type => {

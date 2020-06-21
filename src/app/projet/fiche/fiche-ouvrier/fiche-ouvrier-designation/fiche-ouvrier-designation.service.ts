@@ -30,9 +30,8 @@ export class FicheOuvrierDesignationService {
     this.store.select("fiche").subscribe(ficheState => {
       this.projetSelectionner = ficheState.projetSelectionner;
 
-      if (ficheState.Fiches.length > 0)
-        this.FicheSelectionner =
-          ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+      if (ficheState.ficheSelectionner !== null)
+        this.FicheSelectionner = ficheState.ficheSelectionner;
 
       this.OuvDsRemovingId = ficheState.DsRemovingId;
     });

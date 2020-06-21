@@ -61,7 +61,7 @@ export class FicheValideOuvrierDesignationComponent
         }
         this.projetSelectionner = state.projetSelectionner;
 
-        this.FicheOuvrier = state.Fiches[state.FicheSelectionnerPosition];
+        this.FicheOuvrier = state.ficheSelectionner;
 
         if (this.FicheOuvrier.designations.length !== 0) {
           this.designationOuvrier$ = this.FicheOuvrier.designations;

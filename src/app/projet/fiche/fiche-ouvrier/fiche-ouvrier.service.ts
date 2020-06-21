@@ -97,10 +97,13 @@ export class FicheOuvrierService {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
 
     this.httpClient
-      .get<OuvrierModel[]>(this.SERVER_ADDRESS + "/ouvriers", {
-        observe: "body",
-        responseType: "json"
-      })
+      .get<OuvrierModel[]>(
+        this.SERVER_ADDRESS + "/ouvriers/projets/" + this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         ouvriers => {
           this.store.dispatch(new fromFicheOuvrierAction.GetOuvrier(ouvriers));

@@ -20,7 +20,8 @@ export class FicheLivraisonComponent implements OnInit {
       this.isRoot = state.currentUser.isRoot;
     });
     this.store.select("fiche").subscribe(state => {
-      this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      if (state.ficheSelectionner !== null)
+        this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 }

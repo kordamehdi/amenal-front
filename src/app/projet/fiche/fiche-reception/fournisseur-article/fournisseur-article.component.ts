@@ -22,6 +22,8 @@ import { isTabSwitch } from "@ionic/angular/dist/directives/navigation/stack-uti
 export class FournisseurArticleComponent implements OnInit {
   fournisseursNonAsso: FournisseurModel[] = [];
   fournisseursAsso: fournisseurArticleModel[] = [];
+  fournisseursAsso$: fournisseurArticleModel[] = [];
+
   fourIndex = -1;
   lastFourIndexSelected = -1;
   fourDeleteId = -1;
@@ -50,6 +52,7 @@ export class FournisseurArticleComponent implements OnInit {
       this.fournisseursNonAsso = state.fournisseurArticleNonAsso;
       this.categories = state.categories;
       this.fournisseursAsso = state.fournisseurArticleAsso;
+      this.fournisseursAsso$ = state.fournisseurArticleAsso;
 
       this.calculNumberFr();
     });
@@ -222,6 +225,103 @@ export class FournisseurArticleComponent implements OnInit {
       })
     );
   }
+
+  OnFilterBlur(input) {
+    let v = input.value.trim();
+    if (v === "") input.value = "FROUNISSEURS";
+  }
+
+  onFilterFocus(input) {
+    let v = input.value.trim();
+    if (v === "FROUNISSEURS") input.value = "";
+  }
+
+  onFilterByFournisseur(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() === "")
+      this.fournisseursAsso = this.slice(this.fournisseursAsso$);
+    else {
+      this.fournisseursAsso = this.fournisseursAsso$.filter(f => {
+        if (f.fournisseurNom.includes(word)) return true;
+        else return false;
+      });
+    }
+  }
+  onFilterByArticle(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() === "") {
+      this.fournisseursAsso = this.slice(this.fournisseursAsso$);
+    } else {
+      let ff = this.slice(this.fournisseursAsso$);
+      this.fournisseursAsso = ff.filter(f => {
+        let isMateriel = false;
+        f.categories.forEach(c => {
+          c.articles.forEach(a => {
+            if (a.designation.includes(word)) {
+              isMateriel = true;
+            }
+          });
+        });
+        if (isMateriel) return true;
+        else return false;
+      });
+      this.fournisseursAsso.forEach(f => {
+        f.categories = f.categories.filter(c => {
+          let isCat = false;
+          c.articles.forEach(a => {
+            if (a.designation.includes(word)) isCat = true;
+            else isCat = false;
+          });
+          return isCat;
+        });
+      });
+      this.fournisseursAsso.forEach(f => {
+        f.categories.forEach(c => {
+          c.articles = c.articles.filter(m => m.designation.includes(word));
+        });
+      });
+    }
+  }
+
+  onFilterByCategorie(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    if (keyWord.trim() === "") {
+      this.fournisseursAsso = this.slice(this.fournisseursAsso$);
+    } else {
+      let ff = this.slice(this.fournisseursAsso$);
+      this.fournisseursAsso = ff.filter(f => {
+        let isCat = false;
+        f.categories.forEach(c => {
+          if (c.categorie.includes(word)) {
+            isCat = true;
+          }
+        });
+        return isCat;
+      });
+      this.fournisseursAsso.forEach(f => {
+        f.categories = f.categories.filter(c => {
+          return c.categorie.includes(word);
+        });
+      });
+    }
+  }
+
+  slice(f1: fournisseurArticleModel[]) {
+    let four: fournisseurArticleModel[] = [...f1].map(m =>
+      JSON.parse(JSON.stringify(m))
+    );
+
+    f1.forEach((f, i) => {
+      let cList = [...f.categories].map(cc => {
+        let c: categorieModel = JSON.parse(JSON.stringify(cc));
+        c.articles = c.articles.map(a => JSON.parse(JSON.stringify(a)));
+        return c;
+      });
+      four[i].categories = [...cList];
+    });
+    return four;
+  }
+
   onHideAlert() {
     this.AssCatFr = [];
     this.fourDeleteId = -1;

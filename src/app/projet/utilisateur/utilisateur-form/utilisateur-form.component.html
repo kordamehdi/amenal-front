@@ -20,11 +20,24 @@
         <input type="text" name="username" placeholder="USERNAME" #user />
       </td>
       <td class="tdInput">
-        <input type="text" name="password" placeholder="PASSWORD" #pwd />
+        <input
+          style="width: 90%;"
+          [type]="showPasswordAdd ? 'text' : 'password'"
+          name="password"
+          placeholder="PASSWORD"
+          #pwd
+        />
+        <ion-icon
+          style="font-size: 12px"
+          (click)="showPasswordAdd = !showPasswordAdd"
+          [name]="showPasswordAdd ? 'eye' : 'eye-off'"
+        ></ion-icon>
       </td>
     </tr>
     <!--*****************************************************************************************************-->
     <tr
+      (click)="onClickUpdateUser(item, userUpdate, pwdUpdate, i)"
+      (clickOutside)="OnUpdateUser(item, userUpdate, pwdUpdate, i)"
       (press)="onDelete(item.username, item.id)"
       *ngFor="let item of users; let i = index"
     >
@@ -39,12 +52,17 @@
       </td>
       <td>
         <input
+          style="width: 90%;"
           disabled
-          type="password"
+          [type]="showPasswordUpdate[i] ? 'text' : 'password'"
           name="password{{ i }}"
           [ngModel]="item.password"
           #pwdUpdate
         />
+        <ion-icon
+          (click)="showPasswordUpdate[i] = !showPasswordUpdate[i]"
+          [name]="showPasswordUpdate[i] ? 'eye' : 'eye-off'"
+        ></ion-icon>
       </td>
     </tr>
   </table>

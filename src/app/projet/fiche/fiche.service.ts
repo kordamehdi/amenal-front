@@ -29,13 +29,12 @@ export class FicheService {
 
     this.store.select("fiche").subscribe(projetState => {
       this.projetSelectionner = projetState.projetSelectionner;
-      if (projetState.Fiches.length > 0) {
-        this.fiches = projetState.Fiches;
-        this.ficheSelectionnerId =
-          projetState.Fiches[projetState.FicheSelectionnerPosition].id;
-        this.ficheSelectionner =
-          projetState.Fiches[projetState.FicheSelectionnerPosition];
+      console.log(this.projetSelectionner);
+      if (projetState.ficheSelectionner !== null) {
+        this.ficheSelectionnerId = projetState.ficheSelectionner.id;
+        this.ficheSelectionner = projetState.ficheSelectionner;
       }
+
       this.listAll = projetState.listAll;
       this.typeSelectionner = projetState.typeSelectionner;
     });
@@ -50,8 +49,11 @@ export class FicheService {
       })
       .subscribe(
         () => {
-          if (this.listAll) this.onGetFicheByType("TOUS", null);
-          else this.onGetFicheByType(this.typeSelectionner, null);
+          this.onGetFicheByTypeAndDate(
+            this.ficheSelectionner.type,
+            null,
+            this.ficheSelectionner.date.toString()
+          );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(new fromFicheAction.ValiderFiche(""));
           this.store.dispatch(
@@ -75,15 +77,16 @@ export class FicheService {
       );
   }
 
-  onGetFicheByType(ficheType: String, route: ActivatedRoute) {
+  onGetFicheByType(ficheType: String, route) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     let params;
-    if (route == null)
-      params = new HttpParams().set("date", this.ficheSelectionner.date);
-    else params = new HttpParams().set("date", null);
+    params = new HttpParams().set(
+      "date",
+      this.ficheSelectionner.date.toString()
+    );
 
     this.httpClient
-      .get<FicheModel[]>(
+      .get<FicheModel>(
         this.SERVER_ADDRESS +
           "/projets/" +
           this.projetSelectionner.id +
@@ -96,47 +99,92 @@ export class FicheService {
         }
       )
       .subscribe(
-        fiches => {
-          let ficheId = this.ficheSelectionnerId;
-          if (route !== null) {
-            if (ficheType === "TOUS") {
-              this.store.dispatch(new fromFicheAction.setFiches(fiches));
-              this.store.dispatch(new fromFicheAction.listAll(true));
+        fiche => {
+          this.store.dispatch(new fromFicheAction.RefreshFiche(fiche));
 
-              let ps = fiches.findIndex(f => f.id === ficheId);
-              if (ps > 0)
-                this.store.dispatch(new fromFicheAction.SetFichePosition(ps));
-
-              this.router.navigate(
-                [
-                  this.typeSelectionner === ""
-                    ? fiches[0].type.toLocaleLowerCase()
-                    : this.typeSelectionner.toLocaleLowerCase()
-                ],
-                {
-                  relativeTo: route
-                }
-              );
-            } else {
-              this.store.dispatch(
-                new fromFicheAction.SelectFicheType({
-                  fiches: fiches,
-                  type: ficheType
-                })
-              );
-              this.store.dispatch(new fromFicheAction.listAll(false));
-            }
-          } else {
-            this.store.dispatch(
-              new fromFicheAction.SelectFicheType({
-                fiches: fiches,
-                type: ficheType
-              })
-            );
-          }
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          console.log(resp.error.message);
+
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fiche",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+  onGetFicheWithRoute(ficheType: String, route) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    let params;
+    params = new HttpParams().set(
+      "date",
+      this.projetSelectionner.fin.toString()
+    );
+
+    this.httpClient
+      .get<FicheModel>(
+        this.SERVER_ADDRESS +
+          "/projets/" +
+          this.projetSelectionner.id +
+          "/fiche/" +
+          ficheType,
+        {
+          params: params,
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        fiche => {
+          this.store.dispatch(new fromFicheAction.RefreshFiche(fiche));
+
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          console.log(resp.error.message);
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fiche",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+
+  onGetFicheByTypeAndDate(ficheType: String, route, date) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    let params;
+    console.log(this.projetSelectionner);
+    params = new HttpParams().set("date", date);
+
+    this.httpClient
+      .get<FicheModel>(
+        this.SERVER_ADDRESS +
+          "/projets/" +
+          this.projetSelectionner.id +
+          "/fiche/" +
+          ficheType,
+        {
+          params: params,
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        fiche => {
+          this.store.dispatch(new fromFicheAction.RefreshFiche(fiche));
+
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          console.log(resp.error.message);
+
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               showAlert: true,

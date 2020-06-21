@@ -25,9 +25,8 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   form: NgForm;
   isSelected: Boolean = false;
   isSelectedDirty = false;
-
+  typeAsc = "";
   duration;
-
   columnDesignation: string[] = [
     "DESIGNATION",
     "UNITÉ",
@@ -53,6 +52,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   fournisseurMaterielMap: FournisseurModel[];
   fournisseurMaterielMap$: FournisseurModel[];
 
+  designtions;
+  designtions$;
+
   fournisseurs: FournisseurModel[];
   fournisseurs$: FournisseurModel[];
 
@@ -69,6 +71,10 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   errorMsg = "";
   isValid = [];
   showAlert = false;
+  navPas = 20;
+  position = 0;
+  size;
+  ascendant = [];
   constructor(
     private store: Store<App.AppState>,
     private ficheLocationService: FicheLocationService,
@@ -88,9 +94,8 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        this.FicheLocation = {
-          ...state.Fiches[state.FicheSelectionnerPosition]
-        };
+        if (state.ficheSelectionner !== null)
+          this.FicheLocation = state.ficheSelectionner;
 
         if (this.FicheLocation.designations.length > 0)
           this.FicheLocation.designations.forEach(
@@ -98,6 +103,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
               this.OnInputDate(d.tempsDebut, d.tempsFin, (i = i));
             }
           );
+
+        this.designtions = this.FicheLocation.designations;
+        this.designtions$ = this.FicheLocation.designations;
       });
     this.store
       .select(refresh)
@@ -444,6 +452,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
         }
         this.isUpdate = -1;
       } else {
+        this.isUpdate = -1;
         this.dsIndex = -1;
       }
 
@@ -575,24 +584,94 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     );
   }
   OnInputDate(debut, fin, i = "") {
-    var startTime = moment(debut, "HH:mm:ss");
-    var endTime = moment(fin, "HH:mm:ss");
+    if (debut !== null && fin !== null) {
+      var startTime = moment(debut, "HH:mm:ss");
+      var endTime = moment(fin, "HH:mm:ss");
 
-    // calculate total duration
-    var duration = moment.duration(endTime.diff(startTime));
-    // duration in hours
-    var hours = duration.asHours();
+      // calculate total duration
+      var duration = moment.duration(endTime.diff(startTime));
+      // duration in hours
+      var hours = duration.asHours();
 
-    // duration in minutes
-    var minutes = duration.asMinutes() % 60;
+      // duration in minutes
+      var minutes = duration.asMinutes() % 60;
 
-    if (i !== "")
-      this.FicheLocation.designations[i].travailleLocString =
-        Math.trunc(hours) + "H " + minutes + "M";
-    else
-      this.form.controls["quantite"].setValue(
-        Math.trunc(hours) + "H " + minutes + "M"
-      );
+      if (i !== "")
+        this.FicheLocation.designations[i].travailleLocString =
+          Math.trunc(hours) + "H " + minutes + "M";
+      else
+        this.form.controls["quantite"].setValue(
+          Math.trunc(hours) + "H " + minutes + "M"
+        );
+    } else {
+      if (i !== "")
+        this.FicheLocation.designations[i].travailleLocString = "00H 00M";
+      else this.form.controls["quantite"].setValue("00H 00M");
+    }
+  }
+
+  /* */
+
+  onFilterBur(input, type) {
+    if (input.value.trim() === "") {
+      input.value = type;
+      this.designtions$ = this.FicheLocation.designations;
+      this.designtions = this.designtions$; /*.slice(0, this.navPas);
+      this.size = Math.trunc(this.designtions$.length / this.navPas);
+      if (this.size < this.designtions$.length / this.navPas)
+        this.size = this.size + 1;*/
+    }
+  }
+
+  onFilter() {
+    let inputSearchName = ["libelle", "fournisseurNom"];
+    this.designtions$ = this.FicheLocation.designations;
+    inputSearchName.forEach((key: string) => {
+      let vv = this.form.value[key.concat("$")].trim().toUpperCase();
+      if (vv !== "") {
+        let v = this.designtions$;
+        this.designtions$ = v.filter(d => {
+          return d[key].includes(vv);
+        });
+      }
+    });
+
+    this.designtions = this.designtions$;
+
+    /*this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
+    this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
+    if (this.size < this.designationOuvrier$.length / this.navPas)
+      this.size = this.size + 1;*/
+  }
+
+  /*********** */
+
+  /********** */
+
+  onSort(type) {
+    // descending order z->a
+    this.typeAsc = type;
+    this.ascendant[type] = !this.ascendant[type];
+    if (!this.ascendant[type])
+      this.designtions = this.designtions.sort((a, b) => {
+        if (a[type] > b[type]) {
+          return -1;
+        }
+        if (b[type] > a[type]) {
+          return 1;
+        }
+        return 0;
+      });
+    if (this.ascendant[type])
+      this.designtions = this.designtions.sort((a, b) => {
+        if (a[type] < b[type]) {
+          return -1;
+        }
+        if (b[type] < a[type]) {
+          return 1;
+        }
+        return 0;
+      });
   }
 
   onCtnAlert() {

@@ -15,13 +15,46 @@
     <table>
       <tr class="header">
         <th class="case-left">
-          DESIGNATION
+          <input
+            (focus)="onFilterFocus(keyWord)"
+            (blur)="OnFilterBlur(keyWord)"
+            (input)="filter(keyWord.value, type.value)"
+            type="text"
+            value="DESIGNATION"
+            [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
+            #keyWord
+            style="width: 60%"
+          />
+          <ion-radio-group
+            (ionChange)="filter(keyWord.value, type.value)"
+            name="type"
+            #type
+          >
+            <ion-radio class="checkbox" value="A"></ion-radio>
+            <label class="label-radio">A</label>
+            <ion-radio class="checkbox" value="C"></ion-radio>
+            <label class="label-radio">C</label>
+          </ion-radio-group>
         </th>
+
         <th class="case-middle">
           UNITE
         </th>
-        <th class="case-right">
-          STOCKABLE
+        <th
+          (press)="onClickOutsideFilterStockable(keyWord.value, type.value)"
+          class="case-right"
+        >
+          <ng-container *ngIf="filterStockable; else elseTemplate">
+            <ion-checkbox
+              (ionChange)="filterBox(keyWord.value, type.value)"
+              class="checkbox"
+            ></ion-checkbox>
+
+            <label class="label-radio">STOK</label>
+          </ng-container>
+          <ng-template #elseTemplate>
+            STOCKABLE
+          </ng-template>
         </th>
       </tr>
 

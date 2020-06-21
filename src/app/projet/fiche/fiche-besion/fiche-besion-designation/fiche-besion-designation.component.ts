@@ -69,7 +69,7 @@ export class FicheBesionDesignationComponent implements OnInit, OnDestroy {
           this.showAlert = state.showAlert;
         }
 
-        this.ficheBsn = state.Fiches[state.FicheSelectionnerPosition];
+        this.ficheBsn = state.ficheSelectionner;
 
         this.designation$ = this.ficheBsn.designations;
       });

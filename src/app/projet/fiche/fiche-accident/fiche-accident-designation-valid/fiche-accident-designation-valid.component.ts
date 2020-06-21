@@ -37,7 +37,7 @@ export class FicheAccidentDesignationValidComponent
           this.showAlert = state.showAlert;
         }
 
-        this.ficheAccident = state.Fiches[state.FicheSelectionnerPosition];
+        this.ficheAccident = state.ficheSelectionner;
         this.isValid = this.ficheAccident.isValidated;
 
         this.designation$ = this.ficheAccident.designations;

@@ -16,12 +16,12 @@ export class FicheActiviteComponent implements OnInit {
 
   ngOnInit() {
     this.store.select("projet").subscribe(state => {
-      //this.role = state.currentUser.currentRole;
-      //  this.isRoot = state.currentUser.isRoot;
+      this.role = state.currentUser.currentRole;
+      this.isRoot = state.currentUser.isRoot;
     });
     this.store.select("fiche").subscribe(state => {
-      //    this.lister = state.listerOuvrier;
-      //     this.isValid = state.Fiches[state.FicheSelectionnerPosition].isValidated;
+      this.lister = state.listerOuvrier;
+      this.isValid = state.ficheSelectionner.isValidated;
     });
   }
 }

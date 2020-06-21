@@ -23,8 +23,8 @@ export class FournisseurArticleService {
 
     this.store.select("fiche").subscribe(ficheState => {
       this.projetSelectionner = ficheState.projetSelectionner;
-      this.FicheSelectionner =
-        ficheState.Fiches[ficheState.FicheSelectionnerPosition];
+      if (ficheState.ficheSelectionner !== null)
+        this.FicheSelectionner = ficheState.ficheSelectionner;
     });
   }
 

@@ -55,7 +55,7 @@ export class SelectFicheType implements Action {
 }
 export class RefreshFiche implements Action {
   readonly type = REFRESH_FICHE;
-  payload: { fiche: FicheModel; type: String };
+  payload: FicheModel;
   constructor(payload) {
     this.payload = payload;
   }
@@ -89,27 +89,7 @@ export class GetOuvrierByProjet implements Action {
     this.payload = payload;
   }
 }
-export class NextFiche implements Action {
-  readonly type = NEXT_FICHE;
 
-  constructor() {}
-}
-export class NextDayFiche implements Action {
-  readonly type = NEXT_DAY_FICHE;
-
-  constructor() {}
-}
-
-export class PreviousFiche implements Action {
-  readonly type = PREVIOUS_FICHE;
-
-  constructor() {}
-}
-export class PreviousDayFiche implements Action {
-  readonly type = PREVIOUS_DAY_FICHE;
-
-  constructor() {}
-}
 export class ValiderFiche implements Action {
   readonly type = VALIDER_FICHE;
   payload: any;
@@ -162,8 +142,6 @@ export type FicheAction =
   | Lister
   | SelectProjet
   | setFiches
-  | NextFiche
-  | PreviousFiche
   | GetOuvrierByProjet
   | ShowFicheAlert
   | StartRemovingDs
@@ -171,8 +149,5 @@ export type FicheAction =
   | ValiderFiche
   | SetFichePosition
   | listAll
-  | PreviousDayFiche
-  | NextDayFiche
-  | PreviousDayFiche
   | filterByDate
   | RefreshFiche;
