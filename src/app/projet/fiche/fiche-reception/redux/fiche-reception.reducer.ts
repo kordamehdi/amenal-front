@@ -8,10 +8,21 @@ export interface FicheReceptionState {
   categories: categorieModel[];
   fournisseurArticleAsso: fournisseurArticleModel[];
   fournisseurArticleNonAsso: FournisseurModel[];
+
   ficheReceptionDs: ReceptionCategorieModel[];
   fournisseurArticleToSelect: fournisseurArticleModel[];
+  showFournisseurByArticleOrCategorie: {
+    itemId: number;
+    itemType: string;
+  };
+  showArticleByFournisseurId: number;
 }
 const InitialState: FicheReceptionState = {
+  showFournisseurByArticleOrCategorie: {
+    itemId: -1,
+    itemType: ""
+  },
+  showArticleByFournisseurId: -1,
   categories: [],
   fournisseurArticleAsso: [],
   fournisseurArticleNonAsso: [],
@@ -24,6 +35,18 @@ export function FicheReducer(
   action: fromFicheReceptionAction.FicheReceptionAction
 ) {
   switch (action.type) {
+    case fromFicheReceptionAction.SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE: {
+      return {
+        ...state,
+        showFournisseurByArticleOrCategorie: action.payload
+      };
+    }
+    case fromFicheReceptionAction.SHOW_ARTICLE_BY_FOURNISSEUR: {
+      return {
+        ...state,
+        showArticleByFournisseurId: action.payload
+      };
+    }
     case fromFicheReceptionAction.GET_GATEGORIES: {
       return {
         ...state,

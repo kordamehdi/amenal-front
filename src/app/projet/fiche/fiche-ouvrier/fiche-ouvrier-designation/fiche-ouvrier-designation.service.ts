@@ -62,7 +62,8 @@ export class FicheOuvrierDesignationService {
         resp => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
-            new fromFicheOuvrierAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
+              type: "fiche-ouvrier-ds",
               showAlert: true,
               msg: resp.error.message
             })
@@ -120,7 +121,8 @@ export class FicheOuvrierDesignationService {
         this.store.dispatch(new fromProjetAction.IsBlack(false));
 
         this.store.dispatch(
-          new fromFicheOuvrierAction.ShowAlert({
+          new fromFicheAction.ShowFicheAlert({
+            type: "fiche-ouvrier-ds",
             showAlert: true,
             msg: resp.error.message
           })
@@ -150,6 +152,7 @@ export class FicheOuvrierDesignationService {
         resp => {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
+              type: "fiche-ouvrier-ds",
               showAlert: true,
               msg: resp.error.message
             })

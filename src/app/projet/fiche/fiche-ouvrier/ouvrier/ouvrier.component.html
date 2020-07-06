@@ -8,6 +8,9 @@
     #f="ngForm"
   >
     <div class="header">
+      <span class="left" (click)="onPrevious()"
+        ><ion-icon name="arrow-dropleft"></ion-icon>
+      </span>
       <label for="file" class="left"
         ><ion-icon name="download">
           <input
@@ -19,13 +22,18 @@
         </ion-icon>
       </label>
 
-      <span class="middle">LISTE DES OUVRIERS</span>
+      <span class="middle"
+        >LISTE DES OUVRIERS : {{ position }}/{{ size }}
+      </span>
 
       <span class="left" (click)="OnCancel()">
         <ion-icon name="arrow-round-up"></ion-icon>
       </span>
+      <span class="left" (click)="onNext()">
+        <ion-icon name="arrow-dropright"></ion-icon>
+      </span>
     </div>
-    <table style="width:100%">
+    <table style="width:100% ;">
       <tr (clickOutside)="this.typeAsc = ''">
         <th>
           <input
@@ -35,7 +43,6 @@
             (focus)="onFilterFocus('nom')"
             (input)="onFilter()"
             type="text"
-            value="NOM"
             placeholder="NOM"
             name="nom$"
             ngModel
@@ -62,7 +69,6 @@
             name="prenom$"
             ngModel
             type="text"
-            value="PRENOM"
             placeholder="PRENOM"
             #oprenom
             style="width: 80%"
@@ -87,7 +93,6 @@
             (focus)="onFilterFocus('cin')"
             (input)="onFilter()"
             type="text"
-            value="CIN"
             name="cin$"
             ngModel
             placeholder="CIN"
@@ -117,7 +122,6 @@
             (input)="onFilter()"
             type="text"
             name="qualification$"
-            value="QUALIF."
             placeholder="QUALIF."
             #oqual
             style="width: 80%"
@@ -187,7 +191,6 @@
             (focus)="onFilterFocus('APPREC.')"
             (input)="onFilter()"
             type="text"
-            value="APPREC."
             name="appreciation$"
             placeholder="APPREC."
             #oapp

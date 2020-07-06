@@ -14,6 +14,30 @@ export const GET_FICHE_RECEPTION_DS = "GET_FICHE_RECEPTION_DS";
 export const GET_FOURNISSEUR_ARTICLE_TO_SELECT =
   "GET_FOURNISSEUR_ARTICLE_TO_SELECT";
 
+export const SHOW_ARTICLE_BY_FOURNISSEUR = "SHOW_ARTICLE_BY_FOURNISSEUR";
+
+export const SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE =
+  "SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE";
+
+export class showFournisseurByArticleOrCategorie implements Action {
+  readonly type = SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE;
+  payload: {
+    itemId: number;
+    itemType: string;
+  };
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+
+export class showArticleByFournisseur implements Action {
+  readonly type = SHOW_ARTICLE_BY_FOURNISSEUR;
+  payload: number;
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+
 export class getGategories implements Action {
   readonly type = GET_GATEGORIES;
   payload: categorieModel[];
@@ -58,4 +82,6 @@ export type FicheReceptionAction =
   | getFournisseurArticleNonAsso
   | getFournisseurArticleAsso
   | getFicheReceptionDs
-  | getfournisseurArticleToSelect;
+  | getfournisseurArticleToSelect
+  | showFournisseurByArticleOrCategorie
+  | showArticleByFournisseur;

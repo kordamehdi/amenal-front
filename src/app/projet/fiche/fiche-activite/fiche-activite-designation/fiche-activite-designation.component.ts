@@ -54,6 +54,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
   isUpdate = -1;
   lotIndex = -1;
   x = true;
+  avancementMin = 0;
   lotWithSousLot: lotAssoModel[] = [
     {
       id: 1,
@@ -62,7 +63,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
         {
           id: 1,
           designation: "azazaz",
-          unite: "H"
+          unite: "H",
+          lastPrct: 0,
+          qtCml: 0
         }
       ]
     }
@@ -302,7 +305,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
         this.form.controls["entreeId".concat(i, "_", j)].valid &&
         this.form.controls["quantite".concat(i, "_", j)].valid
       ) {
-        if (qt >= this.max) {
+        if (qt > this.max) {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               type: "ficheActivite",
@@ -455,6 +458,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
 
   /* ADD SOUS LOT DEBUT */
   onSelectAddSousLot(item, i) {
+    this.avancementMin = item.lastPrct == null ? 0 : item.lastPrct;
     this.fillInputSelectSousLot(i, item);
     this.SousLotListSelected = true;
   }
@@ -485,6 +489,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       let id = this.form.value["slotId".concat(i)];
       let qt = this.form.value["slotQuantite".concat(i)];
       let av = this.form.value["avancement".concat(i)];
+      let qtCml = this.form.value["qtCml".concat(i)];
+      let lastAvc = this.form.value["lastAvc".concat(i)];
+
       if (id == "" || qt == "") {
         this.store.dispatch(
           new fromFicheAction.ShowFicheAlert({
@@ -505,7 +512,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
         let ds = {
           sousLotId: id,
           quantite: qt,
-          avancement: av == "" ? 0 : av
+          avancement: av == "" ? 0 : av,
+          qtCml: qtCml,
+          lastAvc: lastAvc
         };
         this.ficheActiviteService.onAddSousLotDesignation(sid, ds);
       }
@@ -559,6 +568,8 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
         let id = this.form.value["slotId".concat(this.transI_J(i, j))];
         let qt = this.form.value["slotQuantite".concat(this.transI_J(i, j))];
         let av = this.form.value["avancement".concat(this.transI_J(i, j))];
+        let qtCml = this.form.value["qtCml".concat(i, j)];
+        let lastAvc = this.form.value["lastAvc".concat(i, j)];
         if (id == null || qt == null || av == null) {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
@@ -575,7 +586,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           this.form.controls["avancement".concat(this.transI_J(i, j))].setValue(
             sLotDs.avancement
           );
-        } else if (av !== "" && (0 >= av || av >= 100)) {
+        } else if (av !== "" && (this.avancementMin >= av || av >= 100)) {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               type: "ficheActivite",
@@ -594,7 +605,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           let ds = {
             sousLotId: id,
             quantite: qt,
-            avancement: av
+            avancement: av,
+            qtCml: qtCml,
+            lastAvc: lastAvc
           };
           this.ficheActiviteService.onUpdateSousLotDesignation(sLotDs.id, ds);
         }
@@ -677,16 +690,29 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["slotName".concat(index)].setValue("");
     this.form.controls["slotUnite".concat(index)].setValue("");
     this.form.controls["slotId".concat(index)].setValue("");
+    this.form.controls["lastAvc".concat(index)].setValue("");
+    this.form.controls["qtCml".concat(index)].setValue("");
   }
   fillInputSelectSousLot(index: string, item) {
     this.form.controls["slotName".concat(index)].setValue(item.designation);
     this.form.controls["slotUnite".concat(index)].setValue(item.unite);
     this.form.controls["slotId".concat(index)].setValue(item.id);
+    this.form.controls["avancement".concat(index)].setValue(
+      item.lastPrct == null ? 0 : item.lastPrct
+    );
+    this.form.controls["lastAvc".concat(index)].setValue(
+      item.lastPrct == null ? 0 : item.lastPrct
+    );
+    this.form.controls["qtCml".concat(index)].setValue(item.qtCml);
   }
   fillInputSelectSousLotUpdate(index: string, item) {
     this.form.controls["slotName".concat(index)].setValue(item.designation);
     this.form.controls["slotUnite".concat(index)].setValue(item.unite);
     this.form.controls["slotId".concat(index)].setValue(item.slotid);
+    this.form.controls["lastAvc".concat(index)].setValue(
+      item.lastPrct == null ? 0 : item.lastPrct
+    );
+    this.form.controls["qtCml".concat(index)].setValue(item.qtCml);
   }
   InputSousLotUpdateDirty(i, j) {
     if (

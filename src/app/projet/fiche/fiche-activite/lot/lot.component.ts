@@ -422,16 +422,14 @@ export class LotComponent implements OnInit, OnDestroy {
           let entree = {
             type: type,
             entreeId: entreeId,
-            quantiteEstimer: quantite,
+            bdg: quantite,
             SousLotId: null
           };
 
           this.lotService.onUpdateEntree(entree, ent.id);
         } else {
           this.form.controls["entreeNom".concat(index)].setValue(ent.entreeNom);
-          this.form.controls["quantiteEstimer".concat(index)].setValue(
-            ent.quantiteEstimer
-          );
+          this.form.controls["quantiteEstimer".concat(index)].setValue(ent.bdg);
           this.form.controls["unite".concat(index)].setValue(ent.unite);
           this.form.controls["entreeId".concat(index)].setValue(ent.idEntree);
           this.form.controls["type".concat(index)].setValue(ent.type);
@@ -449,9 +447,7 @@ export class LotComponent implements OnInit, OnDestroy {
         }
 
         this.form.controls["entreeNom".concat(index)].setValue(ent.entreeNom);
-        this.form.controls["quantiteEstimer".concat(index)].setValue(
-          ent.quantiteEstimer
-        );
+        this.form.controls["quantiteEstimer".concat(index)].setValue(ent.bdg);
         this.form.controls["unite".concat(index)].setValue(ent.unite);
         this.form.controls["entreeId".concat(index)].setValue(ent.idEntree);
         this.form.controls["type".concat(index)].setValue(ent.type);
@@ -539,9 +535,7 @@ export class LotComponent implements OnInit, OnDestroy {
   }
   fillInputUpdate(index: string, item) {
     this.form.controls["entreeNom".concat(index)].setValue(item.entreeNom);
-    this.form.controls["quantiteEstimer".concat(index)].setValue(
-      item.quantiteEstimer
-    );
+    this.form.controls["quantiteEstimer".concat(index)].setValue(item.bdg);
     this.form.controls["unite".concat(index)].setValue(item.unite);
     this.form.controls["entreeId".concat(index)].setValue(item.id);
     this.form.controls["type".concat(index)].setValue(item.type);
@@ -556,6 +550,7 @@ export class LotComponent implements OnInit, OnDestroy {
     return "".concat(i, "_", j);
   }
   onContinue() {
+    console.log(this.sousLotToDeleteID, " ", this.entreeToDeleteID);
     if (this.lotToDeleteID != -1) {
       this.lotService.onDeleteLot(this.lotToDeleteID);
     } else if (this.sousLotToDeleteID != -1) {

@@ -7,6 +7,9 @@
     #f="ngForm"
   >
     <div class="header-nav">
+      <span class="left" (click)="onPrevious()"
+        ><ion-icon name="arrow-dropleft"></ion-icon>
+      </span>
       <label for="file" class="left"
         ><ion-icon name="download">
           <input
@@ -18,10 +21,15 @@
         </ion-icon>
       </label>
 
-      <span class="middle">LISTE DES MATERIELS </span>
+      <span class="middle"
+        >LISTE DES MATERIELS : {{ position }}/{{ size }}
+      </span>
 
       <span class="left" (click)="OnCancel()">
         <ion-icon name="arrow-round-up"></ion-icon>
+      </span>
+      <span class="left" (click)="onNext()">
+        <ion-icon name="arrow-dropright"></ion-icon>
       </span>
     </div>
     <table>
@@ -38,41 +46,136 @@
             #keyWord
             style="width: 80%"
           />
+          <ion-icon
+            [name]="ascendant == false ? 'arrow-round-down' : 'arrow-round-up'"
+            (click)="onSort('libelle')"
+          ></ion-icon>
         </th>
       </tr>
+
+      <ng-container *ngIf="materiels.length !== 0; else nodisp">
+        <tr
+          *ngIf="fournisseurIdFilter === -1"
+          [ngStyle]="{
+            'background-color':
+              matIndex === -2 || matDsIndex == -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+            'text-align': 'center',
+            'font-style': 'italic'
+          }"
+          (click)="OnSelectFournisseurWithNoMateriel()"
+        >
+          <td>
+            fournisseur sans materiels
+          </td>
+        </tr>
+        <tr
+          (dblclick)="onAssoMaterielFournisseurToProjet(materiel.id)"
+          (press)="
+            fournisseurIdFilter === -1 || fournisseurIdFilter === -2
+              ? OnDeleteMateriel(materiel.id)
+              : OnDesAssoMaterielToFournisseur(materiel.id)
+          "
+          (click)="OnClickMateriel(dsInput, materiel)"
+          (clickOutside)="OnClickOutsideMateriel(dsInput, materiel.id)"
+          *ngFor="let materiel of materiels; let i = index"
+          [ngStyle]="{
+            'background-color':
+              this.matIndex == materiel.id || matDsIndex == materiel.id
+                ? 'rgba(255, 0, 0, 0.1)'
+                : '',
+            'font-weight': materiel.isAssoWithProjet ? 'bold' : 'normal'
+          }"
+        >
+          <td>
+            <input
+              [disabled]="true"
+              type="text"
+              (blur)="
+                OnUpdateMateriel(
+                  dsInput.value,
+                  materiel.id,
+                  materiel.designation
+                )
+              "
+              name="ds{{ materiel.id }}"
+              [ngModel]="materiel.designation"
+              ngModel
+              #dsInput
+            />
+          </td>
+        </tr>
+      </ng-container>
+      <ng-template #nodisp>
+        <tr
+          [ngStyle]="{
+            'background-color': matDsIndex === -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+            'text-align': 'center',
+            'font-style': 'italic'
+          }"
+        >
+          <td>
+            fournisseur sans materiels
+          </td>
+        </tr>
+      </ng-template>
       <tr
-        (press)="OnDeleteMateriel(materiel.id)"
-        (click)="dsInput.disabled = false"
-        (clickOutside)="dsInput.disabled = true"
-        *ngFor="let materiel of materiels"
+        *ngIf="fournisseurIdFilter === -1 && matIndex !== -1"
         [ngStyle]="{
-          'background-color':
-            this.matIndex == materiel.id ? 'rgba(255, 0, 0, 0.1)' : ''
+          'text-align': 'center',
+          'font-style': 'italic',
+          'font-weight': 'bold'
         }"
+        (click)="OnAnnulerFilter()"
       >
         <td>
-          <input
-            [disabled]="true"
-            type="text"
-            (blur)="OnUpdateMateriel(dsInput.value, materiel.id)"
-            name="ds{{ materiel.id }}"
-            [ngModel]="materiel.designation"
-            ngModel
-            #dsInput
-          />
+          Annuler le filter
         </td>
       </tr>
       <tr>
-        <td>
-          <input
-            class="tdInput"
-            type="text"
-            name="ds"
-            (blur)="OnAddMateriel(matDsInput)"
-            placeholder="DESIGNATION"
-            #matDsInput
-          />
-        </td>
+        <ng-container
+          *ngIf="
+            fournisseurIdFilter === -1 || fournisseurIdFilter === -2;
+            else elseTemplate
+          "
+        >
+          <td>
+            <input
+              class="tdInput"
+              type="text"
+              name="ds"
+              (blur)="OnAddMateriel(matDsInput)"
+              placeholder="DESIGNATION"
+              #matDsInput
+            />
+          </td>
+        </ng-container>
+        <ng-template #elseTemplate>
+          <td>
+            <input
+              class="tdInput"
+              type="text"
+              name="ds"
+              (blur)="OnBlurAssoMaterielToFournisseur(list)"
+              (input)="OnInputAssoMaterielToFournisseur(matDsFr.value)"
+              (focus)="OnFocusAssoMaterielToFournisseur(list)"
+              placeholder="DESIGNATION"
+              #matDsFr
+            />
+            <!-- DropDown -->
+            <div #list hidden class="div-list">
+              <div
+                class="div-detail"
+                *ngFor="let mat of materielsNotAsso"
+                style="width : 100%"
+                (click)="OnAssoMaterielToFournisseur(mat.id, matDsFr)"
+              >
+                <span class="span-detail" style="width:100%">
+                  {{ mat.designation }}
+                </span>
+              </div>
+            </div>
+          </td>
+        </ng-template>
       </tr>
     </table>
   </form>

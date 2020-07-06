@@ -72,6 +72,11 @@ export class FicheBesionDesignationComponent implements OnInit, OnDestroy {
         this.ficheBsn = state.ficheSelectionner;
 
         this.designation$ = this.ficheBsn.designations;
+
+        this.designation$.forEach(e => {
+          let dtPrevu = moment(e.datePrevu, "YYYY-MM-DD");
+          e.retard = dtPrevu.diff(moment(), "days");
+        });
       });
 
     this.store

@@ -113,6 +113,7 @@ export class DesignationReceptionService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
             new FromFicheAction.ShowFicheAlert({
               type: "recDs",
@@ -120,7 +121,6 @@ export class DesignationReceptionService {
               msg: resp.error.message
             })
           );
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
   }
@@ -147,6 +147,7 @@ export class DesignationReceptionService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
             new FromFicheAction.ShowFicheAlert({
               type: "recDs",
@@ -154,7 +155,6 @@ export class DesignationReceptionService {
               msg: resp.error.message
             })
           );
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
   }

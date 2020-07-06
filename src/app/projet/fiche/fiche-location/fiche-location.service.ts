@@ -5,7 +5,7 @@ import { MaterielCmdModel } from "./../../models/materiel-commande.model";
 import { FournisseurCommandeModel } from "./../../models/fournisseur-commande.model";
 import { FournisseurModel } from "../../models/fournisseur-materiel.model";
 import { Router, ActivatedRoute } from "@angular/router";
-import { Route } from "@angular/compiler/src/core";
+import * as ficheLocationAction from "./redux/fiche-location.action";
 import * as App from "../../../store/app.reducers";
 import * as fromProjetAction from "../../redux/projet.actions";
 import * as fromFicheLocationAction from "./redux/fiche-location.action";
@@ -20,11 +20,19 @@ export class FicheLocationService {
   FicheSelectionner;
   type = "LOCATION";
 
+  fournisseurIdFilter = -1;
+
   constructor(
     private store: Store<App.AppState>,
     private httpClient: HttpClient,
     private ficheService: FicheService
   ) {
+    this.store.select("ficheLocation").subscribe(locState => {
+      if (locState.showMaterielByFournisseur.fournisseurNom !== "") {
+        this.fournisseurIdFilter =
+          locState.showMaterielByFournisseur.fournisseurId;
+      }
+    });
     this.store
       .select("projet")
       .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
@@ -55,6 +63,19 @@ export class FicheLocationService {
             new fromFicheLocationAction.getFournisseur(fours)
           );
 
+          let f = fours.find(ff => ff.id == this.fournisseurIdFilter);
+
+          if (f !== null) {
+            let p = {
+              materiels: f.materiels,
+              fournisseurNom: f.fournisseurNom,
+              fournisseurId: f.id
+            };
+            this.store.dispatch(
+              new ficheLocationAction.showMaterielByFournisseur(p)
+            );
+          }
+
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -84,16 +105,18 @@ export class FicheLocationService {
       .subscribe(
         fours => {
           this.onGetFournisseurs();
+          this.OnGetFournisseurMaterielNotAsso();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
           console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -151,12 +174,13 @@ export class FicheLocationService {
         },
         resp => {
           console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "materiel",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -239,11 +263,12 @@ export class FicheLocationService {
       )
       .subscribe(
         fours => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.onGetFournisseurs();
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               showAlert: true,
@@ -302,13 +327,13 @@ export class FicheLocationService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -383,6 +408,7 @@ export class FicheLocationService {
       .subscribe(
         () => {
           this.onGetFournisseurs();
+          this.OnGetFournisseurMaterielNotAsso();
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
@@ -424,12 +450,13 @@ export class FicheLocationService {
         },
         resp => {
           console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -458,12 +485,45 @@ export class FicheLocationService {
         },
         resp => {
           console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+
+  OnGetFournisseurMaterielNotAsso() {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+
+    this.httpClient
+      .get<FournisseurModel[]>(
+        this.SERVER_ADDRESS + "/fournisseurs/materiels",
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        fours => {
+          this.store.dispatch(
+            new fromFicheLocationAction.getFournisseurLocationNotAsso(fours)
+          );
+
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          console.log(resp.error.message);
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -491,12 +551,13 @@ export class FicheLocationService {
         },
         resp => {
           console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "locDs",
+              msg: resp.error.message
+            })
+          );
         }
       );
   }
@@ -543,7 +604,6 @@ export class FicheLocationService {
       .subscribe(
         () => {
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
-          this.onGetMateriel();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -552,6 +612,7 @@ export class FicheLocationService {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               showAlert: true,
+              type: "locDs",
               msg: resp.error.message
             })
           );

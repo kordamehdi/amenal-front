@@ -2,7 +2,29 @@
   <table>
     <tr>
       <th style="width: 60%">
-        DESIGNATION
+        <input
+          (input)="filter(DsKeyWord.value, type.value)"
+          type="text"
+          value="DESIGNATION"
+          (blur)="onBlurHeaderInput(DsKeyWord, 'DESIGNATION')"
+          (focus)="onFocusHeaderInput(DsKeyWord, 'DESIGNATION')"
+          [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
+          #DsKeyWord
+          ngModel
+          name="DESIGNATION$"
+          style="width: 60%"
+        />
+        <ion-radio-group
+          ngModel
+          (ionChange)="filter(DsKeyWord.value, type.value)"
+          name="type"
+          #type
+        >
+          <ion-radio class="checkbox" value="A"></ion-radio>
+          <label class="label-radio">A</label>
+          <ion-radio class="checkbox" value="C"></ion-radio>
+          <label class="label-radio">C</label>
+        </ion-radio-group>
       </th>
       <th style="width: 20%">
         UNITÉ
@@ -15,14 +37,14 @@
       <tr class="stock-content" *ngFor="let stock of stocks; let i = index">
         <td colspan="3">
           <div>
-            <div class="categorie" (click)="onShowshowDetail(i)">
+            <div class="categorie" (click)="onShowshowDetail(stock.categorie)">
               {{ stock.categorie }}
               <div
                 *ngIf="!stock.stockable"
                 style="position: relative; left: 5px; top: 3px; width: 7px; height: 7px; background-color: red;border-radius: 40px;"
               ></div>
             </div>
-            <div #detail *ngIf="showDetails[i]">
+            <div #detail *ngIf="onTestShowDetail(stock.categorie)">
               <div
                 [ngStyle]="{
                   'background-color':

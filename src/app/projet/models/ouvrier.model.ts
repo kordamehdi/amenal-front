@@ -9,5 +9,5 @@ export interface OuvrierModel {
   j_trv: number;
   tele: string;
   appreciation: string;
-  idProjets: [];
+  idProjets: number[];
 }

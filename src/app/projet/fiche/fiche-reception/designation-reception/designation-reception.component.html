@@ -9,7 +9,29 @@
     <table>
       <tr>
         <th style="width: 25%">
-          DESIGNATION
+          <input
+            (input)="filter(DsKeyWord.value, frKeyWord.value, type.value)"
+            type="text"
+            value="DESIGNATION"
+            (blur)="onBlurHeaderInput(DsKeyWord, 'DESIGNATION')"
+            (focus)="onFocusHeaderInput(DsKeyWord, 'DESIGNATION')"
+            [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
+            #DsKeyWord
+            ngModel
+            name="DESIGNATION$"
+            style="width: 60%"
+          />
+          <ion-radio-group
+            ngModel
+            (ionChange)="filter(DsKeyWord.value, frKeyWord.value, type.value)"
+            name="type"
+            #type
+          >
+            <ion-radio class="checkbox" value="A"></ion-radio>
+            <label class="label-radio">A</label>
+            <ion-radio class="checkbox" value="C"></ion-radio>
+            <label class="label-radio">C</label>
+          </ion-radio-group>
         </th>
         <th style="width: 10%">
           UNITÉ
@@ -18,7 +40,18 @@
           QUANTIÉ
         </th>
         <th style="width: 20%">
-          FOURNISSEUR
+          <input
+            (input)="filter(DsKeyWord.value, frKeyWord.value, type.value)"
+            (blur)="onBlurHeaderInput(frKeyWord, 'FOURNISSEUR')"
+            (focus)="onFocusHeaderInput(frKeyWord, 'FOURNISSEUR')"
+            type="text"
+            #frKeyWord
+            ngModel
+            placeholder="FOURNISSEUR"
+            name="fournisseurNom$"
+            value="FOURNISSEUR"
+            style="width: 80%"
+          />
         </th>
         <th style="width: 20%">
           OBSERVATION
@@ -121,12 +154,16 @@
           <div>
             <div
               class="categorie"
-              (click)="onShowshowDetail(i)"
+              (click)="onShowshowDetail(cat.categorie)"
               style="font-weight:bold"
             >
               {{ cat.categorie }}
             </div>
-            <div style="font-style: italic" #detail *ngIf="showDetails[i]">
+            <div
+              style="font-style: italic"
+              #detail
+              *ngIf="onTestShowDetail(cat.categorie)"
+            >
               <div
                 (press)="OnDeleteDs(ds.id)"
                 [ngStyle]="{

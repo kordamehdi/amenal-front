@@ -19,6 +19,21 @@
   padding-top: 2px;
   padding-bottom: 2px;
 }
+.label-radio {
+  margin-right: 15px;
+}
+.checkbox {
+  z-index: 0;
+
+  width: 12px;
+  height: 12px;
+}
+input {
+  width: 100%;
+  background: transparent;
+  text-align: center;
+  border: none;
+}
 
 .categorie {
   font-weight: bold;

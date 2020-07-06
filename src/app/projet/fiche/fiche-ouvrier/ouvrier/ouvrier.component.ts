@@ -4,7 +4,6 @@ import { OuvrierModel } from "./../../../models/ouvrier.model";
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import * as App from "../../../../store/app.reducers";
-import * as fromFicheOuvrierAction from "./../redux/fiche-ouvrier.action";
 import * as fromFicheAction from "../../redux/fiche.action";
 import * as moment from "moment";
 
@@ -21,7 +20,7 @@ export class OuvrierComponent implements OnInit {
   aaa = true;
   isFocus = false;
   isFocus$ = false;
-
+  projetSelectionnerId;
   ouvriers: OuvrierModel[];
   columnOuvrier: String[];
   qualifications: String[];
@@ -46,6 +45,9 @@ export class OuvrierComponent implements OnInit {
   isValid;
   showAlert;
   qualificationToDelete = "";
+  navPas = 3;
+  position = 1;
+  size;
   constructor(
     private ficheOuvrierService: FicheOuvrierService,
     private store: Store<App.AppState>
@@ -65,16 +67,27 @@ export class OuvrierComponent implements OnInit {
       this.columnOuvrier = state.columnOuvrier;
       this.qualifications$ = state.qualifications;
       this.qualifications = [...this.qualifications$];
-      this.ouvriers = state.ouvriers;
-      this.ouvriers$ = state.ouvriers;
-      this.ouvriers$$ = state.ouvriers;
+      this.ouvriers$$ = [];
+      this.ouvriers$ = [];
+      this.ouvriers = [];
+
       this.isUpdate = state.isOuvrierUpdate;
+
+      if (state.ouvriers !== null)
+        if (state.ouvriers.length !== 0) {
+          this.ouvriers$$ = state.ouvriers;
+          this.onSortByEnGras();
+        }
+
+      this.onFilter();
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "ouvrier") {
         this.errorMsg = state.errorMsg;
         this.showAlert = state.showAlert;
       }
+      this.projetSelectionnerId = state.projetSelectionner.id;
+
       this.listerOuvrier = state.listerOuvrier;
       this.isValid = state.ficheSelectionner.isValidated;
     });
@@ -97,7 +110,7 @@ export class OuvrierComponent implements OnInit {
     this.isUpdate = -1;
     this.ficheOuvrierService.OnSaveOuvrier(ouvrier);
     this.qualificationIsSelected = false;
-    this.form.reset();
+    this.addFormReset();
   }
   OnUpdateOuvrier() {
     const ouvrier: OuvrierModel = {
@@ -120,7 +133,6 @@ export class OuvrierComponent implements OnInit {
     this.isUpdate = -1;
     this.focusID = -1;
     this.ficheOuvrierService.OnUpdateOuvrier(ouvrier, this.ouvSl);
-    this.form.reset();
   }
 
   addOuvToProjets(idOuvrier) {
@@ -135,7 +147,7 @@ export class OuvrierComponent implements OnInit {
   }
 
   onAddClickOutside() {
-    if (this.isUpdate === 0 && this.form.dirty) {
+    if (this.isUpdate === 0 && this.addFormIsDirty("")) {
       let submit = true;
       this.qualificationToAdd = this.form.controls["qual"].value
         .trim()
@@ -155,7 +167,7 @@ export class OuvrierComponent implements OnInit {
               " ] ?"
           })
         );
-        this.form.controls["qual"].setValue("");
+        this.addFormReset();
         this.isUpdate = -1;
       } else {
         this.columnOuvrier.forEach((key: any) => {
@@ -208,7 +220,7 @@ export class OuvrierComponent implements OnInit {
     if (this.ouvSl === i) {
       this.addOuvToProjet$ = true;
       this.aaa = true;
-      if ((this.isUpdate === 1 && this.form.dirty) || this.up)
+      if ((this.isUpdate === 1 && this.addFormIsDirty(i.toString())) || this.up)
         this.form.ngSubmit.emit();
       else this.focusID = -1;
       this.columnOuvrier.forEach((key: any) => {
@@ -315,30 +327,29 @@ export class OuvrierComponent implements OnInit {
       "qualification",
       "appreciation"
     ];
-    this.ouvriers$ = this.ouvriers$$;
-    inputSearchName.forEach((key: string) => {
-      let vv = this.form.value[key.concat("$")].trim().toUpperCase();
-      if (vv !== "") {
-        let v = this.ouvriers$;
-        this.ouvriers$ = v.filter(d => {
-          return d[key].includes(vv);
-        });
-      }
-    });
-
-    this.ouvriers = this.ouvriers$;
-
-    /*this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
-    this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
-    if (this.size < this.designationOuvrier$.length / this.navPas)
-      this.size = this.size + 1;*/
+    this.ouvriers$ = [...this.ouvriers$$];
+    if (typeof this.form !== "undefined")
+      inputSearchName.forEach((key: string) => {
+        let vv = this.form.value[key.concat("$")].trim().toUpperCase();
+        if (vv !== "") {
+          let v = this.ouvriers$;
+          this.ouvriers$ = v.filter(d => {
+            return d[key].includes(vv);
+          });
+        }
+      });
+    this.position = 1;
+    this.ouvriers = this.ouvriers$.slice(0, this.navPas);
+    this.size = Math.trunc(this.ouvriers$.length / this.navPas);
+    if (this.size < this.ouvriers$.length / this.navPas)
+      this.size = this.size + 1;
   }
   onSort(type) {
     this.typeAsc = type;
     // descending order z->a
     this.ascendant[type] = !this.ascendant[type];
     if (!this.ascendant[type])
-      this.ouvriers = this.ouvriers$.sort((a, b) => {
+      this.ouvriers = this.ouvriers.sort((a, b) => {
         if (a[type] > b[type]) {
           return -1;
         }
@@ -348,7 +359,7 @@ export class OuvrierComponent implements OnInit {
         return 0;
       });
     if (this.ascendant[type])
-      this.ouvriers = this.ouvriers$.sort((a, b) => {
+      this.ouvriers = this.ouvriers.sort((a, b) => {
         if (a[type] < b[type]) {
           return -1;
         }
@@ -358,8 +369,47 @@ export class OuvrierComponent implements OnInit {
         return 0;
       });
   }
+  onPrevious() {
+    if (this.position - 1 > 0) {
+      this.position = this.position - 1;
+      let a = this.navPas * this.position;
+      let b = a - this.navPas;
+      this.ouvriers = this.ouvriers$.slice(b, a);
+    }
+  }
+  onNext() {
+    if (this.position + 1 <= this.size) {
+      let b = this.navPas * this.position;
+      this.position = this.position + 1;
+      let a = b + this.navPas;
+      this.ouvriers = this.ouvriers$.slice(b, a);
+    }
+  }
+  onSortByEnGras() {
+    // descending order z->a
+    if (this.ouvriers !== null)
+      this.ouvriers$$ = this.ouvriers$$.sort((a: OuvrierModel, b) => {
+        if (a.idProjets.includes(this.projetSelectionnerId)) {
+          return -1;
+        } else if (b.idProjets.includes(this.projetSelectionnerId)) {
+          return 1;
+        } else return 0;
+      });
+  }
   /**FILTER**/
   getFile(event) {
     this.ficheOuvrierService.onImportExcelFileOuvrier(event.target.files[0]);
+  }
+  addFormIsDirty(i) {
+    let isDirty = false;
+    this.columnOuvrier.forEach((key: string) => {
+      if (this.form.controls[key.concat(i)].dirty) {
+        isDirty = true;
+      }
+    });
+    return isDirty;
+  }
+  addFormReset() {
+    this.columnOuvrier.forEach((key: any) => this.form.controls[key].reset());
   }
 }

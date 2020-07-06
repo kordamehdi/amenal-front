@@ -8,10 +8,7 @@ import {
 } from "./../../../models/reception-designation.model";
 import * as FromFicheAction from "../../redux/fiche.action";
 import { DesignationReceptionService } from "./designation-reception.service";
-import { ListeArticleService } from "./../liste-article/liste-article.service";
-import { categorieModel } from "./../../../models/categorie.model";
 import { articleModel } from "src/app/projet/models/article.model";
-import { locationDesignationModel } from "./../../../models/location-designation.model";
 import { FicheModel } from "./../../../models/fiche.model";
 import { Store } from "@ngrx/store";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
@@ -34,7 +31,17 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
 
   articleSelected: Boolean = false;
   fournisseurSelected: Boolean = false;
-  showDetails = [];
+  showDetails: [
+    {
+      cat: string;
+      show: boolean;
+    }
+  ] = [
+    {
+      cat: "",
+      show: false
+    }
+  ];
   FicheReception: FicheModel;
   errorMsg: string;
   showAlert = false;
@@ -52,26 +59,8 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
   uniteAdd = "";
   fournisseurMaterielMap: fournisseurArticleModel[] = [];
 
-  categories: ReceptionCategorieModel[] = [
-    {
-      id: 1,
-      categorie: "Cimment",
-      receptionDesignation: [
-        {
-          id: 1,
-
-          idArticle: 1,
-          idFournisseur: 1,
-          designation: "ciment 78sx",
-          unite: "H",
-          observation: "cccccccc",
-          quantite: 5,
-          fournisseurNom: "mohammedd",
-          idFiche: null
-        }
-      ]
-    }
-  ];
+  categories: ReceptionCategorieModel[] = [];
+  categories$: ReceptionCategorieModel[] = [];
 
   formNames = [
     "idArticle",
@@ -103,9 +92,25 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
         }
         if (state.ficheSelectionner !== null)
           this.FicheReception = state.ficheSelectionner;
-        if (this.FicheReception.categories !== undefined) {
-          this.categories = this.FicheReception.categories;
-        } else this.categories = [];
+        if (this.FicheReception.categories !== undefined)
+          this.categories$ = this.FicheReception.categories;
+        else this.categories$ = [];
+
+        this.categories = this.categories$;
+
+        this.categories.forEach(c => {
+          if (this.showDetails.find(s => s.cat === c.categorie) === undefined) {
+            let s = { cat: c.categorie, show: false };
+            this.showDetails.push({ ...s });
+          }
+        });
+
+        if (typeof this.form !== "undefined") {
+          let ds = this.form.value["DESIGNATION$"];
+          let fr = this.form.value["fournisseurNom$"];
+          let type = this.form.value["type"];
+          this.filter(ds, fr, type);
+        }
       });
     this.store
       .select(refresh)
@@ -127,8 +132,14 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
       });
   }
 
-  onShowshowDetail(i) {
-    this.showDetails[i] = !this.showDetails[i];
+  onShowshowDetail(cat) {
+    let st = this.showDetails.find(s => s.cat === cat);
+    st.show = !st.show;
+  }
+  onTestShowDetail(cat) {
+    console.log(this.showDetails);
+    let st = this.showDetails.find(s => s.cat === cat);
+    return st.show;
   }
 
   /* ARTICLE_ADD_START */
@@ -611,6 +622,95 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     );
     this.resetAddInput();
   }
+  onFilterByArticle(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    this.categories = this.categories.filter(f => {
+      let isMateriel = false;
+      f.receptionDesignation.forEach(m => {
+        if (m.designation.includes(word)) isMateriel = true;
+      });
+      if (isMateriel) return true;
+      else return false;
+    });
+    this.categories.forEach(
+      f =>
+        (f.receptionDesignation = f.receptionDesignation.filter(m =>
+          m.designation.includes(word)
+        ))
+    );
+  }
+
+  onFilterByCategorie(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    this.categories = this.categories.filter(c => c.categorie.includes(word));
+  }
+
+  onFilterByFounrisseur(keyWord: string) {
+    let word = keyWord.toUpperCase().trim();
+    this.categories = this.categories.filter(f => {
+      let isMateriel = false;
+      f.receptionDesignation.forEach(m => {
+        if (m.fournisseurNom.includes(word)) isMateriel = true;
+      });
+      if (isMateriel) return true;
+      else return false;
+    });
+    this.categories.forEach(
+      f =>
+        (f.receptionDesignation = f.receptionDesignation.filter(m =>
+          m.fournisseurNom.includes(word)
+        ))
+    );
+  }
+
+  filter(ds: string, fr: string, type) {
+    this.categories = this.slice(this.categories$);
+    let ds$ = ds.trim().toUpperCase();
+    let fr$ = fr.trim().toUpperCase();
+    let reset = true;
+    if (ds$ !== "" && ds$ !== "DESIGNATION") {
+      reset = false;
+      if (type == "A") this.onFilterByArticle(ds$);
+      else this.onFilterByCategorie(ds$);
+    }
+
+    if (fr$ !== "" && fr$ !== "FOURNISSEUR") {
+      reset = false;
+      this.onFilterByFounrisseur(fr$);
+    }
+
+    if (reset) this.categories = this.slice(this.categories$);
+  }
+
+  filterBox(vv: string, type) {
+    this.categories = this.slice(this.categories$);
+    let v = vv.trim().toUpperCase();
+
+    if (type == "A") this.onFilterByArticle(v);
+    else this.onFilterByCategorie(v);
+  }
+
+  slice(c: ReceptionCategorieModel[]) {
+    let cat: ReceptionCategorieModel[] = [...c].map(m =>
+      JSON.parse(JSON.stringify(m))
+    );
+    c.forEach((f, i) => {
+      let cList = [...f.receptionDesignation].map(cc =>
+        JSON.parse(JSON.stringify(cc))
+      );
+      cat[i].receptionDesignation = [...cList];
+    });
+    return cat;
+  }
+
+  onFocusHeaderInput(input, value) {
+    let v = input.value;
+    if (v === value) input.value = "";
+  }
+  onBlurHeaderInput(input, value) {
+    let v = input.value.trim();
+    if (v === "") input.value = value;
+  }
 
   resetAddInput() {
     this.form.controls["unite"].reset();
@@ -621,6 +721,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     this.form.controls["observation"].reset();
     this.form.controls["quantite"].reset();
   }
+
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.
   }

@@ -27,6 +27,7 @@ export class DestinationComponent implements OnInit {
     this.destinationService.onGetDestinations();
     this.store.select("ficheLivraison").subscribe(state => {
       this.destinations = state.destinations;
+      this.onSortByEnGras();
     });
 
     this.store.select("fiche").subscribe(state => {
@@ -107,6 +108,18 @@ export class DestinationComponent implements OnInit {
       this.destinationDeleteId = -1;
     }
     this.onHideAlert();
+  }
+  onSortByEnGras() {
+    // descending order z->a
+    if (this.destinations !== null)
+      this.destinations = this.destinations.sort((a, b) => {
+        if (a.isAsso && b.isAsso) return 0;
+        if (a.isAsso) {
+          return -1;
+        } else if (b.isAsso) {
+          return 1;
+        } else return 0;
+      });
   }
   onHideAlert() {
     this.store.dispatch(

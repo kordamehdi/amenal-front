@@ -17,7 +17,7 @@ export interface entreeModel {
   unite: string;
   entreeNom: string;
   idEntree: number;
-  quantiteEstimer: number;
+  bdg: number;
 }
 export interface entreeNonAssoModel {
   id: number;

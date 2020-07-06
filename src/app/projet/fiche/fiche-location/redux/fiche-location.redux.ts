@@ -1,3 +1,4 @@
+import { fournisseurArticleModel } from "./../../../models/fournisseur-article.model";
 import { MaterielModel } from "./../../../models/materiel.model";
 import { FournisseurModel } from "../../../models/fournisseur-materiel.model";
 import * as fromFicheLocationAction from "./fiche-location.action";
@@ -9,15 +10,36 @@ export interface ficheLocationState {
   fournisseursByMateriel: FournisseurModel[];
   fournisseurByProjet: FournisseurModel[];
   unites: string[];
+  showMaterielByFournisseur: {
+    materiels: MaterielModel[];
+    fournisseurNom: string;
+    fournisseurId: number;
+  };
+
+  showFournisseurByMateriel: {
+    materielId: number;
+    materielNom: string;
+  };
+  fournisseurMaterielNotAsso: FournisseurModel[];
 }
 
 const initialState: ficheLocationState = {
+  showMaterielByFournisseur: {
+    fournisseurNom: "",
+    materiels: [],
+    fournisseurId: -1
+  },
+  showFournisseurByMateriel: {
+    materielId: -1,
+    materielNom: ""
+  },
   fournisseurs: [],
   materiels: [],
   showList: false,
   fournisseursByMateriel: [],
   fournisseurByProjet: [],
-  unites: []
+  unites: [],
+  fournisseurMaterielNotAsso: []
 };
 
 export function ficheLocationReducer(
@@ -25,6 +47,30 @@ export function ficheLocationReducer(
   action: fromFicheLocationAction.FicheLocationAction
 ): ficheLocationState {
   switch (action.type) {
+    case fromFicheLocationAction.GET_FOURNISSEUR_LOCATION_NOT_ASSO: {
+      return {
+        ...state,
+        fournisseurMaterielNotAsso: action.payload
+      };
+    }
+    case fromFicheLocationAction.GET_FOURNISSEUR_LOCATION_NOT_ASSO: {
+      return {
+        ...state,
+        fournisseurMaterielNotAsso: action.payload
+      };
+    }
+    case fromFicheLocationAction.SHOW_FOURNISSEUR_BY_MATERIEL: {
+      return {
+        ...state,
+        showFournisseurByMateriel: action.payload
+      };
+    }
+    case fromFicheLocationAction.SHOW_MATERIEL_BY_FOURNISSEUR: {
+      return {
+        ...state,
+        showMaterielByFournisseur: action.payload
+      };
+    }
     case fromFicheLocationAction.GET_FOURNISSEUR: {
       return {
         ...state,

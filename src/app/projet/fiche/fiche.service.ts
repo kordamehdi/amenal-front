@@ -29,7 +29,6 @@ export class FicheService {
 
     this.store.select("fiche").subscribe(projetState => {
       this.projetSelectionner = projetState.projetSelectionner;
-      console.log(this.projetSelectionner);
       if (projetState.ficheSelectionner !== null) {
         this.ficheSelectionnerId = projetState.ficheSelectionner.id;
         this.ficheSelectionner = projetState.ficheSelectionner;

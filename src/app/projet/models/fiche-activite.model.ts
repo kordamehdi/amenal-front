@@ -13,12 +13,16 @@ export interface sousLotAssoModel {
   id: number;
   designation: string;
   unite: string;
+  qtCml: number;
+  lastPrct: number;
 }
 export interface sousLotDesignationModel {
   id: number;
   designation: string;
   unite: string;
   quantite: string;
+  qtCml: number;
+  lastAvc: number;
   slotid: number;
   avancement: number;
   entreeDesignationPresentations: entreeDesignationModel[];

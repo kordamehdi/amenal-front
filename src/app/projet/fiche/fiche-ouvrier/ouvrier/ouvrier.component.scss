@@ -1,8 +1,8 @@
-.scrol_cont {
+/*.scrol_cont {
   height: 220px;
   overflow: scroll;
   padding-bottom: 20px;
-}
+}*/
 .container {
   width: 100%;
   margin-left: auto;
@@ -13,45 +13,73 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
-  font-size: 13px;
+  font-size: 12px;
   table-layout: fixed;
+  font-size: 13px;
 }
 
-tr {
-  background-color: rgba(0, 0, 0, 0.233);
-  padding-top: 3px;
-  padding-bottom: 3px;
-  width: 100%;
+td {
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+  overflow-wrap: break-word;
 }
+td:last-child {
+  border-right: none;
+}
+
+.tdInput {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: none;
+}
+
 th {
-  background-color: rgba(255, 255, 255, 0.5);
+  position: sticky;
+  top: 0;
   width: 10%;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255);
   text-align: center;
   padding-top: 4px;
   padding-bottom: 4px;
   overflow-wrap: break-word;
 }
-
+th:last-child {
+  border-top-right-radius: 10px;
+  border-right: none;
+}
+th:first-child {
+  border-top-left-radius: 10px;
+  border-left: none;
+}
+tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+  border-left: none;
+}
+tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+  border-right: none;
+}
+tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
 .header {
   height: 25px;
   width: 80%;
   display: inline-block;
-
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   background-color: rgba(255, 255, 255, 0.3);
   padding-bottom: 10px;
 }
-th {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
+
 .middle {
   text-align: center;
   height: 25px;
-  width: 80%;
+  width: 60%;
   display: inline-block;
   font-size: 12px;
   font-weight: bold;
@@ -68,12 +96,6 @@ ion-icon {
   margin-top: 5px;
 }
 
-td {
-  width: 20x;
-  text-align: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-}
 .tdInput {
   border-left: 1px rgba(255, 255, 255, 0.5);
   text-align: center;
@@ -81,11 +103,6 @@ td {
   background-color: rgba(255, 0, 0, 0.1);
 }
 
-tr {
-  border: 2px solid rgba(235, 231, 231, 0.651);
-  text-align: center;
-  background-color: rgba(255, 255, 255, 0.5);
-}
 input {
   width: 100%;
   background: transparent;

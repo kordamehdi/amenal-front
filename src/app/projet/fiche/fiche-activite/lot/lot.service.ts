@@ -31,10 +31,14 @@ export class LotService {
   onAddlot(lot) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
-      .post<String>(this.SERVER_ADDRESS + "/lots", lot, {
-        observe: "body",
-        responseType: "json"
-      })
+      .post<String>(
+        this.SERVER_ADDRESS + "/lots/projets/" + this.projetSelectionner.id,
+        lot,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         () => {
           this.onListLot();

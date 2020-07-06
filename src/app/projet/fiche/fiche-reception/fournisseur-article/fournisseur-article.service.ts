@@ -13,6 +13,7 @@ export class FournisseurArticleService {
   projetSelectionner: ProjetModel;
   FicheSelectionner: FicheModel;
   type = "RECEPTION";
+  foursSelecetionnerId;
   constructor(
     private store: Store<App.AppState>,
     private httpClient: HttpClient
@@ -20,7 +21,9 @@ export class FournisseurArticleService {
     this.store
       .select("projet")
       .subscribe(state => (this.SERVER_ADDRESS = state.baseUrl));
-
+    this.store.select("ficheReception").subscribe(state => {
+      this.foursSelecetionnerId = state.showArticleByFournisseurId;
+    });
     this.store.select("fiche").subscribe(ficheState => {
       this.projetSelectionner = ficheState.projetSelectionner;
       if (ficheState.ficheSelectionner !== null)
@@ -43,6 +46,13 @@ export class FournisseurArticleService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
@@ -62,10 +72,17 @@ export class FournisseurArticleService {
       )
       .subscribe(
         fs => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+
           this.store.dispatch(
             new fromFicheReceptionAction.getFournisseurArticleAsso(fs)
           );
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
+
+          this.store.dispatch(
+            new fromFicheReceptionAction.showArticleByFournisseur(
+              this.foursSelecetionnerId
+            )
+          );
         },
         resp => {
           this.store.dispatch(
@@ -98,6 +115,13 @@ export class FournisseurArticleService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
@@ -123,6 +147,13 @@ export class FournisseurArticleService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
@@ -147,6 +178,13 @@ export class FournisseurArticleService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
@@ -265,6 +303,7 @@ export class FournisseurArticleService {
       .subscribe(
         () => {
           this.getFournisseurAsso();
+          this.getFournisseurNotAsso();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {

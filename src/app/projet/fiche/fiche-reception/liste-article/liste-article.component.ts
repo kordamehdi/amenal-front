@@ -7,7 +7,9 @@ import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
 import { Store } from "@ngrx/store";
 import { NgForm } from "@angular/forms";
-import { configFromSession } from "@ionic/core";
+import * as _ from "lodash";
+import * as fromFicheReceptionAction from "../redux/fiche-reception.action";
+import { FournisseurArticleService } from "../fournisseur-article/fournisseur-article.service";
 
 @Component({
   selector: "app-liste-article",
@@ -27,6 +29,9 @@ export class ListeArticleComponent implements OnInit {
   unites: String[] = ["H", "M3", "M2"];
   // -1 : rien ; 0 : ajouter ; 1 : modifier
   formState = -1;
+  articlesNotAssoToFr: articleModel[] = [];
+  articlesNotAssoToFr$: articleModel[] = [];
+
   catToDeleteId = -1;
   ArticleToDeleteId = -1;
   uniteSelected = false;
@@ -34,14 +39,32 @@ export class ListeArticleComponent implements OnInit {
   uniteTodelete;
   ArtAddIndex = "";
   CatIndex = -1;
+  CatId = -1;
+  CatSelected = -1;
+  articleSelected = "";
 
   ArticleUpdateIndex = "";
   filterStockable = false;
   isStockable = false;
-
-  showDetails = [];
-
+  isFilterByFournisseur = false;
+  showDetails: [
+    {
+      id: number;
+      show: boolean;
+    }
+  ] = [
+    {
+      id: 0,
+      show: false
+    }
+  ];
+  fournisseurFilterId = -1;
+  fournisseurFilterNom = "";
+  AssCatFr = -1;
+  AssArtFr = -1;
+  allArtIdsAssoToFrs = [];
   constructor(
+    private fournisseurArticleService: FournisseurArticleService,
     private listeArticleService: ListeArticleService,
     private ficheMaterielService: FicheMaterielService,
     private store: Store<App.AppState>
@@ -54,8 +77,71 @@ export class ListeArticleComponent implements OnInit {
       this.unites = locState.unites;
     });
     this.store.select("ficheReception").subscribe(state => {
-      this.categories = state.categories;
-      this.categories$ = state.categories;
+      if (state.showArticleByFournisseurId !== -1) {
+        if (state.showArticleByFournisseurId === -2) {
+          this.fournisseurFilterId = -2;
+          let ids = [];
+          this.categories$ = this.slice(state.categories);
+          state.fournisseurArticleAsso.forEach(f => {
+            f.categories.forEach(c => {
+              ids = ids.concat(c.articles.map(a => a.id));
+            });
+          });
+          this.categories$ = this.categories$.filter(c => {
+            let pass = false;
+            c.articles.forEach(a => {
+              pass = !ids.includes(a.id);
+            });
+            return pass;
+          });
+          this.categories$.forEach(c => {
+            c.articles = c.articles.filter(a => {
+              return !ids.includes(a.id);
+            });
+          });
+        } else {
+          this.fournisseurFilterId = state.showArticleByFournisseurId;
+          let four = state.fournisseurArticleAsso.find(
+            f => f.id === this.fournisseurFilterId
+          );
+          this.categories$ = four.categories;
+          this.fournisseurFilterNom = four.fournisseurNom;
+          let ids = [];
+          four.categories.forEach(
+            c => (ids = ids.concat(c.articles.map(a => a.id)))
+          );
+          state.categories.forEach(
+            c =>
+              (this.articlesNotAssoToFr$ = this.articlesNotAssoToFr$.concat(
+                c.articles
+              ))
+          );
+
+          this.articlesNotAssoToFr$ = this.articlesNotAssoToFr$.filter(
+            a => !ids.includes(a.id)
+          );
+        }
+        this.articlesNotAssoToFr = this.articlesNotAssoToFr$;
+        this.isFilterByFournisseur = true;
+      } else {
+        this.articlesNotAssoToFr = [];
+        this.articlesNotAssoToFr$ = [];
+
+        this.categories$ = state.categories;
+        this.isFilterByFournisseur = false;
+      }
+      this.categories = this.categories$;
+      this.categories.forEach(c => {
+        if (this.showDetails.find(s => s.id === c.id) === undefined) {
+          let s = { id: c.id, show: false };
+          this.showDetails.push({ ...s });
+        }
+      });
+      if (typeof this.form !== "undefined") {
+        let ds = this.form.value["DESIGNATION$"];
+        let type = this.form.value["type"];
+        this.filter(ds, type);
+      }
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "article" || state.type === "unite") {
@@ -65,16 +151,25 @@ export class ListeArticleComponent implements OnInit {
     });
   }
 
-  onAddCategorie(value) {
-    if (value.trim() !== "") {
-      this.listeArticleService.OnAddCategorie(value);
-      this.form.controls["cat"].setValue("");
-    }
+  onAddCategorie(catInput, list) {
+    setTimeout(() => {
+      list.hidden = true;
+    }, 150);
+    let value = catInput.value.trim();
+    if (!this.isFilterByFournisseur || this.fournisseurFilterId === -2)
+      if (value !== "") {
+        this.listeArticleService.OnAddCategorie(value);
+        catInput.value = "";
+      }
   }
-  onCategorieInputClick() {}
 
-  onShowDetails(i) {
-    this.showDetails[i] = !this.showDetails[i];
+  onShowDetails(id) {
+    let st = this.showDetails.find(s => s.id === id);
+    st.show = !st.show;
+  }
+  onTestShowDetail(id) {
+    let st = this.showDetails.find(s => s.id === id);
+    return st.show;
   }
 
   onFocusUniteInput(detail) {
@@ -101,7 +196,7 @@ export class ListeArticleComponent implements OnInit {
     if (this.formState === 0 && (this.form.dirty || this.uniteSelected)) {
       let submit = true;
 
-      this.uniteToAdd = this.form.controls["unite".concat(i.toString())].value
+      this.uniteToAdd = this.form.controls["unite".concat(id.toString())].value
         .trim()
         .toUpperCase();
       if (!this.unites.includes(this.uniteToAdd)) {
@@ -123,8 +218,8 @@ export class ListeArticleComponent implements OnInit {
         this.uniteSelected = false;
         this.formName.forEach(name => {
           if (
-            this.form.controls[name.concat(i)].invalid &&
-            this.form.controls[name.concat(i)].value.trim() !== ""
+            this.form.controls[name.concat(id)].invalid &&
+            this.form.controls[name.concat(id)].value.trim() !== ""
           )
             submit = false;
         });
@@ -132,12 +227,12 @@ export class ListeArticleComponent implements OnInit {
           let article: articleModel = {
             id: null,
             categorieID: id,
-            designation: this.form.value["designation".concat(i)],
+            designation: this.form.value["designation".concat(id)],
             stockable:
-              this.form.value["stockable".concat(i)] === ""
+              this.form.value["stockable".concat(id)] === ""
                 ? false
-                : this.form.value["stockable".concat(i)],
-            unite: this.form.value["unite".concat(i)],
+                : this.form.value["stockable".concat(id)],
+            unite: this.form.value["unite".concat(id)],
             categorie: null,
             isAssoWithProjet: null
           };
@@ -154,6 +249,14 @@ export class ListeArticleComponent implements OnInit {
       }
       this.formState = -1;
     }
+  }
+  onSearchArticle(v: string) {
+    let vv = v.trim().toUpperCase();
+    if (vv === "") this.articlesNotAssoToFr = this.articlesNotAssoToFr$;
+    else
+      this.articlesNotAssoToFr = this.articlesNotAssoToFr$.filter(a =>
+        a.designation.includes(vv)
+      );
   }
   onAddArticleClick(i) {
     this.formState = 0;
@@ -175,11 +278,12 @@ export class ListeArticleComponent implements OnInit {
   }
   /*       UPDATE ARTICLE       */
 
-  onClickOutsideCategorieUpdateInput(i, input) {
+  onClickOutsideCategorieUpdateInput(i, id, input) {
     this.CatIndex = -1;
+    this.CatId = -1;
 
     if (input.value.trim() === "") {
-      this.form.controls["categorie".concat(i)].setValue(
+      this.form.controls["categorie".concat(id)].setValue(
         this.categories[i].categorie
       );
     } else if (input.value !== this.categories[i].categorie) {
@@ -192,16 +296,50 @@ export class ListeArticleComponent implements OnInit {
     input.disabled = true;
   }
 
-  onClickCategorieUpdateInput(i, input) {
+  onClickCategorieUpdateInput(i, id, input) {
+    if (!this.isFilterByFournisseur) {
+      let item = {
+        itemId: id,
+        itemType: "CATEGORIE"
+      };
+      this.store.dispatch(
+        new fromFicheReceptionAction.showFournisseurByArticleOrCategorie(item)
+      );
+      this.CatSelected = id;
+    }
     setTimeout(() => {
       this.CatIndex = i;
+      this.CatId = id;
       input.disabled = false;
     }, 10);
   }
+  OnSelectDFournisseurWithNoArticles() {
+    if (!this.isFilterByFournisseur) {
+      let item = {
+        itemId: -2,
+        itemType: "ARTICLE"
+      };
+      this.store.dispatch(
+        new fromFicheReceptionAction.showFournisseurByArticleOrCategorie(item)
+      );
+      this.CatSelected = -2;
+    }
+  }
 
   /*       UPDATE ARTICLE       */
-  onClickArticleUpdateInput(i: number, j: number) {
-    this.ArticleUpdateIndex = i.toString().concat(j.toString());
+  onClickArticleUpdateInput(catId, artId, i: number, j: number) {
+    if (!this.isFilterByFournisseur) {
+      this.articleSelected = catId.toString().concat("_", artId.toString());
+      let item = {
+        itemId: artId,
+        itemType: "ARTICLE"
+      };
+      this.store.dispatch(
+        new fromFicheReceptionAction.showFournisseurByArticleOrCategorie(item)
+      );
+      this.CatSelected = catId;
+    }
+    this.ArticleUpdateIndex = catId.toString().concat("_", artId.toString());
     this.uniteSelected = false;
     setTimeout(() => {
       this.formName.forEach(name => {
@@ -210,45 +348,44 @@ export class ListeArticleComponent implements OnInit {
     }, 10);
   }
 
-  onClickOutsideArticleUpdateInput(i: number, j: number) {
-    let index = i.toString().concat(j.toString());
-    if (
-      this.ArticleUpdateIndex === index &&
-      (this.form.dirty || this.uniteSelected)
-    ) {
+  onClickOutsideArticleUpdateInput(catId, artId, i: number, j: number) {
+    let index = catId.toString().concat("_", artId.toString());
+    if (this.ArticleUpdateIndex === index) {
       this.ArticleUpdateIndex = "";
-      let submit = true;
-      this.formName.forEach(name => {
-        if (this.form.value[name.concat(index)] !== null)
-          if (
-            name !== "stockable" &&
-            this.form.value[name.concat(index)].trim() === ""
-          )
-            submit = false;
-      });
-
-      if (!submit) {
+      if (this.form.dirty || this.uniteSelected) {
+        let submit = true;
         this.formName.forEach(name => {
-          this.form.controls[name.concat(index)].setValue(
-            this.categories[i].articles[j][name]
-          );
-          this.form.controls[name.concat(index)].disable();
+          if (this.form.value[name.concat(index)] !== null)
+            if (
+              name !== "stockable" &&
+              this.form.value[name.concat(index)].trim() === ""
+            )
+              submit = false;
         });
-      } else {
-        let article: articleModel = {
-          id: null,
-          categorieID: this.categories[i].id,
-          designation: this.form.value["designation".concat(index)],
-          stockable: this.form.value["stockable".concat(index)],
-          unite: this.form.value["unite".concat(index)],
-          isAssoWithProjet: null,
-          categorie: null
-        };
 
-        this.listeArticleService.OnEditArticle(
-          article,
-          this.categories[i].articles[j].id
-        );
+        if (!submit) {
+          this.formName.forEach(name => {
+            this.form.controls[name.concat(index)].setValue(
+              this.categories[i].articles[j][name]
+            );
+            this.form.controls[name.concat(index)].disable();
+          });
+        } else {
+          let article: articleModel = {
+            id: null,
+            categorieID: this.categories[i].id,
+            designation: this.form.value["designation".concat(index)],
+            stockable: this.form.value["stockable".concat(index)],
+            unite: this.form.value["unite".concat(index)],
+            isAssoWithProjet: null,
+            categorie: null
+          };
+
+          this.listeArticleService.OnEditArticle(
+            article,
+            this.categories[i].articles[j].id
+          );
+        }
       }
     }
 
@@ -317,18 +454,19 @@ export class ListeArticleComponent implements OnInit {
   onFilterByCategorie(keyWord: string) {
     let word = keyWord.toUpperCase();
     if (keyWord.trim() !== "DESIGNATION")
-      if (keyWord.trim() === "") {
-        this.categories = this.slice(this.categories$);
-      } else {
+      if (keyWord.trim() === "") this.categories = this.slice(this.categories$);
+      else {
         let ff = this.slice(this.categories$);
         this.categories = ff.filter(c => c.categorie.includes(word));
       }
   }
+
   onClickOutsideFilterStockable(v, type) {
     this.isStockable = false;
     this.filterStockable = !this.filterStockable;
     this.filter(v, type);
   }
+
   filterStk() {
     let ff = this.slice(this.categories);
     this.categories = ff.filter(f => {
@@ -381,26 +519,108 @@ export class ListeArticleComponent implements OnInit {
     });
     return cat;
   }
+  onfocusAddArticle(list) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2)
+      list.hidden = false;
+  }
+  OnAssoArticleToFournisseur(artID, catInput) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2) {
+      this.fournisseurArticleService.assoArticleToFournisseur(
+        this.fournisseurFilterId,
+        artID
+      );
+      catInput.value = "";
+    }
+  }
+  transIJ(i: number, j) {
+    return i.toString().concat("_", j.toString());
+  }
+  assoArticleFournisseurToProjet(matId) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2)
+      this.fournisseurArticleService.assoArticleFournisseurToProjet(
+        this.fournisseurFilterId,
+        matId
+      );
+  }
+  deleteAssoArticleFournisseur(artId, artName) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2) {
+      this.AssArtFr = artId;
+
+      this.store.dispatch(
+        new fromFicheAction.ShowFicheAlert({
+          type: "article",
+          showAlert: true,
+          msg:
+            "Est ce que vous etes sure de vouloire supprimer l'article [ " +
+            artName +
+            " ] du fournisseur [ " +
+            this.fournisseurFilterNom +
+            " ] "
+        })
+      );
+    }
+  }
+  assoCategorieFournisseurToProjet(catId) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2)
+      this.fournisseurArticleService.assoCategorieFournisseurToProjet(
+        this.fournisseurFilterId,
+        catId
+      );
+  }
+  deleteAssoCategorieFournisseur(catId, cat) {
+    if (this.isFilterByFournisseur && this.fournisseurFilterId !== -2) {
+      this.AssCatFr = catId;
+      this.store.dispatch(
+        new fromFicheAction.ShowFicheAlert({
+          type: "article",
+          showAlert: true,
+          msg:
+            "Est ce que vous etes sure de vouloire supprimer la categorier [ " +
+            cat +
+            " ] du fournisseur [ " +
+            this.fournisseurFilterNom +
+            " ] "
+        })
+      );
+    }
+  }
+  OnAnnulerFilter() {
+    let item = {
+      itemId: -1,
+      itemType: ""
+    };
+    this.store.dispatch(
+      new fromFicheReceptionAction.showFournisseurByArticleOrCategorie(item)
+    );
+
+    this.articleSelected = "";
+    this.CatSelected = -1;
+  }
   /*              */
   onDelete() {
-    if (this.catToDeleteId !== -1) {
+    if (this.AssArtFr !== -1) {
+      this.fournisseurArticleService.OnDeleteFournisseurArticleAsso(
+        this.fournisseurFilterId,
+        this.AssArtFr
+      );
+    } else if (this.AssCatFr !== -1) {
+      this.fournisseurArticleService.OnDeleteFournisseurCategorieAsso(
+        this.AssCatFr,
+        this.fournisseurFilterId
+      );
+    } else if (this.catToDeleteId !== -1) {
       this.listeArticleService.OnDeleteCategorie(this.catToDeleteId);
-      this.onHideAlert();
     } else if (this.ArticleToDeleteId !== -1) {
       this.listeArticleService.OnDeleteArticle(this.ArticleToDeleteId);
-      this.onHideAlert();
     } else if (this.uniteToAdd != "") {
       this.form.controls["unite".concat(this.ArtAddIndex)].setValue(
         this.uniteToAdd.toUpperCase()
       );
       this.ficheMaterielService.onAddUnite(this.uniteToAdd.toUpperCase());
-      this.onHideAlert();
-
-      this.uniteToAdd = "";
     } else if (this.uniteTodelete !== "") {
       this.ficheMaterielService.onDeleteUnite(this.uniteTodelete);
-      this.onHideAlert();
-    } else this.onHideAlert();
+    }
+    //this.onHideAlert();
   }
   onHideAlert() {
     this.store.dispatch(
@@ -410,6 +630,9 @@ export class ListeArticleComponent implements OnInit {
         msg: ""
       })
     );
+    this.uniteToAdd = "";
+    this.AssCatFr = -1;
+    this.AssArtFr = -1;
     this.ArticleToDeleteId = -1;
     this.catToDeleteId = -1;
     this.uniteToAdd = "";

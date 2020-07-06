@@ -21,13 +21,16 @@
             (input)="filter(keyWord.value, type.value)"
             type="text"
             value="DESIGNATION"
+            name="DESIGNATION$"
             [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
             #keyWord
+            ngModel
             style="width: 60%"
           />
           <ion-radio-group
             (ionChange)="filter(keyWord.value, type.value)"
             name="type"
+            ngModel
             #type
           >
             <ion-radio class="checkbox" value="A"></ion-radio>
@@ -57,47 +60,88 @@
           </ng-template>
         </th>
       </tr>
+      <tr
+        *ngIf="!isFilterByFournisseur || categories.length === 0"
+        [ngStyle]="{
+          'background-color':
+            CatSelected === -2 ? 'rgba(225, 181, 116, 0.5)' : '',
+          'text-align': 'center',
+          'font-style': 'italic'
+        }"
+        (click)="OnSelectDFournisseurWithNoArticles()"
+      >
+        <td colspan="3">
+          Fournisseur sans Article
+        </td>
+      </tr>
 
       <tr>
         <td colspan="3">
           <div *ngFor="let cat of categories; let i = index">
             <div
-              (clickOutside)="
-                onClickOutsideCategorieUpdateInput(i, catUpdateInput)
+              (press)="
+                isFilterByFournisseur && fournisseurFilterId !== -2
+                  ? deleteAssoCategorieFournisseur(cat.id, cat.categorie)
+                  : OnDeleteCategorie(cat)
               "
-              (click)="onClickCategorieUpdateInput(i, catUpdateInput)"
+              (dblclick)="assoCategorieFournisseurToProjet(cat.id)"
+              (clickOutside)="
+                onClickOutsideCategorieUpdateInput(i, cat.id, catUpdateInput)
+              "
+              (click)="onClickCategorieUpdateInput(i, cat.id, catUpdateInput)"
               [ngStyle]="{
-                'background-color': CatIndex == i ? 'rgba(255, 0, 0, 0.1)' : ''
+                'background-color':
+                  CatSelected === cat.id || CatId === cat.id
+                    ? 'rgba(225, 181, 116, 0.8)'
+                    : '',
+                'font-weight': cat.isAssoWithProjet ? 'bold' : 'normal'
               }"
               class="cont_div"
             >
-              <span
-                (press)="OnDeleteCategorie(cat)"
-                style="width: 70%;text-align: left"
-              >
+              <span style="width: 70%;text-align: left">
                 <input
                   disabled
                   type="text"
                   [ngModel]="cat.categorie"
-                  name="categorie{{ i }}"
+                  name="categorie{{ cat.id }}"
                   #catUpdateInput
                   ngModel
                 />
               </span>
               <span
                 style="font-style: oblique;display: inline-block;width: 25%;text-align: right"
-                (click)="onShowDetails(i)"
+                (click)="onShowDetails(cat.id)"
               >
                 {{ cat.articles.length }}
-                <span [innerHTML]="showDetails[i] ? '>' : '<'"></span>
+                <span [innerHTML]="onTestShowDetail(cat.id) ? '>' : '<'"></span>
               </span>
             </div>
             <!--****************************detail***************************-->
-            <div #detail *ngIf="showDetails[i]">
+            <div #detail *ngIf="onTestShowDetail(cat.id)">
               <div
-                (press)="OnDeleteArticle(article)"
-                (clickOutside)="onClickOutsideArticleUpdateInput(i, j)"
-                (click)="onClickArticleUpdateInput(i, j)"
+                (press)="
+                  isFilterByFournisseur && fournisseurFilterId !== -2
+                    ? deleteAssoArticleFournisseur(
+                        article.id,
+                        article.designation
+                      )
+                    : OnDeleteArticle(article)
+                "
+                (dblclick)="assoArticleFournisseurToProjet(article.id)"
+                (clickOutside)="
+                  onClickOutsideArticleUpdateInput(cat.id, article.id, i, j)
+                "
+                (click)="onClickArticleUpdateInput(cat.id, article.id, i, j)"
+                [ngStyle]="{
+                  'background-color':
+                    CatSelected === cat.id ||
+                    CatIndex === cat.id ||
+                    ArticleUpdateIndex === transIJ(cat.id, article.id) ||
+                    articleSelected === transIJ(cat.id, article.id)
+                      ? 'rgba(225, 181, 116, 0.5)'
+                      : '',
+                  'font-weight': article.isAssoWithProjet ? 'bold' : 'normal'
+                }"
                 *ngFor="let article of cat.articles; let j = index"
                 class="cont_div"
               >
@@ -107,7 +151,7 @@
                     class="article_input"
                     type="text"
                     required
-                    name="designation{{ i }}{{ j }}"
+                    name="designation{{ cat.id }}_{{ article.id }}"
                     [ngModel]="article.designation"
                     ngModel
                   />
@@ -120,7 +164,7 @@
                     type="text"
                     #uniteInput
                     [ngModel]="article.unite"
-                    name="unite{{ i }}{{ j }}"
+                    name="unite{{ cat.id }}_{{ article.id }}"
                     required
                     placeholder="unite"
                     ngModel
@@ -140,7 +184,7 @@
                   <ion-checkbox
                     disabled
                     ngModel
-                    name="stockable{{ i }}{{ j }}"
+                    name="stockable{{ cat.id }}_{{ article.id }}"
                     [ngModel]="article.stockable"
                   ></ion-checkbox>
                 </span>
@@ -196,16 +240,51 @@
           </div>
         </td>
       </tr>
-      <tr (clickOutside)="onAddCategorie(catInput.value)">
+      <tr
+        *ngIf="
+          !isFilterByFournisseur &&
+          (CatSelected !== -1 || articleSelected !== '')
+        "
+        [ngStyle]="{
+          'text-align': 'center',
+          'font-style': 'italic',
+          'font-weight': 'bold'
+        }"
+        (click)="OnAnnulerFilter()"
+      >
+        <td colspan="3">
+          Annuler le filter
+        </td>
+      </tr>
+      <tr>
         <td colspan="3">
           <input
             class="tdInput"
             type="text"
             name="cat"
+            (input)="onSearchArticle(catInput.value)"
+            (blur)="onAddCategorie(catInput, listArt)"
             placeholder="CATEGORIE"
+            (focus)="onfocusAddArticle(listArt)"
             #catInput
             ngModel
           />
+
+          <div #listArt hidden class="div-list-art">
+            <div
+              class="div-detail"
+              *ngFor="let art of articlesNotAssoToFr"
+              style="width : 100%"
+              (click)="OnAssoArticleToFournisseur(art.id, catInput)"
+            >
+              <span class="span-detail" style="width:80%">
+                {{ art.designation }}
+              </span>
+              <span class="span-detail" style="width:20% ; text-align: center;">
+                {{ art.unite }}
+              </span>
+            </div>
+          </div>
         </td>
       </tr>
     </table>

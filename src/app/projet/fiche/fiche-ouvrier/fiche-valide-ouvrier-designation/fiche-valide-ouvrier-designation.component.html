@@ -24,8 +24,13 @@
           type="text"
           value="NOM & PRENOM"
           placeholder="NOM & PRENOM"
+          style="width: 80%"
           #sNom
         />
+        <ion-icon
+          [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
+          (click)="onSort()"
+        ></ion-icon>
       </th>
       <th style="width: 8.5%">
         CIN

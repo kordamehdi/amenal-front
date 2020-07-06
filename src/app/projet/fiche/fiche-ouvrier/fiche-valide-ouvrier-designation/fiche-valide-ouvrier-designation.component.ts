@@ -23,7 +23,7 @@ export class FicheValideOuvrierDesignationComponent
   ouvrierCin: String;
   ouvrierQualification: String;
   ouvDsSlIndex: number;
-
+  ascendant = true;
   designationOuvrier = [];
   designationOuvrier$ = [];
 
@@ -34,7 +34,7 @@ export class FicheValideOuvrierDesignationComponent
   dateAgeMax;
   DateAcntMax;
 
-  navPas = 5;
+  navPas = 2;
   position = 1;
   size;
   constructor(
@@ -186,6 +186,30 @@ export class FicheValideOuvrierDesignationComponent
     this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
     if (this.size < this.designationOuvrier$.length / this.navPas)
       this.size = this.size + 1;
+  }
+  onSort() {
+    // descending order z->a
+    this.ascendant = !this.ascendant;
+    if (!this.ascendant)
+      this.designationOuvrier = this.designationOuvrier.sort((a, b) => {
+        if (a.nom > b.nom) {
+          return -1;
+        }
+        if (b.nom > a.nom) {
+          return 1;
+        }
+        return 0;
+      });
+    if (this.ascendant)
+      this.designationOuvrier = this.designationOuvrier.sort((a, b) => {
+        if (a.nom < b.nom) {
+          return -1;
+        }
+        if (b.nom < a.nom) {
+          return 1;
+        }
+        return 0;
+      });
   }
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.

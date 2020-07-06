@@ -89,6 +89,8 @@
                     [ngModel]="sLot.designation"
                     ngModel
                   />
+                  <input hidden type="text" name="lastAvc{{ i }}_{{j}}" ngModel />                <input hidden type="text" name="lastAvc{{ i }}" ngModel />
+                <input hidden type="text" name="qtCml{{ i }}_{{ j }}" ngModel />
                   <input
                     hidden
                     name="slotId{{ i }}_{{ j }}"
@@ -100,18 +102,24 @@
                   <div
                     hidden
                     #sousLotUpdate
-                    style="width:68.3%;margin-top: 15px"
+                    style="width:87.6%;margin-top: 15px"
                     class="div-list"
                   >
                     <div
                       style="font-weight: bold;font-style:italic"
                       (click)="sousLotUpdate.hidden = true"
                     >
-                      <span class="border-case-black" style="width: 85.7%">{{
+                      <span class="border-case-black" style="width: 67%">{{
                         sLot.designation
                       }}</span>
-                      <span class="border-case-black" style="width: 14.3%">{{
+                      <span class="border-case-black" style="width: 11%">{{
                         sLot.unite
+                      }}</span>
+                      <span class="border-case-black" style="width: 11%">{{
+                        sLot.qtCml
+                      }}</span>
+                      <span class="border-case-black" style="width: 11%">{{
+                        sLot.lastAvc
                       }}</span>
                     </div>
                     <ng-container
@@ -121,11 +129,17 @@
                         *ngFor="let item of sousLotToSelect"
                         (click)="onSelectUpdateSousLot(item, i, j)"
                       >
-                        <span class="border-case-black" style="width: 85.7%">{{
+                        <span class="border-case-black" style="width: 67%">{{
                           item.designation
                         }}</span>
-                        <span class="border-case-black" style="width: 14.3%">{{
+                        <span class="border-case-black" style="width: 11%">{{
                           item.unite
+                        }}</span>
+                        <span class="border-case-black" style="width: 11%">{{
+                          item.qtCml === null ? 0.0 : item.qtCml
+                        }}</span>
+                        <span class="border-case-black" style="width: 11%">{{
+                          item.lastPrct == null ? 0 : item.qtCml
                         }}</span>
                       </div>
                     </ng-container>
@@ -463,11 +477,13 @@
                   (blur)="onBlurSousLotAdd(sousLotAdd, i)"
                   ngModel
                 />
+                <input hidden type="text" name="lastAvc{{ i }}" ngModel />                <input hidden type="text" name="lastAvc{{ i }}" ngModel />
+                <input hidden type="text" name="qtCml{{ i }}" ngModel />
                 <input hidden type="text" name="slotId{{ i }}" ngModel />
                 <div
                   hidden
                   #sousLotAdd
-                  style="width:68.3%;margin-top: 15px"
+                  style="width:87.6%;margin-top: 15px"
                   class="div-list"
                 >
                   <ng-container
@@ -477,11 +493,17 @@
                       *ngFor="let item of sousLotToSelect"
                       (click)="onSelectAddSousLot(item, i, j)"
                     >
-                      <span class="border-case-black" style="width: 85.7%">{{
+                      <span class="border-case-black" style="width: 67%">{{
                         item.designation
                       }}</span>
-                      <span class="border-case-black" style="width: 14.3%">{{
+                      <span class="border-case-black" style="width: 11%">{{
                         item.unite
+                      }}</span>
+                      <span class="border-case-black" style="width: 11%">{{
+                        item.qtCml === null ? 0.0 : item.qtCml
+                      }}</span>
+                      <span class="border-case-black" style="width: 11%">{{
+                        item.lastPrct == null ? 0 : item.lastPrct
                       }}</span>
                     </div>
                   </ng-container>
@@ -524,7 +546,7 @@
                 <input
                   style="text-align: center"
                   type="number"
-                  min="0"
+                  min="{{avancementMin}}"
                   max="100"
                   name="avancement{{ i }}"
                   placeholder="AVANCEMENT"

@@ -27,6 +27,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   isSelectedDirty = false;
   typeAsc = "";
   duration;
+  Show = true;
   columnDesignation: string[] = [
     "DESIGNATION",
     "UNITÉ",
@@ -48,6 +49,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   uniteOnUpdate: string;
   dsIndex;
   dsIndexSelected;
+  dsID = -1;
   isFocus = false;
   fournisseurMaterielMap: FournisseurModel[];
   fournisseurMaterielMap$: FournisseurModel[];
@@ -71,8 +73,8 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   errorMsg = "";
   isValid = [];
   showAlert = false;
-  navPas = 20;
-  position = 0;
+  navPas = 1;
+  position = 1;
   size;
   ascendant = [];
   constructor(
@@ -84,7 +86,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.ficheLocationService.onGetFournisseurByProjet();
     this.store.select("ficheLocation").subscribe(state => {
-      this.fournisseurMaterielMap$ = state.fournisseurByProjet;
+      this.fournisseurMaterielMap$ = [...state.fournisseurByProjet];
     });
     this.store
       .select("fiche")
@@ -95,17 +97,14 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           this.showAlert = state.showAlert;
         }
         if (state.ficheSelectionner !== null)
-          this.FicheLocation = state.ficheSelectionner;
+          this.FicheLocation = { ...state.ficheSelectionner };
 
-        if (this.FicheLocation.designations.length > 0)
-          this.FicheLocation.designations.forEach(
-            (d: locationDesignationModel, i) => {
-              this.OnInputDate(d.tempsDebut, d.tempsFin, (i = i));
-            }
-          );
-
-        this.designtions = this.FicheLocation.designations;
-        this.designtions$ = this.FicheLocation.designations;
+        if (this.FicheLocation.designations.length > 0) {
+          this.onFilter();
+        } else {
+          this.designtions = [];
+          this.designtions$ = [];
+        }
       });
     this.store
       .select(refresh)
@@ -158,17 +157,17 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     };
     this.ficheLocationService.onAddLocationDesignation(locDs);
     this.form.controls["fournisseurNom"].disable();
-    this.form.reset();
+    this.onResetAdd();
   }
 
   OnUpdateLocationDesignation() {
     this.isUpdate = -1;
     var startTime = moment(
-      this.form.value["tempsDebut".concat(this.dsIndex.toString())],
+      this.form.value["tempsDebut".concat(this.dsID.toString())],
       "HH:mm:ss"
     );
     var endTime = moment(
-      this.form.value["tempsFin".concat(this.dsIndex.toString())],
+      this.form.value["tempsFin".concat(this.dsID.toString())],
       "HH:mm:ss"
     );
 
@@ -181,21 +180,19 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       fournisseurId: this.fournisseurMaterielMap$.find(
         f =>
           f.fournisseurNom ===
-          this.form.value["fournisseurNom".concat(this.dsIndex.toString())]
+          this.form.value["fournisseurNom".concat(this.dsID.toString())]
       ).id,
       idMateriel: this.fournisseurMaterielMap$.find(
         f =>
           f.materiel.designation ===
-          this.form.value["libelle".concat(this.dsIndex.toString())]
+          this.form.value["libelle".concat(this.dsID.toString())]
       ).materiel.id,
 
       quantite: 1,
-      tempsDebut: this.form.value["tempsDebut".concat(this.dsIndex.toString())],
-      tempsFin: this.form.value["tempsFin".concat(this.dsIndex.toString())],
+      tempsDebut: this.form.value["tempsDebut".concat(this.dsID.toString())],
+      tempsFin: this.form.value["tempsFin".concat(this.dsID.toString())],
       travailleLoc: +(duration / 60).toFixed(2),
-      observation: this.form.value[
-        "observation".concat(this.dsIndex.toString())
-      ],
+      observation: this.form.value["observation".concat(this.dsID.toString())],
       fournisseurNom: "",
       libelle: "",
       idFiche: null,
@@ -204,8 +201,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     console.log("ddd", locDs);
     this.ficheLocationService.onUpdateLocationDesignation(
       locDs,
-      this.FicheLocation.designations[this.dsIndex].id
+      this.designtions$[this.dsIndex].id
     );
+    this.dsID = -1;
   }
 
   //the add inputs
@@ -336,14 +334,14 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
 
   ////////////////////////////////////////the update input
 
-  onBlurUpdateInputSearch(list, i) {
+  onBlurUpdateInputSearch(list, i, id) {
     setTimeout(() => {
       if (!this.isSelected) {
-        this.form.controls["libelle".concat(i.toString())].setValue(
-          this.FicheLocation.designations[i].libelle
+        this.form.controls["libelle".concat(id.toString())].setValue(
+          this.designtions$[i].libelle
         );
-        this.form.controls["unite".concat(i.toString())].setValue(
-          this.FicheLocation.designations[i].unite
+        this.form.controls["unite".concat(id.toString())].setValue(
+          this.designtions$[i].unite
         );
       }
       list.hidden = true;
@@ -351,6 +349,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   }
 
   onFocusUpdateInputSearch(list, value) {
+    this.Show = true;
     this.isSelected = false;
     list.hidden = false;
   }
@@ -362,13 +361,13 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     else this.materielsShow = this.materielsShow$;
   }
 
-  OnSelectUpdate(mat, i) {
+  OnSelectUpdate(mat, i, id) {
     this.isSelectedDirty = true;
     this.isSelected = true;
-    this.form.controls["libelle".concat(i.toString())].setValue(
+    this.form.controls["libelle".concat(id.toString())].setValue(
       mat.designation
     );
-    this.form.controls["unite".concat(i.toString())].setValue(mat.unite);
+    this.form.controls["unite".concat(id.toString())].setValue(mat.unite);
 
     this.fournisseurs = this.fournisseurMaterielMap$.filter(fm => {
       return fm.materiel.id === mat.id;
@@ -377,30 +376,23 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       !this.fournisseurs
         .map(f => f.fournisseurNom)
         .includes(this.FicheLocation.designations[i].fournisseurNom)
-    )
-      this.form.controls["fournisseurNom".concat(i.toString())].reset();
+    ) {
+      this.Show = false;
+      this.form.controls["fournisseurNom".concat(mat.id.toString())].reset();
+    }
   }
 
-  onUpdateInputEvent(ev, i) {
-    this.isValid[i] = true;
-    this.formNames.forEach((key: string) => {
-      if (this.form.value[key.concat(i.toString())] !== null)
-        if (this.form.value[key.concat(i.toString())].trim() === "")
-          this.isValid[i] = false;
-    });
-  }
-  onUpdateClickedOutside(i) {
-    if (this.dsIndexSelected === i) {
+  onUpdateClickedOutside(i, id) {
+    if (this.dsID === id) {
       if (this.isUpdate == 1 && (this.form.dirty || this.isSelectedDirty)) {
         this.isSelectedDirty = false;
-
         let submit = true;
         var startTime = moment(
-          this.form.value["tempsDebut".concat(this.dsIndex.toString())],
+          this.form.value["tempsDebut".concat(id.toString())],
           "HH:mm:ss"
         );
         var endTime = moment(
-          this.form.value["tempsFin".concat(this.dsIndex.toString())],
+          this.form.value["tempsFin".concat(id.toString())],
           "HH:mm:ss"
         );
 
@@ -415,21 +407,21 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
               msg: "la date debut doit etre inferieur a la date de fin"
             })
           );
-          this.form.controls[
-            "tempsDebut".concat(this.dsIndex.toString())
-          ].setValue(this.FicheLocation.designations[i].tempsDebut);
-          this.form.controls[
-            "tempsFin".concat(this.dsIndex.toString())
-          ].setValue(this.FicheLocation.designations[i].tempsFin);
+          this.form.controls["tempsDebut".concat(id.toString())].setValue(
+            this.designtions$[i].tempsDebut
+          );
+          this.form.controls["tempsFin".concat(id.toString())].setValue(
+            this.designtions$[i].tempsFin
+          );
           this.isUpdate = -1;
         } else {
           let foursName = this.fournisseurs.map(f => f.fournisseurNom);
           if (
             !foursName.includes(
-              this.form.value["fournisseurNom".concat(i.toString())]
+              this.form.value["fournisseurNom".concat(id.toString())]
             ) &&
-            this.form.value["fournisseurNom".concat(i.toString())] !==
-              this.FicheLocation.designations[i].fournisseurNom
+            this.form.value["fournisseurNom".concat(id.toString())] !==
+              this.designtions$[i].fournisseurNom
           ) {
             submit = false;
           }
@@ -443,8 +435,8 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
               })
             );
             this.formNames.forEach((key: any) => {
-              this.form.controls[key.concat(i.toString())].setValue(
-                this.FicheLocation.designations[i][key]
+              this.form.controls[key.concat(id.toString())].setValue(
+                this.designtions$[i][key]
               );
             });
           }
@@ -454,35 +446,48 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       } else {
         this.isUpdate = -1;
         this.dsIndex = -1;
+        this.dsID = -1;
       }
 
       this.formNames.forEach((key: any) => {
-        this.form.controls[key.concat(i.toString())].disable();
+        this.form.controls[key.concat(id.toString())].disable();
       });
     }
   }
 
-  onUpdateClick(i, value, locDs: locationDesignationModel) {
+  concat(a: string, b: number) {
+    return a.concat(b.toString());
+  }
+
+  onUpdateClick(i, id, value, locDs: locationDesignationModel) {
     if (this.isUpdate !== 1) {
+      this.dsID = id;
+      this.dsIndex = i;
+      if (typeof this.form !== "undefined")
+        this.formNames.forEach((key: string) => {
+          console.log(this.form.controls);
+          this.form.controls[key.concat(id)].enable();
+        });
+
       this.isUpdate = 1;
       if (this.FicheLocation.designations === null) {
-        this.FicheLocation.designations = [];
+        this.designtions$ = [];
       }
 
       //remove double
       this.fournisseurMaterielMap = this.fournisseurMaterielMap$.filter(fa => {
         let pass = true;
-        this.FicheLocation.designations.forEach(
-          (ds: locationDesignationModel) => {
-            if (fa.materiel.designation === ds.libelle) {
-              pass = false;
-            }
+        this.designtions$.forEach((ds: locationDesignationModel) => {
+          if (fa.materiel.designation === ds.libelle) {
+            pass = false;
           }
-        );
+        });
         return pass;
       });
 
-      let tabAr = this.fournisseurMaterielMap.map(f => f.materiel);
+      let tabAr = this.fournisseurMaterielMap$
+        .map(f => f.materiel)
+        .filter(m => m.designation !== locDs.libelle);
 
       if (tabAr.length > 0) {
         let c = tabAr[0].designation;
@@ -497,6 +502,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           return 0;
         });
         this.materielsShow = tabAr.filter(a => {
+          let is;
           if (c === a.designation) {
             i = i + 1;
             if (i > 1) return false;
@@ -523,19 +529,11 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
 
         return pass && fm.materiel.designation === value;
       });
-
-      setTimeout(() => {
-        this.dsIndexSelected = i;
-        this.dsIndex = i;
-        this.formNames.forEach((key: any) => {
-          this.form.controls[key.concat(i.toString())].enable();
-        });
-      }, 10);
     }
   }
-  onSelectUpdateFr(fournisseurNom, i) {
+  onSelectUpdateFr(fournisseurNom, i, id) {
     this.isSelectedDirty = true;
-    this.form.controls["fournisseurNom".concat(i.toString())].setValue(
+    this.form.controls["fournisseurNom".concat(id.toString())].setValue(
       fournisseurNom
     );
   }
@@ -574,6 +572,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     return Math.trunc(hours) + "H " + minutes + "M";
   }
   OnDeleteDs(id) {
+    console.log("OnDeleteDs");
     this.locDsToDelete = id;
     this.store.dispatch(
       new fromFicheAction.ShowFicheAlert({
@@ -589,33 +588,28 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       var endTime = moment(fin, "HH:mm:ss");
 
       // calculate total duration
-      var duration = moment.duration(endTime.diff(startTime));
+      let duration: number = moment
+        .duration(endTime.diff(startTime))
+        .asMinutes();
+
+      if (Number.isNaN(duration)) duration = 0.0;
+
       // duration in hours
-      var hours = duration.asHours();
-
-      // duration in minutes
-      var minutes = duration.asMinutes() % 60;
 
       if (i !== "")
-        this.FicheLocation.designations[i].travailleLocString =
-          Math.trunc(hours) + "H " + minutes + "M";
-      else
-        this.form.controls["quantite"].setValue(
-          Math.trunc(hours) + "H " + minutes + "M"
-        );
+        this.designtions$[i].travailleLocString = +(duration / 60).toFixed(2);
+      else this.form.controls["quantite"].setValue(+(duration / 60).toFixed(2));
     } else {
-      if (i !== "")
-        this.FicheLocation.designations[i].travailleLocString = "00H 00M";
-      else this.form.controls["quantite"].setValue("00H 00M");
+      if (i !== "") this.designtions$[i].travailleLocString = "0.0";
+      else this.form.controls["quantite"].setValue("0.0");
     }
   }
 
   /* */
 
-  onFilterBur(input, type) {
+  onFilterBur(input) {
     if (input.value.trim() === "") {
-      input.value = type;
-      this.designtions$ = this.FicheLocation.designations;
+      this.designtions$ = this.designtions$;
       this.designtions = this.designtions$; /*.slice(0, this.navPas);
       this.size = Math.trunc(this.designtions$.length / this.navPas);
       if (this.size < this.designtions$.length / this.navPas)
@@ -626,22 +620,27 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   onFilter() {
     let inputSearchName = ["libelle", "fournisseurNom"];
     this.designtions$ = this.FicheLocation.designations;
-    inputSearchName.forEach((key: string) => {
-      let vv = this.form.value[key.concat("$")].trim().toUpperCase();
-      if (vv !== "") {
-        let v = this.designtions$;
-        this.designtions$ = v.filter(d => {
-          return d[key].includes(vv);
-        });
-      }
-    });
+    if (typeof this.form !== "undefined")
+      inputSearchName.forEach((key: string) => {
+        if (typeof this.form.value[key.concat("$")] !== "undefined") {
+          let vv = this.form.value[key.concat("$")].trim().toUpperCase();
+          if (vv !== "") {
+            let v = this.designtions$;
+            this.designtions$ = v.filter(d => {
+              return d[key].includes(vv);
+            });
+          }
+        }
+      });
 
     this.designtions = this.designtions$;
-
-    /*this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
-    this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
-    if (this.size < this.designationOuvrier$.length / this.navPas)
-      this.size = this.size + 1;*/
+    this.designtions.forEach((d: locationDesignationModel, i) => {
+      this.OnInputDate(d.tempsDebut, d.tempsFin, (i = i));
+    });
+    this.designtions = this.designtions$.slice(0, this.navPas);
+    this.size = Math.trunc(this.designtions$.length / this.navPas);
+    if (this.size < this.designtions$.length / this.navPas)
+      this.size = this.size + 1;
   }
 
   /*********** */
@@ -697,6 +696,29 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
         msg: ""
       })
     );
+  }
+
+  onPrevious() {
+    if (this.position - 1 > 0) {
+      this.position = this.position - 1;
+      let a = this.navPas * this.position;
+      let b = a - this.navPas;
+      this.designtions = this.designtions$.slice(b, a);
+    }
+  }
+  onNext() {
+    if (this.position + 1 <= this.size) {
+      let b = this.navPas * this.position;
+      this.position = this.position + 1;
+      let a = b + this.navPas;
+      this.designtions = this.designtions$.slice(b, a);
+    }
+  }
+
+  onResetAdd() {
+    this.formNames.forEach((key: any) => {
+      this.form.controls[key].reset();
+    });
   }
 
   ngOnDestroy() {

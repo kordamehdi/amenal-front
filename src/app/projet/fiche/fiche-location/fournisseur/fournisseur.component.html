@@ -3,6 +3,9 @@
     {{ errorMsg }}
   </app-dialog>
   <div class="header-nav">
+    <span class="left" (click)="onPrevious()"
+      ><ion-icon name="arrow-dropleft"></ion-icon>
+    </span>
     <label for="file" class="left"
       ><ion-icon name="download">
         <input
@@ -14,10 +17,15 @@
       </ion-icon>
     </label>
 
-    <span class="middle">LISTE DES FOURNISSEURS </span>
+    <span class="middle"
+      >LISTE DES FOURNISSEURS : {{ position }}/{{ size }}
+    </span>
 
     <span class="left" (click)="OnCancel()">
       <ion-icon name="arrow-round-up"></ion-icon>
+    </span>
+    <span class="left" (click)="onNext()">
+      <ion-icon name="arrow-dropright"></ion-icon>
     </span>
   </div>
   <table>
@@ -26,34 +34,35 @@
         <input
           (focus)="onFilterFocus(keyWord)"
           (blur)="OnFilterBlur(keyWord)"
-          (input)="
-            type.value === 'M'
-              ? onFilterByMateriel(keyWord.value)
-              : onFilterByFournisseur(keyWord.value)
-          "
+          (input)="onFilterByFournisseur(keyWord.value)"
           type="text"
           value="FROUNISSEURS"
-          [placeholder]="type.value === 'M' ? 'MATERIELS' : 'FROUNISSEURS'"
+          placeholder="FROUNISSEURS"
           #keyWord
           style="width: 80%"
+          [(ngModel)]="key"
         />
-        <ion-radio-group
-          (ionChange)="
-            type.value === 'M'
-              ? onFilterByMateriel(keyWord.value)
-              : onFilterByFournisseur(keyWord.value)
-          "
-          name="type"
-          #type
-        >
-          <ion-radio class="checkbox" value="M"></ion-radio>
-          <label class="label-radio">M</label>
-          <ion-radio class="checkbox" value="F"></ion-radio>
-          <label class="label-radio">F</label>
-        </ion-radio-group>
       </th>
     </tr>
+
     <tr
+      *ngIf="!isFilterByMateriel$ || fournisseurs.length === 0"
+      [ngStyle]="{
+        'background-color':
+          fourIndex === -2 || selected == -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+        'text-align': 'center',
+        'font-style': 'italic'
+      }"
+      (click)="OnSelectMaterielWithNoFournisseur()"
+    >
+      <td>
+        Materiel sans fournisseur
+      </td>
+    </tr>
+    <tr
+      (press)="OnDeleteFournisseur(four.id, i)"
+      (clickOutside)="onClickedOutside(fourUpdateInput, four.id)"
+      (click)="onClick(fourUpdateInput, i, four.id)"
       id="{{ four.id }}"
       #fournisseur
       *ngFor="let four of fournisseurs; let i = index"
@@ -61,18 +70,15 @@
       <td
         [ngStyle]="{
           'background-color':
-            this.fourIndex == four.id ? 'rgba(255, 0, 0, 0.1)' : ''
+            fourIndex == four.id || selected == four.id
+              ? 'rgba(255, 0, 0, 0.1)'
+              : ''
         }"
       >
         <div>
-          <div
-            (press)="OnDeleteFournisseur(four.id, i)"
-            class="cont_div"
-            (clickOutside)="onClickedOutside(fourUpdateInput, four.id)"
-            (click)="onClick(fourUpdateInput, four.id)"
-          >
+          <div class="cont_div">
             <span
-              (dblclick)="onAssoFourToProjet(four.id)"
+              (dblclick)="onAssoFourToProjet(four.id, 'false')"
               [ngStyle]="
                 four.isAssoWithProjet
                   ? { 'font-weight': 'bold' }
@@ -82,76 +88,53 @@
             >
               <input
                 disabled
-                (blur)="OnaUpdateFounisseur(fourUpdateInput, four)"
+                (blur)="OnBlurUpdateFounisseur(fourUpdateInput, four)"
                 type="text"
                 [ngModel]="four.fournisseurNom"
                 #fourUpdateInput
               />
             </span>
-            <span style="font-style: oblique" (click)="onShowDetails(i)">
+            <span
+              (dblclick)="onAssoFourToProjet(four.id, 'true')"
+              style="font-style: oblique"
+            >
               {{ calculNumber(i) }}
-              <span [innerHTML]="showDetails[i] ? '>' : '<'"></span>
             </span>
           </div>
-          <div #detail *ngIf="showDetails[i]">
-            <div
-              (dblclick)="onAssoMaterielToProjet(four.id, mat.id)"
-              style="  background-color: rgba(184, 184, 184, 0.5)"
-              [ngStyle]="
-                mat.isAssoWithProjet
-                  ? { 'font-weight': 'bold' }
-                  : { 'font-weight': 'normal' }
-              "
-              *ngFor="let mat of four.materiels; let i = index"
-              class="cont_div"
-              (press)="OnDesAssoMaterielToFournisseur(four.id, mat.id)"
-            >
-              <span class="case-left"> {{ mat.designation }} </span>
-              <span class="case-right">
-                {{ mat.unite }}
-              </span>
-            </div>
-            <input
-              (input)="OnSearch(inputSrch.value, i)"
-              class="tdInput"
-              type="text"
-              style=" padding-left: 20px; width : 100%;"
-              (focus)="onFocusInputSearch(i, list)"
-              (blur)="onListBlur(list)"
-              placeholder="DESIGNATION"
-              #inputSrch
-            />
-            <!-- DropDown -->
-            <div #list hidden="false" class="div-list">
-              <div
-                class="div-detail"
-                *ngFor="let mat of materielsShow"
-                style="width : 100%"
-                (click)="OnAssoMaterielToFournisseur(four.id, mat.id)"
-              >
-                <span class="span-detail" style="width:80%">
-                  {{ mat.designation }}
-                </span>
-                <span
-                  class="span-detail"
-                  style="width:20% ; text-align: center;"
-                >
-                  {{ mat.unite }}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
+      </td>
+    </tr>
+    <tr
+      *ngIf="!isFilterByMateriel$ && selected !== -1"
+      [ngStyle]="{
+        'text-align': 'center',
+        'font-style': 'italic',
+        'font-weight': 'bold'
+      }"
+      (click)="OnAnnulerFilter()"
+    >
+      <td>
+        Annuler le filter
       </td>
     </tr>
     <tr>
       <input
         class="tdInput"
-        (blur)="OnaddFounisseur(fourInput)"
+        (blur)="OnaddFounisseur(fourInput, listF)"
+        (focus)="OnFocusAddFounisseur(listF)"
         type="text"
         placeholder="FOURNISSEUR"
         #fourInput
       />
+      <div #listF hidden="false" class="div-list">
+        <div *ngFor="let item of fournisseursNonAsso" style="width : 100%">
+          <span
+            (click)="onselectFournisseur(fourInput, item.fournisseurNom)"
+            style=" display: inline-block; border: 1px solid rgba(0, 0, 0, 0.781);width:100%"
+            >{{ item.fournisseurNom }}</span
+          >
+        </div>
+      </div>
     </tr>
   </table>
 </div>

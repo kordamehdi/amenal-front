@@ -13,7 +13,29 @@
     <table>
       <tr class="header">
         <th style="width: 30%">
-          DESIGNATION
+          <input
+            (input)="filter(DsKeyWord.value, dstKeyWord.value, type.value)"
+            type="text"
+            value="DESIGNATION"
+            (blur)="onBlurHeaderInput(DsKeyWord, 'DESIGNATION')"
+            (focus)="onFocusHeaderInput(DsKeyWord, 'DESIGNATION')"
+            [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
+            #DsKeyWord
+            ngModel
+            name="DESIGNATION$"
+            style="width: 60%"
+          />
+          <ion-radio-group
+            ngModel
+            (ionChange)="filter(keyWord.value, type.value)"
+            name="type"
+            #type
+          >
+            <ion-radio class="checkbox" value="A"></ion-radio>
+            <label class="label-radio">A</label>
+            <ion-radio class="checkbox" value="C"></ion-radio>
+            <label class="label-radio">C</label>
+          </ion-radio-group>
         </th>
         <th style="width: 9%">
           UNITÉ
@@ -22,7 +44,18 @@
           QUANTIÉ
         </th>
         <th style="width: 12%">
-          VERS
+          <input
+            (input)="filter(DsKeyWord.value, dstKeyWord.value, type.value)"
+            (blur)="onBlurHeaderInput(frKeyWord, 'FOURNISSEUR')"
+            (focus)="onFocusHeaderInput(frKeyWord, 'FOURNISSEUR')"
+            type="text"
+            #dstKeyWord
+            ngModel
+            placeholder="DESTINATION"
+            name="destination$"
+            value="DESTINATION"
+            style="width: 80%"
+          />
         </th>
         <th style="width: 31%">
           OBSERVATION
@@ -117,6 +150,9 @@
         </td>
         <td class="tdInput" style="width: 9%"></td>
       </tr>
+      <!--*********************************************************************************************************************************-->
+      <!--*********************************************************************************************************************************-->
+      <!--*********************************************************************************************************************************-->
       <tr
         class="stock-content"
         *ngFor="let livStck of livraisonDesignation; let i = index"

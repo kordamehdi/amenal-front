@@ -4,15 +4,11 @@ import { categorieModel } from "./../../../models/categorie.model";
 import { MaterielModel } from "../../../models/materiel.model";
 import { FournisseurModel } from "../../../models/fournisseur-materiel.model";
 import { Component, OnInit } from "@angular/core";
-
+import * as fromFicheReceptionAction from "../redux/fiche-reception.action";
 import { Store } from "@ngrx/store";
 import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
-import { FicheLocationService } from "../../fiche-location/fiche-location.service";
-import { ListeArticleService } from "../liste-article/liste-article.service";
 import { articleModel } from "src/app/projet/models/article.model";
-import { of } from "rxjs";
-import { isTabSwitch } from "@ionic/angular/dist/directives/navigation/stack-utils";
 
 @Component({
   selector: "app-fournisseur-article",
@@ -23,9 +19,9 @@ export class FournisseurArticleComponent implements OnInit {
   fournisseursNonAsso: FournisseurModel[] = [];
   fournisseursAsso: fournisseurArticleModel[] = [];
   fournisseursAsso$: fournisseurArticleModel[] = [];
-
-  fourIndex = -1;
-  lastFourIndexSelected = -1;
+  isFilterByArticle = false;
+  fourId = -1;
+  fourSelected = -1;
   fourDeleteId = -1;
   culumn = ["Fournisseur"];
   showAlert = false;
@@ -33,7 +29,6 @@ export class FournisseurArticleComponent implements OnInit {
   descCat = [[]];
   errorMsg = "";
   categories: categorieModel[] = [];
-  showCategorie = [];
   arts: articleModel[];
 
   AssCatFr = [];
@@ -51,9 +46,52 @@ export class FournisseurArticleComponent implements OnInit {
     this.store.select("ficheReception").subscribe(state => {
       this.fournisseursNonAsso = state.fournisseurArticleNonAsso;
       this.categories = state.categories;
-      this.fournisseursAsso = state.fournisseurArticleAsso;
-      this.fournisseursAsso$ = state.fournisseurArticleAsso;
+      if (state.showFournisseurByArticleOrCategorie.itemId !== -1) {
+        this.isFilterByArticle = true;
+        console.log(
+          "itemId : ",
+          state.showFournisseurByArticleOrCategorie.itemId,
+          " four ",
+          state.fournisseurArticleAsso
+        );
 
+        if (state.showFournisseurByArticleOrCategorie.itemType === "ARTICLE") {
+          if (state.showFournisseurByArticleOrCategorie.itemId === -2) {
+            this.fournisseursAsso$ = state.fournisseurArticleAsso.filter(
+              f => f.categories.length === 0
+            );
+          } else {
+            this.fournisseursAsso$ = state.fournisseurArticleAsso.filter(f => {
+              let pass = false;
+
+              f.categories.forEach(c => {
+                if (pass === false)
+                  pass = c.articles
+                    .map(a => a.id)
+                    .includes(state.showFournisseurByArticleOrCategorie.itemId);
+              });
+              return pass;
+            });
+          }
+        } else if (
+          state.showFournisseurByArticleOrCategorie.itemType === "CATEGORIE"
+        ) {
+          this.fournisseursAsso$ = state.fournisseurArticleAsso.filter(f => {
+            let pass = false;
+            f.categories.forEach(c => {
+              if (pass === false)
+                pass =
+                  c.id === state.showFournisseurByArticleOrCategorie.itemId;
+            });
+            return pass;
+          });
+        }
+      } else {
+        this.fournisseursAsso$ = state.fournisseurArticleAsso;
+        this.isFilterByArticle = false;
+      }
+      this.onSortByEnGras();
+      this.fournisseursAsso = this.fournisseursAsso$;
       this.calculNumberFr();
     });
 
@@ -79,21 +117,7 @@ export class FournisseurArticleComponent implements OnInit {
   onAssoFourToProjet(id) {
     this.fournisseurArticleService.onAssoFourToProjet(id);
   }
-  OnAssoArticleToFournisseur(fourID, artID) {
-    this.fournisseurArticleService.assoArticleToFournisseur(fourID, artID);
-  }
-  assoCategorieFournisseurToProjet(fourId, catId) {
-    this.fournisseurArticleService.assoCategorieFournisseurToProjet(
-      fourId,
-      catId
-    );
-  }
-  assoArticleFournisseurToProjet(fourId, matId) {
-    this.fournisseurArticleService.assoArticleFournisseurToProjet(
-      fourId,
-      matId
-    );
-  }
+
   onBlurAddFr(list) {
     setTimeout(() => {
       list.hidden = true;
@@ -109,31 +133,7 @@ export class FournisseurArticleComponent implements OnInit {
       input.value = "";
     }, 100);
   }
-  onShowCategories(i) {
-    this.showCategorie[i] = !this.showCategorie[i];
-    if (!this.showCategorie[i]) {
-    }
-    this.fournisseursAsso[i].categories.forEach(cat => (cat.show = false));
-  }
-  onShowDetails(cat) {
-    cat.show = !cat.show;
-  }
-  onFocusInputSearch(i, list) {
-    let art = [];
-    let artss = [];
-    this.categories.forEach(c => {
-      art = [...art, ...c.articles];
-    });
 
-    this.fournisseursAsso[i].categories.forEach(c => {
-      artss = [...artss, ...c.articles];
-    });
-    this.arts = art.filter(a => {
-      return typeof artss.find(aa => aa.id === a.id) === "undefined";
-    });
-
-    list.hidden = false;
-  }
   calculNumberFr() {
     this.descFr = new Array(this.fournisseursAsso.length);
     this.descCat = new Array(this.fournisseursAsso.length);
@@ -178,52 +178,8 @@ export class FournisseurArticleComponent implements OnInit {
       this.fournisseurArticleService.OnDeleteFournisseurArticle(
         this.fourDeleteId
       );
-      this.onHideAlert();
-    } else if (this.AssCatFr.length > 0) {
-      this.fournisseurArticleService.OnDeleteFournisseurCategorieAsso(
-        this.AssCatFr[1],
-        this.AssCatFr[0]
-      );
-      this.AssCatFr = [];
-    } else if (this.AssArtFr.length > 0) {
-      this.fournisseurArticleService.OnDeleteFournisseurArticleAsso(
-        this.AssArtFr[1],
-        this.AssArtFr[0]
-      );
-      this.onHideAlert();
-    } else {
-      this.onHideAlert();
     }
-  }
-  deleteAssoCategorieFournisseur(fourId, catId, fr, cat) {
-    this.AssCatFr = [catId, fourId];
-    this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
-        type: "fournisseur_article",
-        showAlert: true,
-        msg:
-          "Est ce que vous etes sure de vouloire supprimer la categorier [ " +
-          cat +
-          " ] du fournisseur [ " +
-          fr +
-          " ] "
-      })
-    );
-  }
-  deleteAssoArticleFournisseur(fourId, artId, fr, art) {
-    this.AssArtFr = [artId, fourId];
-    this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
-        type: "fournisseur_article",
-        showAlert: true,
-        msg:
-          "Est ce que vous etes sure de vouloire supprimer l'article [ " +
-          art +
-          " ] du fournisseur [ " +
-          fr +
-          " ] "
-      })
-    );
+    this.onHideAlert();
   }
 
   OnFilterBlur(input) {
@@ -244,64 +200,6 @@ export class FournisseurArticleComponent implements OnInit {
       this.fournisseursAsso = this.fournisseursAsso$.filter(f => {
         if (f.fournisseurNom.includes(word)) return true;
         else return false;
-      });
-    }
-  }
-  onFilterByArticle(keyWord: string) {
-    let word = keyWord.toUpperCase();
-    if (keyWord.trim() === "") {
-      this.fournisseursAsso = this.slice(this.fournisseursAsso$);
-    } else {
-      let ff = this.slice(this.fournisseursAsso$);
-      this.fournisseursAsso = ff.filter(f => {
-        let isMateriel = false;
-        f.categories.forEach(c => {
-          c.articles.forEach(a => {
-            if (a.designation.includes(word)) {
-              isMateriel = true;
-            }
-          });
-        });
-        if (isMateriel) return true;
-        else return false;
-      });
-      this.fournisseursAsso.forEach(f => {
-        f.categories = f.categories.filter(c => {
-          let isCat = false;
-          c.articles.forEach(a => {
-            if (a.designation.includes(word)) isCat = true;
-            else isCat = false;
-          });
-          return isCat;
-        });
-      });
-      this.fournisseursAsso.forEach(f => {
-        f.categories.forEach(c => {
-          c.articles = c.articles.filter(m => m.designation.includes(word));
-        });
-      });
-    }
-  }
-
-  onFilterByCategorie(keyWord: string) {
-    let word = keyWord.toUpperCase();
-    if (keyWord.trim() === "") {
-      this.fournisseursAsso = this.slice(this.fournisseursAsso$);
-    } else {
-      let ff = this.slice(this.fournisseursAsso$);
-      this.fournisseursAsso = ff.filter(f => {
-        let isCat = false;
-        f.categories.forEach(c => {
-          if (c.categorie.includes(word)) {
-            isCat = true;
-          }
-        });
-        return isCat;
-      });
-      this.fournisseursAsso.forEach(f => {
-        f.categories = f.categories.filter(c => {
-          return c.categorie.includes(word);
-        });
       });
     }
   }
@@ -334,13 +232,48 @@ export class FournisseurArticleComponent implements OnInit {
       })
     );
   }
-  onClickedOutside(i) {
-    this.fourIndex = -1;
+  onClickedOutside(id) {
+    this.fourId = -1;
   }
-  onClick(i) {
+  onClick(index, id) {
+    if (!this.isFilterByArticle) {
+      this.fourSelected = id;
+      this.store.dispatch(
+        new fromFicheReceptionAction.showArticleByFournisseur(
+          this.fournisseursAsso[index].id
+        )
+      );
+    }
+
     setTimeout(() => {
-      this.fourIndex = i;
-      this.lastFourIndexSelected = i;
+      this.fourId = id;
     }, 10);
+  }
+  onSortByEnGras() {
+    // descending order z->a
+    if (this.fournisseursAsso$ !== null)
+      this.fournisseursAsso$ = this.fournisseursAsso$.sort((a, b) => {
+        if (a.isAssoWithProjet && b.isAssoWithProjet) return 0;
+        if (a.isAssoWithProjet) {
+          return -1;
+        } else if (b.isAssoWithProjet) {
+          return 1;
+        } else return 0;
+      });
+  }
+  OnSelectArticleWithNoFournisseur() {
+    if (!this.isFilterByArticle) {
+      this.fourSelected = -2;
+      this.store.dispatch(
+        new fromFicheReceptionAction.showArticleByFournisseur(-2)
+      );
+    }
+  }
+  OnAnnulerFilter() {
+    this.fourSelected = -1;
+
+    this.store.dispatch(
+      new fromFicheReceptionAction.showArticleByFournisseur(this.fourSelected)
+    );
   }
 }

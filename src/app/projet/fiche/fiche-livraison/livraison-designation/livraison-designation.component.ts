@@ -35,6 +35,8 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   isUpdate = -1;
 
   livraisonDesignation: livraisonCategorieModel[] = [];
+  livraisonDesignation$: livraisonCategorieModel[] = [];
+
   articleSelected = false;
   showDetails = [];
 
@@ -79,10 +81,17 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
         if (state.ficheSelectionner !== null)
           this.FicheLivraison = state.ficheSelectionner;
 
-        this.livraisonDesignation = this.FicheLivraison.categorieLivraisons;
+        this.livraisonDesignation$ = this.FicheLivraison.categorieLivraisons;
         if (state.type === "livDs" || state.type === "fiche") {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
+        }
+        this.livraisonDesignation = this.livraisonDesignation$;
+        if (typeof this.form !== "undefined") {
+          let ds = this.form.value["DESIGNATION$"];
+          let dst = this.form.value["destination$"];
+          let type = this.form.value["type"];
+          this.filter(ds, dst, type);
         }
       });
     this.store
@@ -524,6 +533,87 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
         msg: ""
       })
     );
+  }
+  onFilterByArticle(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    this.livraisonDesignation = this.livraisonDesignation.filter(f => {
+      let isMateriel = false;
+      f.livraisonDesignationPresentations.forEach(m => {
+        if (m.designation.includes(word)) isMateriel = true;
+      });
+      if (isMateriel) return true;
+      else return false;
+    });
+    this.livraisonDesignation.forEach(
+      f =>
+        (f.livraisonDesignationPresentations = f.livraisonDesignationPresentations.filter(
+          m => m.designation.includes(word)
+        ))
+    );
+  }
+
+  onFilterByCategorie(keyWord: string) {
+    let word = keyWord.toUpperCase();
+    this.livraisonDesignation = this.livraisonDesignation.filter(c =>
+      c.categorie.includes(word)
+    );
+  }
+
+  onFilterByDestination(keyWord: string) {
+    let word = keyWord.toUpperCase().trim();
+    this.livraisonDesignation = this.livraisonDesignation.filter(f => {
+      let isMateriel = false;
+      f.livraisonDesignationPresentations.forEach(m => {
+        if (m.destinationNom.includes(word)) isMateriel = true;
+      });
+      if (isMateriel) return true;
+      else return false;
+    });
+    this.livraisonDesignation.forEach(
+      f =>
+        (f.livraisonDesignationPresentations = f.livraisonDesignationPresentations.filter(
+          m => m.destinationNom.includes(word)
+        ))
+    );
+  }
+  filter(ds: string, dst: string, type) {
+    this.livraisonDesignation = this.slice(this.livraisonDesignation$);
+    let ds$ = ds.trim().toUpperCase();
+    let dst$ = dst.trim().toUpperCase();
+    let reset = true;
+    if (ds$ !== "" && ds$ !== "DESIGNATION") {
+      reset = false;
+      if (type == "A") this.onFilterByArticle(ds$);
+      else this.onFilterByCategorie(ds$);
+    }
+
+    if (dst$ !== "" && dst$ !== "FOURNISSEUR") {
+      reset = false;
+      this.onFilterByDestination(dst$);
+    }
+
+    if (reset)
+      this.livraisonDesignation = this.slice(this.livraisonDesignation$);
+  }
+  filterBox(vv: string, type) {
+    this.livraisonDesignation = this.slice(this.livraisonDesignation$);
+    let v = vv.trim().toUpperCase();
+
+    if (type == "A") this.onFilterByArticle(v);
+    else this.onFilterByCategorie(v);
+  }
+
+  slice(c: livraisonCategorieModel[]) {
+    let cat: livraisonCategorieModel[] = [...c].map(m =>
+      JSON.parse(JSON.stringify(m))
+    );
+    c.forEach((f, i) => {
+      let cList = [...f.livraisonDesignationPresentations].map(cc =>
+        JSON.parse(JSON.stringify(cc))
+      );
+      cat[i].livraisonDesignationPresentations = [...cList];
+    });
+    return cat;
   }
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.

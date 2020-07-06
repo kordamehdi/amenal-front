@@ -3,17 +3,10 @@ import { OuvrierModel } from "src/app/projet/models/ouvrier.model";
 import { FicheService } from "./../../fiche.service";
 import { nextFiche, validerFiche } from "./../../nav/nav.selector";
 import { ProjetModel } from "./../../../models/projet.model";
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  OnChanges,
-  OnDestroy
-} from "@angular/core";
+import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 import { Store } from "@ngrx/store";
 import { FicheOuvrierDesignationService } from "./fiche-ouvrier-designation.service";
 import * as App from "../../../../store/app.reducers";
-import * as fromProjetAction from "../../../../projet/redux/projet.actions";
 import * as fromFicheAction from "../../redux/fiche.action";
 import { ouvrierDesignationModel } from "src/app/projet/models/ouvrierDesignation.model";
 import { NgForm } from "@angular/forms";
@@ -63,7 +56,7 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   dateFinMax;
   dateAgeMax;
   DateAcntMax;
-  navPas = 5;
+  navPas = 2;
   position = 1;
   size;
   constructor(
@@ -150,8 +143,8 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
 
   OnAddOuvrierDesignation() {
-    var jour = this.form.value["jour"];
-    var hsup = this.form.value["hSup"];
+    var jour = this.form.value["jour"] === "" ? 0 : this.form.value["jour"];
+    var hsup = this.form.value["hSup"] === "" ? 0 : this.form.value["hSup"];
     // calculate total duration
 
     const ouvDs: ouvrierDesignationModel = {
@@ -163,7 +156,7 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
       cin: "",
       tempsDebut: this.form.value["debut"],
       tempsFin: this.form.value["fin"],
-      travail: jour === "" && hsup === "" ? 0 : (jour * 9 + hsup).toFixed(2),
+      travail: (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi"],
       hsup: this.form.value["hSup"],
       jour: this.form.value["jour"],
@@ -185,21 +178,30 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
 
   OnUpdateOuvrierDesignation() {
-    var jour = this.form.value["jour".concat(this.ouvDsSlIndex.toString())];
-    var hsup = this.form.value["hSup".concat(this.ouvDsSlIndex.toString())];
+    var jour =
+      this.form.value["jour".concat(this.ouvDsSlIndex.toString())] === ""
+        ? 0
+        : this.form.value["jour".concat(this.ouvDsSlIndex.toString())];
+    var hsup =
+      this.form.value["hSup".concat(this.ouvDsSlIndex.toString())] === ""
+        ? 0
+        : this.form.value["hSup".concat(this.ouvDsSlIndex.toString())];
+
+    let dss = this.FicheOuvrier.designations.find(
+      d => d.id === this.ouvDsSlIndex
+    );
 
     // calculate total duration
     const ouvDs: ouvrierDesignationModel = {
       id: null,
       idOuvrier: this.form.value["ouvID".concat(this.ouvDsSlIndex.toString())],
-      nom: this.FicheOuvrier.designations[this.ouvDsSlIndex].nom,
+      nom: dss.nom,
       prenom: "",
-      qualification: this.FicheOuvrier.designations[this.ouvDsSlIndex]
-        .qualification,
-      cin: this.FicheOuvrier.designations[this.ouvDsSlIndex].cin,
+      qualification: dss.qualification,
+      cin: dss.cin,
       tempsDebut: this.form.value["debut".concat(this.ouvDsSlIndex.toString())],
       tempsFin: this.form.value["fin".concat(this.ouvDsSlIndex.toString())],
-      travail: jour === "" && hsup === "" ? 0 : (jour * 9 + hsup).toFixed(2),
+      travail: (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi".concat(this.ouvDsSlIndex.toString())],
       hsup: this.form.value["hSup".concat(this.ouvDsSlIndex.toString())],
       jour: this.form.value["jour".concat(this.ouvDsSlIndex.toString())],
@@ -214,7 +216,7 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
 
     this.ficheOuvrierDesignationService.OnUpdateOuvrierDesignation(
       ouvDs,
-      this.FicheOuvrier.designations[this.ouvDsSlIndex].id
+      this.ouvDsSlIndex
     );
     this.isSelected = false;
     this.ouvDsSlIndex = -1;
@@ -536,10 +538,6 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
     if (this.size < this.designationOuvrier$.length / this.navPas)
       this.size = this.size + 1;
   }
-
-  /*********** */
-
-  /********** */
 
   onSort() {
     // descending order z->a
