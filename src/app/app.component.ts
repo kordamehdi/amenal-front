@@ -6,6 +6,9 @@ import { Platform } from "@ionic/angular";
 import { SplashScreen } from "@ionic-native/splash-screen/ngx";
 import { StatusBar } from "@ionic-native/status-bar/ngx";
 import { LoginService } from "./login/login.service";
+import { Store } from "@ngrx/store";
+import * as App from "./store/app.reducers";
+import * as fromProjetAction from "./projet/redux/projet.actions";
 
 @Component({
   selector: "app-root",
@@ -31,8 +34,8 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private dataStorageService: DataStorageService,
-    private screenOrientation: ScreenOrientation
+    private screenOrientation: ScreenOrientation,
+    private store: Store<App.AppState>
   ) {
     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
 
@@ -41,6 +44,11 @@ export class AppComponent {
   ngOnInit() {
     this.loginService.getUser();
     //this.dataStorageService.testConnection();
+    this.screenOrientation.onChange().subscribe(() => {
+      this.store.dispatch(
+        new fromProjetAction.GetInnerHeight(window.innerHeight)
+      );
+    });
   }
 
   initializeApp() {

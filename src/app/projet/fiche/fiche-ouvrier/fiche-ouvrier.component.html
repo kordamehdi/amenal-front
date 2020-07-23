@@ -14,7 +14,8 @@
     <app-fiche-valide-ouvrier-designation></app-fiche-valide-ouvrier-designation>
   </ng-template>
 
-  <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
+  <div class="separate"></div>
+  <ng-container *ngIf="(role === 'ADMIN' || isRoot) && lister">
     <app-ouvrier></app-ouvrier>
-  </div>
+  </ng-container>
 </div>

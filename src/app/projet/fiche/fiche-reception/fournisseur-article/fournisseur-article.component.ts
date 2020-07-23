@@ -44,16 +44,12 @@ export class FournisseurArticleComponent implements OnInit {
     this.fournisseurArticleService.getFournisseurNotAsso();
     this.fournisseurArticleService.getFournisseurAsso();
     this.store.select("ficheReception").subscribe(state => {
+      this.fourSelected = state.showArticleByFournisseurId;
+
       this.fournisseursNonAsso = state.fournisseurArticleNonAsso;
       this.categories = state.categories;
       if (state.showFournisseurByArticleOrCategorie.itemId !== -1) {
         this.isFilterByArticle = true;
-        console.log(
-          "itemId : ",
-          state.showFournisseurByArticleOrCategorie.itemId,
-          " four ",
-          state.fournisseurArticleAsso
-        );
 
         if (state.showFournisseurByArticleOrCategorie.itemType === "ARTICLE") {
           if (state.showFournisseurByArticleOrCategorie.itemId === -2) {

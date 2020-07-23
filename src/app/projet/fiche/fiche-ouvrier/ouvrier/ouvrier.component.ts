@@ -1,18 +1,22 @@
 import { Store } from "@ngrx/store";
 import { FicheOuvrierService } from "./../fiche-ouvrier.service";
 import { OuvrierModel } from "./../../../models/ouvrier.model";
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
+import * as fromFicheOuvrierAction from "../redux/fiche-ouvrier.action";
+
 import * as moment from "moment";
+import { untilDestroyed } from "ngx-take-until-destroy";
+import { stateListOuvrier } from "../redux/fiche-ouvrier.selector";
 
 @Component({
   selector: "app-ouvrier",
   templateUrl: "./ouvrier.component.html",
   styleUrls: ["./ouvrier.component.scss"]
 })
-export class OuvrierComponent implements OnInit {
+export class OuvrierComponent implements OnInit, OnDestroy {
   @ViewChild("f", { static: false })
   form: NgForm;
   isCompleted: boolean = false;
@@ -38,8 +42,8 @@ export class OuvrierComponent implements OnInit {
   qualificationToAdd = "";
   dateAgeMax;
   DateAcntMax;
-  ouvriers$;
-  ouvriers$$;
+  ouvriers$ = [];
+  ouvriers$$ = [];
   ascendant = [];
   typeAsc = "";
   isValid;
@@ -47,7 +51,18 @@ export class OuvrierComponent implements OnInit {
   qualificationToDelete = "";
   navPas = 3;
   position = 1;
+  a = 0;
+  b = this.navPas;
   size;
+  inputSearchName = ["cin", "nom", "prenom", "qualification", "appreciation"];
+  filterState = {
+    cin: "",
+    nom: "",
+    prenom: "",
+    qualification: "",
+    appreciation: ""
+  };
+  screenHeight = "";
   constructor(
     private ficheOuvrierService: FicheOuvrierService,
     private store: Store<App.AppState>
@@ -63,34 +78,54 @@ export class OuvrierComponent implements OnInit {
     this.DateAcntMax = moment().format("YYYY-MM-DD");
 
     this.ficheOuvrierService.onGetQualifications();
-    this.store.select("ficheOuvrier").subscribe(state => {
-      this.columnOuvrier = state.columnOuvrier;
-      this.qualifications$ = state.qualifications;
-      this.qualifications = [...this.qualifications$];
-      this.ouvriers$$ = [];
-      this.ouvriers$ = [];
-      this.ouvriers = [];
+    this.store.select("projet").subscribe(state => {
+      this.screenHeight = (state.innerHeight * 0.7).toString().concat("px");
+    });
+    this.store
+      .select(stateListOuvrier)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.a = state.position.a;
+        this.b = state.position.b;
+        this.position = state.position.position;
+        this.filterState = state.filter;
+        this.ascendant = state.sort.order;
+        this.typeAsc = state.sort.type;
+        this.onFilter(true);
+      });
 
-      this.isUpdate = state.isOuvrierUpdate;
+    this.store
+      .select("ficheOuvrier")
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.columnOuvrier = state.columnOuvrier;
+        this.qualifications$ = state.qualifications;
+        this.qualifications = [...this.qualifications$];
+        this.ouvriers$$ = [];
+        this.ouvriers$ = [];
+        this.ouvriers = [];
 
-      if (state.ouvriers !== null)
-        if (state.ouvriers.length !== 0) {
-          this.ouvriers$$ = state.ouvriers;
-          this.onSortByEnGras();
+        this.isUpdate = state.isOuvrierUpdate;
+
+        if (state.ouvriers !== null)
+          if (state.ouvriers.length !== 0) {
+            this.ouvriers$$ = state.ouvriers;
+          }
+        this.onFilter(true);
+      });
+    this.store
+      .select("fiche")
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        if (state.type === "ouvrier") {
+          this.errorMsg = state.errorMsg;
+          this.showAlert = state.showAlert;
         }
+        this.projetSelectionnerId = state.projetSelectionner.id;
 
-      this.onFilter();
-    });
-    this.store.select("fiche").subscribe(state => {
-      if (state.type === "ouvrier") {
-        this.errorMsg = state.errorMsg;
-        this.showAlert = state.showAlert;
-      }
-      this.projetSelectionnerId = state.projetSelectionner.id;
-
-      this.listerOuvrier = state.listerOuvrier;
-      this.isValid = state.ficheSelectionner.isValidated;
-    });
+        this.listerOuvrier = state.listerOuvrier;
+        this.isValid = state.ficheSelectionner.isValidated;
+      });
   }
 
   OnAddOuvrier() {
@@ -105,7 +140,7 @@ export class OuvrierComponent implements OnInit {
       j_trv: null,
       tele: this.form.value["tele"],
       appreciation: this.form.value["appreciation"],
-      idProjets: []
+      isAsso: null
     };
     this.isUpdate = -1;
     this.ficheOuvrierService.OnSaveOuvrier(ouvrier);
@@ -128,7 +163,7 @@ export class OuvrierComponent implements OnInit {
       appreciation: this.form.value[
         "appreciation".concat(this.ouvSl.toString())
       ],
-      idProjets: []
+      isAsso: null
     };
     this.isUpdate = -1;
     this.focusID = -1;
@@ -167,7 +202,6 @@ export class OuvrierComponent implements OnInit {
               " ] ?"
           })
         );
-        this.addFormReset();
         this.isUpdate = -1;
       } else {
         this.columnOuvrier.forEach((key: any) => {
@@ -229,6 +263,7 @@ export class OuvrierComponent implements OnInit {
         }
       });
       this.up = false;
+      this.ouvSl = -1;
     }
   }
 
@@ -295,9 +330,16 @@ export class OuvrierComponent implements OnInit {
       );
       this.qualificationToDelete = "";
     }
-    this.onHideAlert();
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        showAlert: false,
+        type: "ouvrier",
+        msg: ""
+      })
+    );
   }
   onHideAlert() {
+    this.addFormReset();
     this.store.dispatch(
       new fromFicheAction.ShowFicheAlert({
         showAlert: false,
@@ -307,11 +349,6 @@ export class OuvrierComponent implements OnInit {
     );
   }
 
-  /**FILTER***/
-  onFilterFocus(field) {
-    this.typeAsc = field;
-  }
-
   onFilterBur(input, type) {
     /* this.ouvriers = this.ouvriers$.slice(0, this.navPas);
       this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
@@ -319,51 +356,61 @@ export class OuvrierComponent implements OnInit {
         this.size = this.size + 1;*/
   }
 
-  onFilter() {
-    let inputSearchName = [
-      "cin",
-      "nom",
-      "prenom",
-      "qualification",
-      "appreciation"
-    ];
+  onFilter(init) {
     this.ouvriers$ = [...this.ouvriers$$];
+    let empty = true;
     if (typeof this.form !== "undefined")
-      inputSearchName.forEach((key: string) => {
-        let vv = this.form.value[key.concat("$")].trim().toUpperCase();
-        if (vv !== "") {
+      this.inputSearchName.forEach((key: string) => {
+        if (init) {
+          this.form.controls[key.concat("$")].setValue(this.filterState[key]);
+        }
+        this.filterState[key] = this.form.value[key.concat("$")]
+          .trim()
+          .toUpperCase();
+        if (this.filterState[key] !== "") {
+          empty = false;
           let v = this.ouvriers$;
           this.ouvriers$ = v.filter(d => {
-            return d[key].includes(vv);
+            return d[key].includes(this.filterState[key]);
           });
         }
       });
-    this.position = 1;
-    this.ouvriers = this.ouvriers$.slice(0, this.navPas);
+    if (!init && !empty) {
+      this.a = 0;
+      this.b = this.navPas;
+      this.position = 1;
+    }
+    this.ouvriers = this.ouvriers$;
+    /*  this.ouvriers = this.ouvriers$.slice(this.a, this.b);
     this.size = Math.trunc(this.ouvriers$.length / this.navPas);
     if (this.size < this.ouvriers$.length / this.navPas)
-      this.size = this.size + 1;
+      this.size = this.size + 1;*/
+    if (this.typeAsc !== "") this.onSort(this.typeAsc, true);
   }
-  onSort(type) {
-    this.typeAsc = type;
+  onSort(type, init) {
     // descending order z->a
-    this.ascendant[type] = !this.ascendant[type];
-    if (!this.ascendant[type])
+    console.log(this.ascendant, "  ", this.typeAsc);
+    if (!init) {
+      this.typeAsc = type;
+      this.ascendant[this.typeAsc] = !this.ascendant[this.typeAsc];
+    }
+
+    if (!this.ascendant[this.typeAsc])
       this.ouvriers = this.ouvriers.sort((a, b) => {
-        if (a[type] > b[type]) {
+        if (a[this.typeAsc] > b[this.typeAsc]) {
           return -1;
         }
-        if (b[type] > a[type]) {
+        if (b[this.typeAsc] > a[this.typeAsc]) {
           return 1;
         }
         return 0;
       });
-    if (this.ascendant[type])
+    if (this.ascendant[this.typeAsc])
       this.ouvriers = this.ouvriers.sort((a, b) => {
-        if (a[type] < b[type]) {
+        if (a[this.typeAsc] < b[this.typeAsc]) {
           return -1;
         }
-        if (b[type] < a[type]) {
+        if (b[this.typeAsc] < a[this.typeAsc]) {
           return 1;
         }
         return 0;
@@ -372,30 +419,22 @@ export class OuvrierComponent implements OnInit {
   onPrevious() {
     if (this.position - 1 > 0) {
       this.position = this.position - 1;
-      let a = this.navPas * this.position;
-      let b = a - this.navPas;
-      this.ouvriers = this.ouvriers$.slice(b, a);
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.ouvriers = this.ouvriers$.slice(this.a, this.b);
+      this.onSort(this.typeAsc, true);
     }
   }
   onNext() {
     if (this.position + 1 <= this.size) {
-      let b = this.navPas * this.position;
+      this.a = this.navPas * this.position;
       this.position = this.position + 1;
-      let a = b + this.navPas;
-      this.ouvriers = this.ouvriers$.slice(b, a);
+      this.b = this.a + this.navPas;
+      this.ouvriers = this.ouvriers$.slice(this.a, this.b);
+      this.onSort(this.typeAsc, true);
     }
   }
-  onSortByEnGras() {
-    // descending order z->a
-    if (this.ouvriers !== null)
-      this.ouvriers$$ = this.ouvriers$$.sort((a: OuvrierModel, b) => {
-        if (a.idProjets.includes(this.projetSelectionnerId)) {
-          return -1;
-        } else if (b.idProjets.includes(this.projetSelectionnerId)) {
-          return 1;
-        } else return 0;
-      });
-  }
+
   /**FILTER**/
   getFile(event) {
     this.ficheOuvrierService.onImportExcelFileOuvrier(event.target.files[0]);
@@ -411,5 +450,23 @@ export class OuvrierComponent implements OnInit {
   }
   addFormReset() {
     this.columnOuvrier.forEach((key: any) => this.form.controls[key].reset());
+  }
+  ngOnDestroy() {
+    // To protect you, we'll throw an error if it doesn't exist.
+
+    this.store.dispatch(
+      new fromFicheOuvrierAction.getOuvListState({
+        position: {
+          a: this.a,
+          b: this.b,
+          position: this.position
+        },
+        filter: this.filterState,
+        sort: {
+          order: this.ascendant,
+          type: this.typeAsc
+        }
+      })
+    );
   }
 }

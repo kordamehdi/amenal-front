@@ -2,6 +2,7 @@ export interface visiteurModel {
   id: number;
   nom: string;
   organisme: string;
+  permanent: boolean;
   isAsso: boolean;
 }
 export interface VisiteurDesignationModel {
@@ -9,8 +10,10 @@ export interface VisiteurDesignationModel {
   nom: string;
   organisme: string;
   objet: string;
-  depart: any;
-  arivee: any;
+  debut: any;
+  debut_sys: any;
+  fin: any;
+  fin_sys: any;
   visiteurId: number;
   idFiche: number;
 }

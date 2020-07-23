@@ -3,8 +3,8 @@
   margin: auto;
   margin-top: 15px;
   text-align: center;
-  max-height: 177px;
-  padding-bottom: 20px;
+  overflow: scroll;
+  padding-bottom: 5px;
 }
 table {
   width: 100%;
@@ -15,25 +15,6 @@ table {
   table-layout: fixed;
 }
 
-th {
-  position: sticky;
-  top: 0;
-  width: 10%;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  background-color: rgba(255, 255, 255);
-  text-align: center;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  overflow-wrap: break-word;
-}
-th:last-child {
-  border-top-right-radius: 10px;
-  border-right: none;
-}
-th:first-child {
-  border-top-left-radius: 10px;
-  border-left: none;
-}
 tr:last-child td:first-child {
   border-bottom-left-radius: 10px;
   border-left: none;
@@ -85,7 +66,6 @@ input {
   height: 25px;
   width: 80%;
   display: inline-block;
-
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   background-color: rgba(255, 255, 255, 0.3);
@@ -93,8 +73,7 @@ input {
 }
 .middle {
   text-align: center;
-  height: 25px;
-  width: 80%;
+  padding-top: 5px;
   display: inline-block;
   font-size: 12px;
   font-weight: bold;
@@ -125,4 +104,36 @@ ion-icon {
   width: 100%;
   //padding-top: 2px;
   // padding-bottom: 2px;
+}
+.header-title {
+  height: 25px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  width: 100%;
+  display: inline-block;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: rgba(189, 185, 167, 0.904);
+}
+
+th {
+  z-index: 3;
+  position: sticky;
+  top: 25px;
+  width: 10%;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255);
+  text-align: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  overflow-wrap: break-word;
+}
+th:last-child {
+  border-top-right-radius: 10px;
+  border-right: none;
+}
+th:first-child {
+  border-top-left-radius: 10px;
+  border-left: none;
 }

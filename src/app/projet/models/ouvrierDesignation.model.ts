@@ -9,7 +9,6 @@ export interface ouvrierDesignationModel {
   tempsDebut: any;
   tempsFin: any;
   jour: number;
-  travail: number;
   hsup: any;
   epi: boolean;
   valid: boolean;

@@ -153,12 +153,13 @@ export class LotComponent implements OnInit, OnDestroy {
   onAddSousLotClick() {
     this.addSlot = true;
   }
-  onAddSousLotClickOutside(slot, slotUnt, lot: lotModel) {
+  onAddSousLotClickOutside(slot, slotUnt, slotBdg, lot: lotModel) {
     if (this.addSlot) {
       this.addSlot = false;
       let slotValue = slot.value.toUpperCase();
       let slotUntValue = slotUnt.value.toUpperCase();
-      if (slotValue != "" && slotUntValue != "") {
+      let bdgValue = slotBdg.value.toUpperCase();
+      if (slotValue != "" && slotUntValue != "" && bdgValue != "") {
         let sousLotValues = lot.sousLots.map(s => s.designation);
         if (sousLotValues.includes(slotValue)) {
           this.store.dispatch(
@@ -187,7 +188,8 @@ export class LotComponent implements OnInit, OnDestroy {
           let slot = {
             designation: slotValue,
             unite: slotUntValue,
-            lotId: lot.id
+            lotId: lot.id,
+            bdg: bdgValue
           };
           this.lotService.onAddSousLot(slot);
         }
@@ -198,6 +200,8 @@ export class LotComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.form.controls["slotName".concat(i, "_", j)].enable();
       this.form.controls["slotUnite".concat(i, "_", j)].enable();
+      this.form.controls["sLotquantiteEstimer".concat(i, "_", j)].enable();
+
       this.AssoSousLoToProjet = false;
     }, 200);
     this.i = i;
@@ -217,11 +221,17 @@ export class LotComponent implements OnInit, OnDestroy {
         .trim()
         .toUpperCase();
 
+      let bdgValue = this.form.value["sLotquantiteEstimer".concat(i, "_", j)];
       this.form.controls["slotName".concat(i, "_", j)].disable();
       this.form.controls["slotUnite".concat(i, "_", j)].disable();
+      this.form.controls["sLotquantiteEstimer".concat(i, "_", j)].disable();
 
       if (slotValue != "" && slotUntValue != "") {
-        if (slotValue !== slot.designation || slotUntValue !== slot.unite) {
+        if (
+          slotValue !== slot.designation ||
+          slotUntValue !== slot.unite ||
+          bdgValue !== slot.bdg
+        ) {
           let sousLotValues = lot.sousLots
             .map(s => s.designation)
             .filter(d => d !== slot.designation);
@@ -239,6 +249,9 @@ export class LotComponent implements OnInit, OnDestroy {
             this.form.controls["slotName".concat(i, "_", j)].setValue(
               slot.designation
             );
+            this.form.controls[
+              "sLotquantiteEstimer".concat(i, "_", j)
+            ].setValue(slot.bdg);
           } else if (!this.unites.includes(slotUntValue)) {
             this.uniteToAdd = slotUntValue;
             this.store.dispatch(
@@ -255,7 +268,8 @@ export class LotComponent implements OnInit, OnDestroy {
             let sl = {
               designation: slotValue,
               unite: slotUntValue,
-              lotId: lot.id
+              lotId: lot.id,
+              bdg: bdgValue
             };
             this.lotService.onUpdateSousLot(sl, slot.id);
           }
@@ -272,8 +286,15 @@ export class LotComponent implements OnInit, OnDestroy {
         this.form.controls["slotName".concat(i, "_", j)].setValue(
           slot.designation
         );
+        this.form.controls["sLotquantiteEstimer".concat(i, "_", j)].setValue(
+          slot.bdg
+        );
       }
     }
+  }
+  onCalculeRnd(qtSlot, qtArt) {
+    if (qtArt === 0 || isNaN(qtArt)) return 0;
+    else return (qtSlot / qtArt).toFixed(2);
   }
   /*UNITE_UPDATE_DEBUT */
   onFocusUnitUpdate(unitUpdt) {
@@ -398,7 +419,8 @@ export class LotComponent implements OnInit, OnDestroy {
     if (
       this.updateEntree &&
       this.index == index &&
-      this.form.controls["entreeNom".concat(this.index)].dirty
+      (this.form.controls["entreeNom".concat(this.index)].dirty ||
+        this.form.controls["quantiteEstimer".concat(this.index)])
     ) {
       setTimeout(() => {
         this.form.controls["entreeNom".concat(this.index)].disable();
@@ -407,7 +429,7 @@ export class LotComponent implements OnInit, OnDestroy {
 
       this.updateEntree = false;
       let entreeId = this.form.value["entreeId".concat(index)];
-      let quantite = this.form.value["quantiteEstimer".concat(index)];
+      let bdg = this.form.value["quantiteEstimer".concat(index)];
       let entreeValue = this.form.value["entreeNom".concat(index)].trim();
       let isCor = false;
 
@@ -417,12 +439,12 @@ export class LotComponent implements OnInit, OnDestroy {
         }
       });
       if (isCor) {
-        if (quantite != "") {
+        if (bdg != "") {
           let type = this.form.value["type".concat(index)];
           let entree = {
             type: type,
             entreeId: entreeId,
-            bdg: quantite,
+            bdg: bdg,
             SousLotId: null
           };
 
@@ -465,7 +487,7 @@ export class LotComponent implements OnInit, OnDestroy {
     if (this.addEntree && i === this.i && j === this.j) {
       this.addEntree = false;
       let entreeId = this.form.value["entreeId".concat(i, "_", j)];
-      let quantite = this.form.value["quantiteEstimer".concat(i, "_", j)];
+      let bdg = this.form.value["quantiteEstimer".concat(i, "_", j)];
       let entreeValue = this.form.value["entreeNom".concat(i, "_", j)].trim();
       let isCor = false;
 
@@ -476,12 +498,12 @@ export class LotComponent implements OnInit, OnDestroy {
       });
 
       if (isCor) {
-        if (quantite != "") {
+        if (bdg != "") {
           let type = this.form.value["type".concat(i, "_", j)];
           let entree = {
             type: type,
             entreeId: entreeId,
-            quantiteEstimer: quantite
+            bdg: bdg
           };
           console.log(entree);
           this.lotService.onAddEntreeToSousLot(entree, slotId);

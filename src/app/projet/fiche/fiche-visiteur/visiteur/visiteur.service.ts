@@ -36,10 +36,16 @@ export class VisiteurService {
   public onAddVisiteur(visiteur) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
-      .post<visiteurModel[]>(this.SERVER_ADDRESS + "/visiteurs", visiteur, {
-        observe: "body",
-        responseType: "json"
-      })
+      .post<visiteurModel[]>(
+        this.SERVER_ADDRESS +
+          "/visiteurs/projets/" +
+          this.projetSelectionner.id,
+        visiteur,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         vss => {
           this.onGetVisiteur();
@@ -61,10 +67,17 @@ export class VisiteurService {
   public onDeleteVisiteur(id) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
-      .delete<visiteurModel[]>(this.SERVER_ADDRESS + "/visiteurs/" + id, {
-        observe: "body",
-        responseType: "json"
-      })
+      .delete<visiteurModel[]>(
+        this.SERVER_ADDRESS +
+          "/visiteurs/" +
+          id +
+          "/projets/" +
+          this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         vss => {
           this.onGetVisiteur();

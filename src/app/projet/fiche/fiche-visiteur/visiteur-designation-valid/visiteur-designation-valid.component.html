@@ -4,20 +4,40 @@
   </app-dialog>
   <table>
     <tr class="header">
-      <th style="width: 20%">
-        NOM & PRENOM
+      <th style="width: 15%">
+        <input
+          (input)="onFilter()"
+          type="text"
+          placeholder="NOM & PRENOM"
+          name="nom$"
+          ngModel
+          style="width: 100%"
+        />
       </th>
-      <th style="width: 20%">
-        ORGANISME
+      <th style="width: 15%">
+        <input
+          (input)="onFilter()"
+          type="text"
+          placeholder="ORGANISME"
+          name="organisme$"
+          ngModel
+          style="width: 100%"
+        />
       </th>
-      <th style="width: 30%">
+      <th style="width: 25%">
         OBJET
       </th>
-      <th style="width: 15%">
-        ARIVÉE
+      <th style="width: 7%">
+        DEBUT
       </th>
-      <th style="width: 15%">
-        DEPART
+      <th style="width: 14%">
+        DEBUT_SYS
+      </th>
+      <th style="width: 7%">
+        FIN
+      </th>
+      <th style="width: 14%">
+        FIN_SYS
       </th>
     </tr>
 
@@ -67,19 +87,42 @@
           <input
             disabled
             type="text"
-            [ngModel]="item.arivee"
-            name="arivee{{ i }}"
-            placeholder="ARIVEÉ"
+            [ngModel]="item.debut"
+            name="debut{{ item.id }}"
+            placeholder="DEBUT"
             ngModel
           />
         </td>
         <td>
           <input
+            readonly
+            [type]="text"
+            [ngModel]="item.debut_sys"
+            name="debut_sys{{ item.id }}"
+            placeholder="DEBUT_SYS"
+            ngModel
+          />
+        </td>
+
+        <td>
+          <input
             disabled
+            (input)="onInputFinUpdate(item.id)"
             type="text"
-            [ngModel]="item.depart"
-            name="depart{{ i }}"
-            placeholder="DEPART"
+            [ngModel]="item.fin"
+            name="fin{{ item.id }}"
+            placeholder="FIN"
+            #fin
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            readonly
+            [type]="text"
+            [ngModel]="item.fin_sys"
+            name="fin_sys{{ item.id }}"
+            placeholder="FIN_SYS"
             ngModel
           />
         </td>

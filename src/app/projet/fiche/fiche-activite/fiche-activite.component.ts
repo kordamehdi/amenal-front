@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import * as App from "../../../store/app.reducers";
 import { Store } from "@ngrx/store";
 
@@ -12,6 +12,7 @@ export class FicheActiviteComponent implements OnInit {
   role;
   lister: Boolean = true;
   isRoot = true;
+
   constructor(private store: Store<App.AppState>) {}
 
   ngOnInit() {

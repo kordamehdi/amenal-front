@@ -113,6 +113,7 @@
               </div>
               <div #detail *ngIf="showDetails[i]">
                 <div
+                  (press)="onDeleteUserRole(item.id)"
                   *ngFor="let item of user.roles; let j = index"
                   class="cont_div"
                 >

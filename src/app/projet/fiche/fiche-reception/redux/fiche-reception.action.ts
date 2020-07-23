@@ -19,6 +19,8 @@ export const SHOW_ARTICLE_BY_FOURNISSEUR = "SHOW_ARTICLE_BY_FOURNISSEUR";
 export const SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE =
   "SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE";
 
+export const SHOW_DETAIL_CAT_ARTICLE = "SHOW_DETAIL_CAT_ARTICLE";
+
 export class showFournisseurByArticleOrCategorie implements Action {
   readonly type = SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE;
   payload: {
@@ -76,6 +78,18 @@ export class getfournisseurArticleToSelect implements Action {
     this.payload = payload;
   }
 }
+export class showDetailCatArticle implements Action {
+  readonly type = SHOW_DETAIL_CAT_ARTICLE;
+  payload: [
+    {
+      id: number;
+      show: boolean;
+    }
+  ];
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
 
 export type FicheReceptionAction =
   | getGategories
@@ -84,4 +98,5 @@ export type FicheReceptionAction =
   | getFicheReceptionDs
   | getfournisseurArticleToSelect
   | showFournisseurByArticleOrCategorie
-  | showArticleByFournisseur;
+  | showArticleByFournisseur
+  | showDetailCatArticle;

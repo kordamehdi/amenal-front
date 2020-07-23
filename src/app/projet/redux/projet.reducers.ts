@@ -13,19 +13,21 @@ export interface projetState {
   usersWithRole: UtilisateurModel[];
   currentUser: AuthModel;
   loginError: { isErr: boolean; msg: string };
+  innerHeight: number;
 }
 
 const InitialState: projetState = {
   projets: [],
   projetSelectionner: null,
   isBlack: false,
-  //baseUrl: "https://amenal-back.herokuapp.com",
-  baseUrl: "http://127.0.0.1:8080",
+  baseUrl: "https://amenal-back.herokuapp.com",
+  //baseUrl: "http://127.0.0.1:8080",
   refreshComp: { refresh: "", f: false },
   users: [],
   usersWithRole: [],
   currentUser: null,
-  loginError: { isErr: false, msg: "" }
+  loginError: { isErr: false, msg: "" },
+  innerHeight: window.innerHeight
 };
 
 export function ProjetReducer(
@@ -33,6 +35,12 @@ export function ProjetReducer(
   action: fromProjetAction.ProjetAction
 ) {
   switch (action.type) {
+    case fromProjetAction.GET_INNER_HEIGHT: {
+      return {
+        ...state,
+        innerHeight: action.payload
+      };
+    }
     case fromProjetAction.LOGIN_ERROR: {
       return {
         ...state,

@@ -40,7 +40,7 @@
               color: isSearch ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus()"
-            (input)="onFilterByMateriel(keyWord.value)"
+            (input)="onFilterByMateriel(false)"
             type="text"
             placeholder="MATERIEL"
             #keyWord
@@ -58,7 +58,9 @@
           *ngIf="fournisseurIdFilter === -1"
           [ngStyle]="{
             'background-color':
-              matIndex === -2 || matDsIndex == -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+              matSelectedId === -2 || matId === -2
+                ? 'rgba(255, 0, 0, 0.1)'
+                : '',
             'text-align': 'center',
             'font-style': 'italic'
           }"
@@ -80,7 +82,7 @@
           *ngFor="let materiel of materiels; let i = index"
           [ngStyle]="{
             'background-color':
-              this.matIndex == materiel.id || matDsIndex == materiel.id
+              this.matSelectedId === materiel.id || matId === materiel.id
                 ? 'rgba(255, 0, 0, 0.1)'
                 : '',
             'font-weight': materiel.isAssoWithProjet ? 'bold' : 'normal'
@@ -108,7 +110,7 @@
       <ng-template #nodisp>
         <tr
           [ngStyle]="{
-            'background-color': matDsIndex === -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+            'background-color': matId === -2 ? 'rgba(255, 0, 0, 0.1)' : '',
             'text-align': 'center',
             'font-style': 'italic'
           }"
@@ -119,7 +121,7 @@
         </tr>
       </ng-template>
       <tr
-        *ngIf="fournisseurIdFilter === -1 && matIndex !== -1"
+        *ngIf="fournisseurIdFilter === -1 && matSelectedId !== -1"
         [ngStyle]="{
           'text-align': 'center',
           'font-style': 'italic',

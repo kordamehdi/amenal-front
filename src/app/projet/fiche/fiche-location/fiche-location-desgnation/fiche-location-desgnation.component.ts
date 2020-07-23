@@ -12,8 +12,11 @@ import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 import * as App from "../../../../store/app.reducers";
 import { NgForm } from "@angular/forms";
 import * as fromFicheAction from "../../redux/fiche.action";
+import * as fromFicheLocationAction from "../redux/fiche-location.action";
+
 import * as moment from "moment";
 import { untilDestroyed } from "ngx-take-until-destroy";
+import { stateFicheLocation } from "../redux/fiche-location.selector";
 
 @Component({
   selector: "app-fiche-location-desgnation",
@@ -53,9 +56,10 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   isFocus = false;
   fournisseurMaterielMap: FournisseurModel[];
   fournisseurMaterielMap$: FournisseurModel[];
-
-  designtions;
-  designtions$;
+  inputSearchName = ["libelle", "fournisseurNom"];
+  designtions: locationDesignationModel[] = [];
+  designtions$: locationDesignationModel[] = [];
+  designtions$$: locationDesignationModel[] = [];
 
   fournisseurs: FournisseurModel[];
   fournisseurs$: FournisseurModel[];
@@ -77,6 +81,12 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   position = 1;
   size;
   ascendant = [];
+  a = 0;
+  b = this.navPas;
+  filterState: {
+    libelle: "";
+    fournisseurNom: "";
+  };
   constructor(
     private store: Store<App.AppState>,
     private ficheLocationService: FicheLocationService,
@@ -85,26 +95,45 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.ficheLocationService.onGetFournisseurByProjet();
-    this.store.select("ficheLocation").subscribe(state => {
-      this.fournisseurMaterielMap$ = [...state.fournisseurByProjet];
-    });
+    this.store
+      .select(stateFicheLocation)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        setTimeout(() => {
+          console.log(" loc ", state);
+          this.a = state.position.a;
+          if (state.position.b > 0) this.b = state.position.b;
+          this.position = state.position.position;
+          this.filterState = state.filter;
+          this.ascendant = state.sort.order;
+          this.typeAsc = state.sort.type;
+
+          this.onFilter(true);
+        }, 0);
+      });
+    this.store
+      .select("ficheLocation")
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.fournisseurMaterielMap$ = [...state.fournisseurByProjet];
+      });
     this.store
       .select("fiche")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
-        if (state.type === "locDs" || state.type === "fiche") {
-          this.errorMsg = state.errorMsg;
-          this.showAlert = state.showAlert;
-        }
-        if (state.ficheSelectionner !== null)
-          this.FicheLocation = { ...state.ficheSelectionner };
+        setTimeout(() => {
+          if (state.type === "locDs" || state.type === "fiche") {
+            this.errorMsg = state.errorMsg;
+            this.showAlert = state.showAlert;
+          }
+          if (state.ficheSelectionner !== null)
+            this.FicheLocation = { ...state.ficheSelectionner };
 
-        if (this.FicheLocation.designations.length > 0) {
-          this.onFilter();
-        } else {
-          this.designtions = [];
-          this.designtions$ = [];
-        }
+          if (this.FicheLocation.designations.length > 0)
+            this.designtions$$ = this.FicheLocation.designations;
+
+          this.onFilter(true);
+        }, 0);
       });
     this.store
       .select(refresh)
@@ -141,7 +170,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       fournisseurId: this.fournisseurMaterielMap$.find(
         f => f.fournisseurNom === this.form.value["fournisseurNom"]
       ).id,
-
+      unite: null,
       idMateriel: this.fournisseurMaterielMap$.find(
         f => f.materiel.designation === this.form.value["libelle"]
       ).materiel.id,
@@ -182,6 +211,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           f.fournisseurNom ===
           this.form.value["fournisseurNom".concat(this.dsID.toString())]
       ).id,
+      unite: null,
       idMateriel: this.fournisseurMaterielMap$.find(
         f =>
           f.materiel.designation ===
@@ -617,40 +647,56 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     }
   }
 
-  onFilter() {
-    let inputSearchName = ["libelle", "fournisseurNom"];
-    this.designtions$ = this.FicheLocation.designations;
+  onFilter(init) {
+    this.designtions$ = this.slice(this.designtions$$);
+    let empty = true;
+    console.log("before   ", this.filterState);
+
     if (typeof this.form !== "undefined")
-      inputSearchName.forEach((key: string) => {
-        if (typeof this.form.value[key.concat("$")] !== "undefined") {
-          let vv = this.form.value[key.concat("$")].trim().toUpperCase();
-          if (vv !== "") {
+      this.inputSearchName.forEach((key: string) => {
+        if (typeof this.form.controls[key.concat("$")] !== "undefined") {
+          if (init)
+            this.form.controls[key.concat("$")].setValue(this.filterState[key]);
+
+          this.filterState[key] = this.form.controls[key.concat("$")].value
+            .trim()
+            .toUpperCase();
+          if (this.filterState[key] !== "") {
+            empty = false;
             let v = this.designtions$;
             this.designtions$ = v.filter(d => {
-              return d[key].includes(vv);
+              return d[key].includes(this.filterState[key]);
             });
           }
         }
       });
 
+    console.log("after   ", this.filterState);
+    if (!init && !empty) {
+      this.a = 0;
+      this.b = this.navPas;
+      this.position = 1;
+    }
     this.designtions = this.designtions$;
     this.designtions.forEach((d: locationDesignationModel, i) => {
-      this.OnInputDate(d.tempsDebut, d.tempsFin, (i = i));
+      this.OnInputDate(d.tempsDebut, d.tempsFin, i.toString());
     });
-    this.designtions = this.designtions$.slice(0, this.navPas);
+    this.designtions = this.designtions$.slice(this.a, this.b);
     this.size = Math.trunc(this.designtions$.length / this.navPas);
     if (this.size < this.designtions$.length / this.navPas)
       this.size = this.size + 1;
+
+    this.onSort(this.typeAsc, true);
   }
 
   /*********** */
 
   /********** */
 
-  onSort(type) {
+  onSort(type, init) {
     // descending order z->a
     this.typeAsc = type;
-    this.ascendant[type] = !this.ascendant[type];
+    if (!init) this.ascendant[type] = !this.ascendant[type];
     if (!this.ascendant[type])
       this.designtions = this.designtions.sort((a, b) => {
         if (a[type] > b[type]) {
@@ -697,21 +743,24 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       })
     );
   }
+  slice(Dss) {
+    return [...Dss].map(m => JSON.parse(JSON.stringify(m)));
+  }
 
   onPrevious() {
     if (this.position - 1 > 0) {
       this.position = this.position - 1;
-      let a = this.navPas * this.position;
-      let b = a - this.navPas;
-      this.designtions = this.designtions$.slice(b, a);
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.designtions = this.designtions$.slice(this.a, this.b);
     }
   }
   onNext() {
     if (this.position + 1 <= this.size) {
-      let b = this.navPas * this.position;
+      this.a = this.navPas * this.position;
       this.position = this.position + 1;
-      let a = b + this.navPas;
-      this.designtions = this.designtions$.slice(b, a);
+      this.b = this.a + this.navPas;
+      this.designtions = this.designtions$.slice(this.a, this.b);
     }
   }
 
@@ -723,5 +772,20 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.
+
+    this.store.dispatch(
+      new fromFicheLocationAction.getFicheState({
+        position: {
+          a: this.a,
+          b: this.b,
+          position: this.position
+        },
+        filter: this.filterState,
+        sort: {
+          order: this.ascendant,
+          type: this.typeAsc
+        }
+      })
+    );
   }
 }

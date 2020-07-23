@@ -28,15 +28,6 @@ ion-icon {
   margin: 3px;
   color: black;
 }
-spane {
-  vertical-align: baseline;
-  padding: 2px;
-  height: 40px;
-  display: inline-block;
-  margin-left: 2px;
-  margin-right: 2px;
-  background-color: rgba(255, 255, 255, 0.3);
-}
 
 .content {
   padding-top: 12px;
@@ -45,18 +36,6 @@ spane {
   align-content: center;
 }
 
-@media only screen and (max-width: 379px) {
-  /* For mobile phones: */
-  spane {
-    vertical-align: baseline;
-    padding: 2px;
-    height: 50px;
-    display: inline-block;
-    margin-left: 2px;
-    margin-right: 2px;
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-}
 /**************************************************************************************/
 
 /*DROPDOWN*/
@@ -88,6 +67,7 @@ table {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   font-size: 12px;
+  table-layout: fixed;
 }
 
 th {
@@ -96,11 +76,13 @@ th {
   border-left: 1px solid rgba(255, 255, 255, 0.5);
   padding: 0px;
   text-align: center;
+  overflow-wrap: break-word;
 }
 td {
   border-left: 1px rgba(255, 255, 255, 0.5);
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.5);
+  overflow-wrap: break-word;
 }
 .inputs {
   background-color: rgba(255, 255, 255, 0.5);
@@ -219,3 +201,6 @@ ion-icon {
   // padding-bottom: 2px;
 }
 /*DROPLIST*/
+.empty {
+  background-color: rgba(0, 0, 0, 0.05);
+}

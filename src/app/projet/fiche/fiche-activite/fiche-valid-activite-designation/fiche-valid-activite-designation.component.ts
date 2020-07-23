@@ -5,6 +5,7 @@ import { FicheService } from "../../fiche.service";
 import * as App from "../../../../store/app.reducers";
 import { untilDestroyed } from "ngx-take-until-destroy";
 import { refresh } from "../../header/head.selector";
+import * as fromFicheAction from "../../redux/fiche.action";
 
 @Component({
   selector: "app-fiche-valid-activite-designation",
@@ -87,7 +88,19 @@ export class FicheValidActiviteDesignationComponent
   transI_J(i, j) {
     return "".concat(i, "_", j);
   }
+  onCancel() {
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        type: "ficheActivite",
+        showAlert: false,
+        msg: ""
+      })
+    );
+  }
 
+  calculRls(rls: string, qt: string) {
+    return parseInt(rls, 10) + parseInt(qt, 10);
+  }
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.
   }

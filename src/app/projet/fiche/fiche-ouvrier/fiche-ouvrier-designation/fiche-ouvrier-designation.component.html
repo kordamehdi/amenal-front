@@ -1,56 +1,56 @@
-<div (onclick)="click()" class="container">
+<div
+  (onclick)="click()"
+  class="container"
+  [ngStyle]="{ height: 'auto', 'max-height': screenHeight }"
+>
   <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
   <form
     id="form1"
     (ngSubmit)="
-      isUpdate ? OnUpdateOuvrierDesignation() : OnAddOuvrierDesignation()
+      isUpdate === 1 ? OnUpdateOuvrierDesignation() : OnAddOuvrierDesignation()
     "
     #f="ngForm"
   >
-    <div class="header-nav">
-      <span class="left" (click)="onPrevious()"
+    <div class="header-title">
+      <!--  <span class="left" (click)="onPrevious()"
         ><ion-icon name="arrow-dropleft"></ion-icon>
-      </span>
+      </span>-->
 
-      <span class="middle">{{ position }}/{{ size }}</span>
+      <span class="middle">FICHE OUVRIER</span>
 
-      <span class="left" (click)="onNext()">
+      <!-- <span class="left" (click)="onNext()">
         <ion-icon name="arrow-dropright"></ion-icon>
-      </span>
+      </span>-->
     </div>
 
     <table>
       <tr class="header">
-        <th style="width: 22.8%">
+        <th style="width: 22%">
           <input
-            (focus)="onFilterFocus(sNom, 'NOM & PRENOM')"
-            (input)="onFilter(sNom.value, 'nom')"
-            (blur)="onFilterBur(sNom, 'NOM & PRENOM')"
+            (input)="onFilter(false)"
             type="text"
-            value="NOM & PRENOM"
+            name="nomOuv$"
             placeholder="NOM & PRENOM"
-            #sNom
+            ngModel
             style="width: 80%"
           />
           <ion-icon
             [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
-            (click)="onSort()"
+            (click)="onSort(false)"
           ></ion-icon>
         </th>
-        <th style="width: 14.5%">
+        <th style="width: 15%">
           CIN
         </th>
         <th style="width: 20%">
           <input
-            (focus)="onFilterFocus(squal, 'QUALIFICATION')"
-            (input)="onFilter(squal.value, 'qualification')"
-            (blur)="onFilterBur(squal, 'QUALIFICATION')"
+            (input)="onFilter(false)"
             type="text"
-            value="QUALIFICATION"
             placeholder="QUALIFICATION"
-            #squal
+            name="qualification$"
+            ngModel
             style="width: 80%"
           />
         </th>
@@ -81,7 +81,7 @@
         (clickOutside)="onClickAddOutside()"
         (click)="onClickAdd()"
       >
-        <td class="tdInput">
+        <td style="width: 22.8% ;position: relative " class="tdInput">
           <input
             type="text"
             name="ouv"
@@ -93,7 +93,7 @@
             (blur)="onBlurSelectOuvrier(ouvadd)"
           />
           <input hidden type="text" name="ouvID" required ngModel />
-          <div hidden #ouvadd style="width :57%" class="div-list">
+          <div hidden #ouvadd style="width :254%" class="div-list">
             <div
               *ngFor="let item of OuvrierToSelect"
               (click)="onAddSelectOuvrier(item)"
@@ -111,20 +111,20 @@
           </div>
         </td>
 
-        <td class="tdInput">
+        <td style="width: 14.5%" class="tdInput">
           {{ ouvrierCin }}
         </td>
 
-        <td class="tdInput">
+        <td style="width: 20%" class="tdInput">
           {{ ouvrierQualification }}
         </td>
-        <td class="tdInput">
+        <td style="width: 7%" class="tdInput">
           <input type="time" name="debut" required ngModel #dateDebut />
         </td>
-        <td class="tdInput">
+        <td style="width: 7%" class="tdInput">
           <input type="time" name="fin" ngModel #dateFin />
         </td>
-        <td class="tdInput">
+        <td style="width: 8.5%" class="tdInput">
           <input
             type="text"
             readonly
@@ -133,7 +133,7 @@
             [ngModel]="calculTravail(dateDebut.value, dateFin.value)"
           />
         </td>
-        <td class="tdInput">
+        <td style="width:5%" class="tdInput">
           <input
             type="number"
             min="0"
@@ -144,10 +144,10 @@
             ngModel
           />
         </td>
-        <td class="tdInput">
+        <td style="width:5%" class="tdInput">
           <input type="number" name="hSup" placeholder="hSup" ngModel />
         </td>
-        <td class="tdInput">
+        <td style="width:5%" class="tdInput">
           <input
             [ngModel]="false"
             type="checkbox"
@@ -157,7 +157,7 @@
             #epiInput
           />
         </td>
-        <td class="tdInput"></td>
+        <td style="width:5%" class="tdInput"></td>
       </tr>
 
       <!--****************************************************************************************************************************-->
@@ -183,10 +183,10 @@
           }"
           (press)="onLongPress(ouvDs.id)"
           *ngFor="let ouvDs of designationOuvrier; let i = index"
-          (clickOutside)="onClickedOutside(ouvDs.id)"
+          (clickOutside)="onClickUpdateOutside(ouvDs.id)"
           (click)="onClick(ouvDs.id)"
         >
-          <td tabindex="1">
+          <td style="width: 22.8% ; position: relative; " tabindex="1">
             <input
               disabled
               type="text"
@@ -207,7 +207,7 @@
               required
               ngModel
             />
-            <div hidden #ouvUpdate style="width :57%" class="div-list">
+            <div hidden #ouvUpdate style="width :254%" class="div-list">
               <div
                 (click)="ouvUpdate.hidden = true"
                 style="font-weight:bold;font-style:italic"
@@ -239,7 +239,7 @@
             </div>
           </td>
 
-          <td tabindex="1">
+          <td style="width: 14.5%" tabindex="1">
             <input
               readonly
               type="text"
@@ -250,7 +250,7 @@
             />
           </td>
 
-          <td tabindex="1">
+          <td style="width: 20%" tabindex="1">
             <input
               readonly
               type="text"
@@ -260,10 +260,10 @@
               ngModel
             />
           </td>
-          <td>
+          <td style="width: 7%">
             <input
               [ngModel]="ouvDs.tempsDebut"
-              type="time"
+              [type]="this.ouvDsSlIndex == ouvDs.id ? 'time' : 'text'"
               disabled
               name="debut{{ ouvDs.id }}"
               placeholder="debut"
@@ -272,18 +272,18 @@
               #tempsDebut
             />
           </td>
-          <td>
+          <td style="width: 7%">
             <input
               disabled
               [ngModel]="ouvDs.tempsFin"
-              type="time"
+              [type]="this.ouvDsSlIndex == ouvDs.id ? 'time' : 'text'"
               name="fin{{ ouvDs.id }}"
               placeholder="fin"
               ngModel
               #tempsFin
             />
           </td>
-          <td>
+          <td style="width: 8.5%">
             <input
               readonly
               type="text"
@@ -294,7 +294,7 @@
               #trv
             />
           </td>
-          <td>
+          <td style="width: 5%">
             <input
               disabled
               [ngModel]="ouvDs.jour"
@@ -308,7 +308,7 @@
               #jour
             />
           </td>
-          <td>
+          <td style="width: 5%">
             <input
               disabled
               [ngModel]="ouvDs.hsup"
@@ -319,7 +319,7 @@
               #hSup
             />
           </td>
-          <td>
+          <td style="width: 5%">
             <input
               disabled
               type="checkbox"
@@ -329,7 +329,7 @@
               ngModel
             />
           </td>
-          <td></td>
+          <td style="width: 5%"></td>
         </tr>
       </ng-container>
       <ng-template #elseTemplate>

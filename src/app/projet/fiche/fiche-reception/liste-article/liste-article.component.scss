@@ -10,8 +10,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   overflow: hidden;
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
+  margin-top: 54px;
   font-size: 13px;
 }
 .span-detail {
@@ -35,17 +34,16 @@ table {
 }
 .case-left {
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-left: none;
   width: 50%;
 }
 .case-middle {
+  position: relative;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.5);
   width: 25%;
 }
 .case-right {
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.5);
   width: 25%;
 }
 .cont_div {
@@ -61,7 +59,7 @@ table {
 }
 
 .div-list {
-  width: 11%;
+  width: 100%;
   background-color: white;
   position: absolute;
   z-index: 1;
@@ -76,13 +74,6 @@ table {
 }
 .div-detail:hover {
   background-color: rgba(255, 0, 0, 0.1);
-}
-th {
-  background-color: rgba(255, 255, 255, 0.5);
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  text-align: center;
-  padding-top: 4px;
-  padding-bottom: 4px;
 }
 
 tr {
@@ -109,13 +100,6 @@ input {
 
   background-color: rgba(255, 0, 0, 0.1);
 }
-.header {
-  background-color: rgba(0, 0, 0, 0.233);
-  padding-top: 3px;
-  padding-bottom: 3px;
-  border: 2px solid rgba(235, 231, 231, 0.651);
-  text-align: center;
-}
 
 .middle {
   text-align: center;
@@ -125,6 +109,7 @@ input {
   font-size: 12px;
   font-weight: bold;
 }
+
 .left {
   height: 25px;
   width: 10%;
@@ -133,17 +118,29 @@ input {
   border-top-left-radius: 10px;
   border: 2px #f25454 solid;
 }
-.header-title {
-  height: 25px;
-  width: 80%;
-  display: inline-block;
-
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.3);
-  padding-bottom: 10px;
-}
-
 ion-checkbox {
   z-index: 0;
+}
+
+.header-title {
+  position: absolute;
+  height: 25px;
+  bottom: 298px;
+  left: 0px;
+  width: 99.9%;
+  display: inline-block;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: rgb(172, 172, 172);
+  padding-bottom: 10px;
+}
+.header {
+  bottom: 269px;
+  width: 99.9%;
+  z-index: 2;
+  position: absolute;
+  border: 2px solid rgba(235, 231, 231, 0.651);
+  background-color: rgba(255, 255, 255, 1);
+  padding-top: 4px;
+  padding-bottom: 4px;
 }

@@ -117,6 +117,29 @@ export class UtilisateurService {
         }
       );
   }
+  onSupprimerUserRoleAsso(id) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .delete<UtilisateurModel>(this.SERVER_ADDRESS + "/user/role/" + id, {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        fiches => {
+          this.onListerRoleToUser();
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "userFrom",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
   onAddRoleToUser(user: UtilisateurWithRoleCommandeModel) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient

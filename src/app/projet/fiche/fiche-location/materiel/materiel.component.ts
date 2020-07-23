@@ -9,6 +9,8 @@ import * as fromFicheAction from "../../redux/fiche.action";
 import { NgForm } from "@angular/forms";
 import * as fromProjetAction from "../../../../projet/redux/projet.actions";
 import { untilDestroyed } from "ngx-take-until-destroy";
+import * as fromFicheLocationAction from "../redux/fiche-location.action";
+import { matListState } from "../redux/fiche-location.selector";
 
 @Component({
   selector: "app-materiel",
@@ -17,19 +19,21 @@ import { untilDestroyed } from "ngx-take-until-destroy";
 })
 export class MaterielComponent implements OnInit, OnDestroy {
   culumn = ["DESIGNATION", "UNITÉ"];
+  @ViewChild("keyWord", { static: false })
+  input;
 
   @ViewChild("f", { static: false })
   form: NgForm;
-  materiels: MaterielModel[];
-  materiels$: MaterielModel[];
-  materiels$$: MaterielModel[];
+  materiels: MaterielModel[] = [];
+  materiels$: MaterielModel[] = [];
+  materiels$$: MaterielModel[] = [];
 
   ascendant = false;
   materielsNotAsso: MaterielModel[];
   materielsNotAsso$: MaterielModel[];
   isSearch = false;
-  matIndex = -1;
-  matDsIndex = -1;
+  matSelectedId = -1;
+  matId = -1;
   errorMsg = "";
   matToDeleteId = -1;
   showAlert = false;
@@ -45,6 +49,8 @@ export class MaterielComponent implements OnInit, OnDestroy {
   assArtToPrjt = true;
   navPas = 5;
   position = 1;
+  a = 0;
+  b = this.navPas;
   size;
 
   constructor(
@@ -56,65 +62,63 @@ export class MaterielComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.ficheLocationService.onGetMateriel();
     this.ficheMaterielService.onGetUnite();
-
+    this.store.select(matListState).subscribe(state => {
+      setTimeout(() => {
+        this.a = state.position.a;
+        if (state.position.b > 0) this.b = state.position.b;
+        this.position = state.position.position;
+        this.word = state.filterByNom;
+        this.onFilterByMateriel(true);
+      }, 0);
+    });
     this.store.select("ficheLocation").subscribe(locState => {
-      if (locState.showMaterielByFournisseur.fournisseurNom !== "") {
-        if (
-          locState.showMaterielByFournisseur.fournisseurNom ===
-          "MATERIEL_SANS_FOURNISSEUR"
-        ) {
-          this.fournisseurIdFilter = -2;
-          this.matIndex = -1;
-          this.materiels$$ = [...locState.materiels].filter(
-            m =>
-              !locState.showMaterielByFournisseur.materiels
-                .map(mm => mm.id)
-                .includes(m.id)
-          );
-          this.materielsNotAsso = this.materielsNotAsso$;
+      setTimeout(() => {
+        this.matSelectedId = locState.showFournisseurByMateriel.materielId;
+        if (locState.showMaterielByFournisseur.fournisseurNom !== "") {
+          if (
+            locState.showMaterielByFournisseur.fournisseurNom ===
+            "MATERIEL_SANS_FOURNISSEUR"
+          ) {
+            this.fournisseurIdFilter = -2;
+            this.matSelectedId = -1;
+            this.materiels$$ = [...locState.materiels].filter(
+              m =>
+                !locState.showMaterielByFournisseur.materiels
+                  .map(mm => mm.id)
+                  .includes(m.id)
+            );
+          } else {
+            this.fournisseurIdFilter =
+              locState.showMaterielByFournisseur.fournisseurId;
+            this.matSelectedId = -1;
+            this.materiels$$ = [...locState.fournisseurs].find(
+              f => f.id == this.fournisseurIdFilter
+            ).materiels;
+
+            this.materielsNotAsso$ = [...locState.materiels].filter(
+              m => !this.materiels$$.map(mm => mm.id).includes(m.id)
+            );
+
+            this.materielsNotAsso = this.materielsNotAsso$;
+          }
         } else {
-          this.fournisseurIdFilter =
-            locState.showMaterielByFournisseur.fournisseurId;
-          this.matIndex = -1;
-          this.materiels$$ = [...locState.materiels]
-            .filter(m =>
-              locState.showMaterielByFournisseur.materiels
-                .map(mm => mm.id)
-                .includes(m.id)
-            )
-            .map(m => {
-              return { ...m };
-            });
-          this.materielsNotAsso$ = [...locState.materiels].filter(
-            m =>
-              !locState.showMaterielByFournisseur.materiels
-                .map(mm => mm.id)
-                .includes(m.id)
-          );
-          this.materielsNotAsso = this.materielsNotAsso$;
-
-          locState.showMaterielByFournisseur.materiels.forEach(mm => {
-            let m = this.materiels$.find(m => m.id == mm.id);
-            m.isAssoWithProjet = mm.isAssoWithProjet;
+          this.fournisseurIdFilter = -1;
+          this.materiels$$ = [...locState.materiels];
+          this.materiels$$ = this.materiels$$.sort((a, b) => {
+            if (a.designation < b.designation) {
+              return -1;
+            }
+            if (a.designation > b.designation) {
+              return 1;
+            }
+            return 0;
           });
-          this.onSortByEnGras();
         }
-      } else {
-        this.fournisseurIdFilter = -1;
-        this.materiels$$ = [...locState.materiels];
-        this.materiels$$ = this.materiels$$.sort((a, b) => {
-          if (a.designation < b.designation) {
-            return -1;
-          }
-          if (a.designation > b.designation) {
-            return 1;
-          }
-          return 0;
-        });
-      }
-      this.materiels$ = this.materiels$$;
+        this.materiels$ = this.materiels$$;
+        this.onSortByEnGras();
 
-      this.onFilterByMateriel(this.word);
+        this.onFilterByMateriel(true);
+      }, 0);
     });
     this.store
       .select("fiche")
@@ -168,19 +172,23 @@ export class MaterielComponent implements OnInit, OnDestroy {
     this.isSearch = true;
   }
 
-  onFilterByMateriel(keyWord: string) {
-    this.word = keyWord.toUpperCase().trim();
-    if (this.word === "") {
-      this.materiels$ = [...this.materiels$$];
-    } else {
-      this.materiels$ = this.materiels$$.filter(f => {
-        if (f.designation.includes(this.word)) return true;
-        else return false;
-      });
+  onFilterByMateriel(init) {
+    if (init) this.input.nativeElement.value = this.word.toLowerCase();
+
+    this.word = this.input.nativeElement.value.trim().toUpperCase();
+    this.materiels$ = this.materiels$$.filter(m => {
+      if (m.designation.includes(this.word)) return true;
+      else return false;
+    });
+
+    if (!init && this.word !== "") {
+      this.a = 0;
+      this.b = this.navPas;
+      this.position = 1;
     }
-    this.position = 1;
+
     let n = this.materiels$.length;
-    this.materiels = this.materiels$.slice(0, this.navPas);
+    this.materiels = this.materiels$.slice(this.a, this.b);
     this.size = Math.trunc(n / this.navPas);
     if (this.size < n / this.navPas) this.size = this.size + 1;
   }
@@ -199,22 +207,22 @@ export class MaterielComponent implements OnInit, OnDestroy {
   }
   OnClickMateriel(dsInput, mm: MaterielModel) {
     if (this.fournisseurIdFilter === -1) {
-      this.matIndex = mm.id;
+      this.matSelectedId = mm.id;
       let m = {
         materielId: mm.id,
         materielNom: mm.designation
       };
       this.store.dispatch(new ficheLocationAction.showFournisseurByMateriel(m));
-      this.matDsIndex = mm.id;
-    } else this.matDsIndex = mm.id;
+      this.matId = mm.id;
+    } else this.matId = mm.id;
     setTimeout(() => {
       dsInput.disabled = false;
       this.assArtToPrjt = false;
     }, 200);
   }
   OnClickOutsideMateriel(dsInput, i) {
-    if (i == this.matDsIndex) {
-      this.matDsIndex = -1;
+    if (i == this.matId) {
+      this.matId = -1;
       dsInput.disabled = true;
       this.assArtToPrjt = true;
     }
@@ -280,23 +288,23 @@ export class MaterielComponent implements OnInit, OnDestroy {
         materielNom: "FOURNISSEUR_SANS_MATERIEL"
       };
       this.store.dispatch(new ficheLocationAction.showFournisseurByMateriel(m));
-      this.matIndex = -2;
+      this.matSelectedId = -2;
     }
   }
   onPrevious() {
     if (this.position - 1 > 0) {
       this.position = this.position - 1;
-      let a = this.navPas * this.position;
-      let b = a - this.navPas;
-      this.materiels = this.materiels$.slice(b, a);
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.materiels = this.materiels$.slice(this.a, this.b);
     }
   }
   onNext() {
     if (this.position + 1 <= this.size) {
-      let b = this.navPas * this.position;
+      this.a = this.navPas * this.position;
       this.position = this.position + 1;
-      let a = b + this.navPas;
-      this.materiels = this.materiels$.slice(b, a);
+      this.b = this.a + this.navPas;
+      this.materiels = this.materiels$.slice(this.a, this.b);
     }
   }
 
@@ -338,7 +346,7 @@ export class MaterielComponent implements OnInit, OnDestroy {
   }
 
   OnAnnulerFilter() {
-    this.matIndex = -1;
+    this.matSelectedId = -1;
     let m = {
       materielId: -1,
       materielNom: ""
@@ -357,5 +365,15 @@ export class MaterielComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.
+    this.store.dispatch(
+      new fromFicheLocationAction.getMatListState({
+        position: {
+          a: this.a,
+          b: this.b,
+          position: this.position
+        },
+        filterByNom: this.word
+      })
+    );
   }
 }

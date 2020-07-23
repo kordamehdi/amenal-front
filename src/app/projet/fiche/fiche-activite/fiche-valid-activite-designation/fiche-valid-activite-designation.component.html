@@ -5,19 +5,40 @@
   <form style="width: 100%" id="form" #f="ngForm">
     <table>
       <tr class="header">
-        <th style="width: 60%">
+        <th style="width: 45%">
           DESIGNATION
         </th>
-        <th style="width: 10%">
+        <th style="width: 5%">
+          DCL
+        </th>
+        <th style="width: 5%">
+          DJR
+        </th>
+        <th style="width: 5%">
           UNITE
         </th>
-        <th style="width: 10%">
+        <th style="width: 5%">
           QUT
         </th>
-        <th style="width: 10%">
+        <th style="width: 5%">
           %
         </th>
-        <th style="width: 10%">
+        <th style="width: 5%">
+          RLS
+        </th>
+        <th style="width: 5%">
+          RND_E
+        </th>
+        <th style="width: 5%">
+          BDA
+        </th>
+        <th style="width: 5%">
+          BDG
+        </th>
+        <th style="width: 5%">
+          RND_R
+        </th>
+        <th style="width: 5%">
           <ion-icon name="reverse-camera"></ion-icon>
         </th>
       </tr>
@@ -25,7 +46,7 @@
       <!--*****************************************************************************************************-->
       <!--*****************************************************************************************************-->
       <tr class="stock-content" *ngFor="let ds of designation; let i = index">
-        <td colspan="6">
+        <td colspan="12">
           <div
             (click)="onClickDesignation(i)"
             (clickOutside)="onClickOutsideDesignation(i)"
@@ -35,20 +56,37 @@
             }"
             class="categorie"
           >
-            <span
-              style="padding :0px"
-              (click)="onShowshowDetail(i)"
-              [class]="showSousLot[i] ? 'rotate' : 'no-rotate'"
-              >></span
-            >
-            <input
-              readonly
-              type="text"
-              name="lot{{ i }}"
-              [ngModel]="ds.lot"
-              ngModel
-              #lotUpt
-            />
+            <span class="border-case" style="width: 45% ">
+              <span
+                (click)="onShowshowDetail(i)"
+                [class]="showSousLot[i] ? 'rotate' : 'no-rotate'"
+                >></span
+              >
+              <input
+                readonly
+                type="text"
+                name="lot{{ i }}"
+                [ngModel]="ds.lot"
+                ngModel
+                #lotUpt
+              />
+            </span>
+            <span class="border-case" style=" width: 5% ">
+              <input
+                readonly
+                type="text"
+                name="dcl{{ i }}"
+                [ngModel]="ds.dcl"
+              /> </span
+            ><span class="border-case" style="width: 5% ">
+              <input
+                readonly
+                type="text"
+                name="dcl{{ i }}"
+                [ngModel]="ds.dcl"
+              />
+            </span>
+            <span class="border-case empty" style="width: 45%"> </span>
           </div>
 
           <div *ngIf="showSousLot[i]">
@@ -71,10 +109,10 @@
                 }"
                 class="cont_div"
               >
-                <span class="border-case" style="width: 60%">
+                <span class="border-case" style="width: 45%">
                   <span
+                    style="margin-left: 2.5%;"
                     (click)="onShowshowDetailOfdetail(i, j)"
-                    style="margin-left: 2.5%;padding: 0px"
                     [class]="showDetailsSousLot[i][j] ? 'rotate' : 'no-rotate'"
                     >></span
                   >
@@ -94,9 +132,9 @@
                     ngModel
                   />
                 </span>
-                <span
-                  style="border-left: 1px solid rgb(255, 255, 255);width: 10% "
-                >
+                <span class="border-case empty" style="width: 5% "></span>
+                <span class="border-case empty" style="width: 5% "></span>
+                <span class="border-case" style="width: 5% ">
                   <input
                     readonly
                     style="text-align: center"
@@ -106,7 +144,7 @@
                     ngModel
                   />
                 </span>
-                <span class="border-case" style="width: 10%">
+                <span class="border-case" style="width: 5%">
                   <input
                     readonly
                     style="text-align: center"
@@ -118,7 +156,7 @@
                     ngModel
                   />
                 </span>
-                <span class="border-case" style="width: 10%">
+                <span class="border-case" style="width: 5%">
                   <input
                     readonly
                     style="text-align: center"
@@ -132,7 +170,35 @@
                     #slotPrct
                   />
                 </span>
-                <span class="border-case" style="width: 10%"> </span>
+                <span class="border-case" style="width: 5%">
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="number"
+                    name="rls{{ i }}_{{ j }}"
+                    [ngModel]="calculRls(sLot.rls, sLot.quantite)"
+                  />
+                </span>
+                <span class="border-case empty" style="width: 5%"> </span>
+                <span class="border-case" style="width: 5%">
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="number"
+                    name="bda{{ i }}_{{ j }}"
+                    [ngModel]="sLot.bda"
+                  />
+                </span>
+                <span class="border-case" style="width: 5%">
+                  <input
+                    readonly
+                    style="text-align: center"
+                    type="number"
+                    name="bdg{{ i }}_{{ j }}"
+                    [ngModel]="sLot.bdg"
+                  />
+                </span>
+                <span class="border-case empty" style="width: 5%"> </span>
               </div>
               <div #detailSousLot *ngIf="showDetailsSousLot[i][j]">
                 <!--ENTREE PAR SOUS LOT-->
@@ -149,10 +215,10 @@
                   "
                 >
                   <div class="cont_div">
-                    <span class="border-case" style="width: 60%">
+                    <span class="border-case" style="width: 45%">
                       <input
                         readonly
-                        style="padding-left: 6.5%"
+                        style="padding-left: 9%"
                         type="text"
                         name="entreeNom{{ i }}_{{ j }}_{{ k }}"
                         [ngModel]="entree.entreeNom"
@@ -160,7 +226,10 @@
                         #entreeUpdt
                       />
                     </span>
-                    <span class="border-case" style="width: 10%">
+                    <span class="border-case empty" style="width: 5%"> </span>
+                    <span class="border-case empty" style="width: 5%"> </span>
+
+                    <span class="border-case" style="width: 5%">
                       <input
                         readonly
                         style="text-align: center"
@@ -185,7 +254,7 @@
                       />
                     </span>
 
-                    <span class="border-case" style="width: 10%"
+                    <span class="border-case" style="width: 5%"
                       ><input
                         readonly
                         required
@@ -196,7 +265,61 @@
                         ngModel
                       />
                     </span>
-                    <span class="border-case" style="width: 20%"></span>
+                    <span class="border-case empty" style="width: 5%"> </span>
+                    <span class="border-case" style="width: 5%"
+                      ><input
+                        readonly
+                        required
+                        style="text-align: center"
+                        type="number"
+                        name="rls{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="calculRls(entree.rls, entree.quantite)"
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case" style="width: 5%"
+                      ><input
+                        readonly
+                        required
+                        style="text-align: center"
+                        type="number"
+                        name="rndEstimer{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.rndEstimer"
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case" style="width: 5%"
+                      ><input
+                        readonly
+                        required
+                        style="text-align: center"
+                        type="number"
+                        name="bda{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.bda"
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case" style="width: 5%">
+                      <input
+                        readonly
+                        style="text-align: center"
+                        type="number"
+                        name="bdg{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.bdg"
+                      />
+                    </span>
+                    <span class="border-case" style="width: 5%"
+                      ><input
+                        readonly
+                        required
+                        style="text-align: center"
+                        type="number"
+                        name="rndReel{{ i }}_{{ j }}_{{ k }}"
+                        [ngModel]="entree.rndReel"
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case empty" style="width: 5%"> </span>
                   </div>
 
                   <!--AJOUT SOUS LOTS-->

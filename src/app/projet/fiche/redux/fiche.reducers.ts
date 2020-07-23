@@ -35,6 +35,10 @@ export function FicheReducer(
   action: fileAction.FicheAction
 ) {
   switch (action.type) {
+    case fromFicheAction.RESET:
+      return {
+        ...InitialState
+      };
     case fromFicheAction.SELECT_PROJET:
       return {
         ...InitialState,

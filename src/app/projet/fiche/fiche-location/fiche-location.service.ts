@@ -65,7 +65,7 @@ export class FicheLocationService {
 
           let f = fours.find(ff => ff.id == this.fournisseurIdFilter);
 
-          if (f !== null) {
+          if (typeof f !== "undefined") {
             let p = {
               materiels: f.materiels,
               fournisseurNom: f.fournisseurNom,
@@ -385,13 +385,14 @@ export class FicheLocationService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          console.log(resp.error.message);
-          // this.store.dispatch(
-          //   new fromFicheOuvrierAction.ShowAlert({
-          //     showAlert: true,
-          //     msg: resp.error.message
-          //   })
-          // );
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fournisseur",
+              msg: resp.error.message
+            })
+          );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
   }
@@ -488,7 +489,7 @@ export class FicheLocationService {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               showAlert: true,
-              type: "fournisseur",
+              type: "locDs",
               msg: resp.error.message
             })
           );

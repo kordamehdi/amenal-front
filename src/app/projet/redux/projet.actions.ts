@@ -16,7 +16,7 @@ export const GET_USERS = "GET_USERS";
 export const SET_CURRENT_USER = "SET_CURRENT_USER";
 export const GET_USER_WITH_ROLE = "GET_USER_WITH_ROLE";
 export const LOGIN_ERROR = "LOGIN_ERROR";
-
+export const GET_INNER_HEIGHT = "GET_INNER_HEIGHT";
 export class setCurrentUser implements Action {
   readonly type = SET_CURRENT_USER;
   payload: AuthModel;
@@ -91,6 +91,14 @@ export class Refresh implements Action {
     this.payload = payload;
   }
 }
+export class GetInnerHeight implements Action {
+  readonly type = GET_INNER_HEIGHT;
+  payload: number;
+
+  constructor(payload: number) {
+    this.payload = payload;
+  }
+}
 
 export type ProjetAction =
   | AddProjet
@@ -101,4 +109,5 @@ export type ProjetAction =
   | GetUsers
   | setCurrentUser
   | GetUsersWithRole
-  | loginError;
+  | loginError
+  | GetInnerHeight;

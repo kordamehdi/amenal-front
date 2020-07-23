@@ -13,102 +13,108 @@
       <ion-icon name="arrow-dropright"></ion-icon>
     </span>
   </div>
+  <form id="form1" #f="ngForm">
+    <table>
+      <tr class="header">
+        <th style="width: 22.8%">
+          <input
+            (input)="onFilter(false)"
+            type="text"
+            name="nomOuv$"
+            placeholder="NOM & PRENOM"
+            ngModel
+            style="width: 80%"
+          />
+          <ion-icon
+            [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
+            (click)="onSort(false)"
+          ></ion-icon>
+        </th>
+        <th style="width: 14.5%">
+          CIN
+        </th>
+        <th style="width: 20%">
+          <input
+            (input)="onFilter(false)"
+            type="text"
+            placeholder="QUALIFICATION"
+            name="qualification$"
+            ngModel
+            style="width: 80%"
+          />
+        </th>
+        <th style="width: 7%">
+          DEBUT
+        </th>
+        <th style="width: 7%">
+          FIN
+        </th>
+        <th style="width: 8.5%">
+          TRAVAIL
+        </th>
+        <th style="width: 5%">
+          JOUR
+        </th>
+        <th style="width: 5%">
+          H.SUP
+        </th>
+        <th style="width: 5%">
+          EPI
+        </th>
+        <th style="width: 5%">
+          <ion-icon name="reverse-camera"></ion-icon>
+        </th>
+      </tr>
 
-  <table>
-    <tr class="header">
-      <th style="width: 22.8%">
-        <input
-          (focus)="onFilterFocus(sNom)"
-          (input)="onFilter(sNom.value, 'nom')"
-          (blur)="onFilterBur(sNom)"
-          type="text"
-          value="NOM & PRENOM"
-          placeholder="NOM & PRENOM"
-          style="width: 80%"
-          #sNom
-        />
-        <ion-icon
-          [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
-          (click)="onSort()"
-        ></ion-icon>
-      </th>
-      <th style="width: 8.5%">
-        CIN
-      </th>
-      <th style="width: 8.5%">
-        QUALIFICATION
-      </th>
-      <th style="width: 7%">
-        DEBUT
-      </th>
-      <th style="width: 7%">
-        FIN
-      </th>
-      <th style="width: 12.5%">
-        TRAVAIL
-      </th>
-      <th style="width: 8.5%">
-        JOUR
-      </th>
-      <th style="width: 8.5%">
-        H.SUP
-      </th>
-      <th style="width: 5.7%">
-        EPI
-      </th>
-      <th style="width: 5.7%">
-        <ion-icon name="reverse-camera"></ion-icon>
-      </th>
-    </tr>
-
-    <ng-container
-      *ngIf="FicheOuvrier?.designations.length > 0; else elseTemplate"
-    >
-      <tr
-        [ngStyle]="{
-          'background-color':
-            this.ouvDsSlIndex == i ? 'rgba(255, 0, 0, 0.1)' : ''
-        }"
-        *ngFor="let ouvDs of designationOuvrier; let i = index"
-        (clickOutside)="onClickOutside(i)"
-        (click)="onClick(i)"
+      <ng-container
+        *ngIf="FicheOuvrier?.designations.length > 0; else elseTemplate"
       >
-        <td tabindex="1">
-          {{ ouvDs.nom }}
-        </td>
+        <tr
+          [ngStyle]="{
+            'background-color':
+              this.ouvDsSlIndex == i ? 'rgba(255, 0, 0, 0.1)' : ''
+          }"
+          *ngFor="let ouvDs of designationOuvrier; let i = index"
+          (clickOutside)="onClickOutside(i)"
+          (click)="onClick(i)"
+        >
+          <td tabindex="1">
+            {{ ouvDs.nom }}
+          </td>
 
-        <td tabindex="1">
-          {{ ouvDs.cin }}
-        </td>
+          <td tabindex="1">
+            {{ ouvDs.cin }}
+          </td>
 
-        <td tabindex="1">
-          {{ ouvDs.qualification }}
-        </td>
-        <td>
-          {{ ouvDs.tempsDebut }}
-        </td>
-        <td>
-          {{ ouvDs.tempsFin }}
-        </td>
-        <td>
-          {{ calculTravail(ouvDs.tempsDebut, ouvDs.tempsFin) }}
-        </td>
-        <td>
-          {{ ouvDs.jour }}
-        </td>
-        <td>
-          {{ ouvDs.hsup }}
-        </td>
-        <td>
-          <ion-checkbox disabled checked="{{ ouvDs.epi }}"></ion-checkbox>
-        </td>
-        <td></td>
-      </tr>
-    </ng-container>
-    <ng-template #elseTemplate>
-      <tr style="text-align: center ; font-style: italic">
-        <td colspan="10">rien a signaler</td>
-      </tr>
-    </ng-template>
-  </table>
+          <td tabindex="1">
+            {{ ouvDs.qualification }}
+          </td>
+          <td>
+            {{ ouvDs.tempsDebut }}
+          </td>
+          <td>
+            {{ ouvDs.tempsFin }}
+          </td>
+          <td>
+            {{ calculTravail(ouvDs.tempsDebut, ouvDs.tempsFin) }}
+          </td>
+          <td>
+            {{ ouvDs.jour }}
+          </td>
+          <td>
+            {{ ouvDs.hsup }}
+          </td>
+          <td>
+            <ion-checkbox disabled checked="{{ ouvDs.epi }}"></ion-checkbox>
+          </td>
+          <td></td>
+        </tr>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <tr style="text-align: center ; font-style: italic">
+          <td colspan="10">rien a signaler</td>
+        </tr>
+      </ng-template>
+    </table>
+  </form>
 </div>

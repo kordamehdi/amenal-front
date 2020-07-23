@@ -1,5 +1,6 @@
 td {
   width: 20x;
+  max-height: 100%;
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.5);
   border-left: 1px solid rgba(255, 255, 255, 0.5);
@@ -17,8 +18,9 @@ tr {
   background-color: rgba(255, 255, 255, 0.5);
 }
 .container {
-  width: 99%;
+  width: 97%;
   margin: auto;
+  height: 100%;
   margin-top: 15px;
   text-align: center;
 }

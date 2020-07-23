@@ -147,7 +147,6 @@ export class HeaderComponent implements OnInit {
   }
   onCtnAlert() {
     this.loginService.logout();
-    this.router.navigate(["/login"]);
     this.store.dispatch(
       new FromFicheAction.ShowFicheAlert({
         type: "header",

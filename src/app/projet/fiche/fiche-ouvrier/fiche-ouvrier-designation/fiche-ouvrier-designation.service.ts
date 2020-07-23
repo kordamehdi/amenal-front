@@ -131,34 +131,32 @@ export class FicheOuvrierDesignationService {
     );
   }
 
-  public OnDeleteOuvrierDesignation() {
+  public OnDeleteOuvrierDesignation(ouvID) {
     console.log("OnDeleteOuvrierDesignation");
-    if (this.OuvDsRemovingId !== -1) {
-      this.store.dispatch(new fromProjetAction.IsBlack(true));
-      const req = new HttpRequest(
-        "DELETE",
-        this.SERVER_ADDRESS + "/designations/" + this.OuvDsRemovingId,
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    const req = new HttpRequest(
+      "DELETE",
+      this.SERVER_ADDRESS + "/designations/" + ouvID,
 
-        {
-          reportProgress: true
-        }
-      );
-      this.httpClient.request(req).subscribe(
-        () => {
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.store.dispatch(new fromFicheAction.FinishRemovingDs());
-          this.ficheService.onGetFicheByType("OUVRIER", null);
-        },
-        resp => {
-          this.store.dispatch(
-            new fromFicheAction.ShowFicheAlert({
-              type: "fiche-ouvrier-ds",
-              showAlert: true,
-              msg: resp.error.message
-            })
-          );
-        }
-      );
-    }
+      {
+        reportProgress: true
+      }
+    );
+    this.httpClient.request(req).subscribe(
+      () => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+        this.store.dispatch(new fromFicheAction.FinishRemovingDs());
+        this.ficheService.onGetFicheByType("OUVRIER", null);
+      },
+      resp => {
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "fiche-ouvrier-ds",
+            showAlert: true,
+            msg: resp.error.message
+          })
+        );
+      }
+    );
   }
 }

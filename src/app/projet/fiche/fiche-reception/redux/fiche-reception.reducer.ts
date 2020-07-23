@@ -16,6 +16,12 @@ export interface FicheReceptionState {
     itemType: string;
   };
   showArticleByFournisseurId: number;
+  showDetails: [
+    {
+      id: number;
+      show: boolean;
+    }
+  ];
 }
 const InitialState: FicheReceptionState = {
   showFournisseurByArticleOrCategorie: {
@@ -27,7 +33,13 @@ const InitialState: FicheReceptionState = {
   fournisseurArticleAsso: [],
   fournisseurArticleNonAsso: [],
   ficheReceptionDs: [],
-  fournisseurArticleToSelect: []
+  fournisseurArticleToSelect: [],
+  showDetails: [
+    {
+      id: 0,
+      show: false
+    }
+  ]
 };
 
 export function FicheReducer(
@@ -35,6 +47,12 @@ export function FicheReducer(
   action: fromFicheReceptionAction.FicheReceptionAction
 ) {
   switch (action.type) {
+    case fromFicheReceptionAction.SHOW_DETAIL_CAT_ARTICLE: {
+      return {
+        ...state,
+        showDetails: action.payload
+      };
+    }
     case fromFicheReceptionAction.SHOW_FOURNISSEUR_BY_ARTICLE_OR_CATEGORIE: {
       return {
         ...state,

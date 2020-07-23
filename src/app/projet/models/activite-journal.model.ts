@@ -1,4 +1,4 @@
-export interface lotModel {
+export interface lotsModel {
   id: number;
   designation: string;
   avancement: number;

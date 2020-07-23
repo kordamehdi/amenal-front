@@ -20,7 +20,41 @@ export interface ficheLocationState {
     materielId: number;
     materielNom: string;
   };
+  FournisseurListState: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filterByNom: string;
+  };
+  MaterielListState: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filterByNom: string;
+  };
   fournisseurMaterielNotAsso: FournisseurModel[];
+  ficheLocState: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filter: {
+      libelle: string;
+      fournisseurNom: string;
+    };
+    sort: {
+      order: {
+        libelle: boolean;
+        fournisseurNom: boolean;
+      };
+      type: string;
+    };
+  };
 }
 
 const initialState: ficheLocationState = {
@@ -33,13 +67,47 @@ const initialState: ficheLocationState = {
     materielId: -1,
     materielNom: ""
   },
+  FournisseurListState: {
+    position: {
+      a: 0,
+      b: -1,
+      position: 1
+    },
+    filterByNom: ""
+  },
+  MaterielListState: {
+    position: {
+      a: 0,
+      b: -1,
+      position: 1
+    },
+    filterByNom: ""
+  },
   fournisseurs: [],
   materiels: [],
   showList: false,
   fournisseursByMateriel: [],
   fournisseurByProjet: [],
   unites: [],
-  fournisseurMaterielNotAsso: []
+  fournisseurMaterielNotAsso: [],
+  ficheLocState: {
+    position: {
+      a: 0,
+      b: -1,
+      position: 1
+    },
+    filter: {
+      libelle: "",
+      fournisseurNom: ""
+    },
+    sort: {
+      order: {
+        libelle: true,
+        fournisseurNom: true
+      },
+      type: "libelle"
+    }
+  }
 };
 
 export function ficheLocationReducer(
@@ -47,6 +115,24 @@ export function ficheLocationReducer(
   action: fromFicheLocationAction.FicheLocationAction
 ): ficheLocationState {
   switch (action.type) {
+    case fromFicheLocationAction.GET_LIST_MAT_STATE: {
+      return {
+        ...state,
+        MaterielListState: action.payload
+      };
+    }
+    case fromFicheLocationAction.GET_LIST_FOURNISSEUR_STATE: {
+      return {
+        ...state,
+        FournisseurListState: action.payload
+      };
+    }
+    case fromFicheLocationAction.GET_FICHE_LOC_STATE: {
+      return {
+        ...state,
+        ficheLocState: action.payload
+      };
+    }
     case fromFicheLocationAction.GET_FOURNISSEUR_LOCATION_NOT_ASSO: {
       return {
         ...state,

@@ -1,4 +1,4 @@
-<div class="scrol_cont">
+<div class="scrol_cont" [ngStyle]="{ height: screenHeight }">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -7,10 +7,10 @@
     (ngSubmit)="isUpdate === 1 ? OnUpdateOuvrier() : OnAddOuvrier()"
     #f="ngForm"
   >
-    <div class="header">
-      <span class="left" (click)="onPrevious()"
+    <div class="header-title">
+      <!--   <span class="left" (click)="onPrevious()"
         ><ion-icon name="arrow-dropleft"></ion-icon>
-      </span>
+      </span>-->
       <label for="file" class="left"
         ><ion-icon name="download">
           <input
@@ -22,26 +22,24 @@
         </ion-icon>
       </label>
 
-      <span class="middle"
-        >LISTE DES OUVRIERS : {{ position }}/{{ size }}
-      </span>
+      <span class="middle">LISTE DES OUVRIERS </span>
 
       <span class="left" (click)="OnCancel()">
         <ion-icon name="arrow-round-up"></ion-icon>
       </span>
-      <span class="left" (click)="onNext()">
+      <!-- <span class="left" (click)="onNext()">
         <ion-icon name="arrow-dropright"></ion-icon>
-      </span>
+      </span>-->
     </div>
     <table style="width:100% ;">
-      <tr (clickOutside)="this.typeAsc = ''">
-        <th>
+      <tr>
+        <th Style="width: 11%">
           <input
             [ngStyle]="{
               color: typeAsc === 'nom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('nom')"
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             type="text"
             placeholder="NOM"
             name="nom$"
@@ -56,16 +54,16 @@
             [name]="
               ascendant['nom'] == true ? 'arrow-round-down' : 'arrow-round-up'
             "
-            (click)="onSort('nom')"
+            (click)="onSort('nom', false)"
           ></ion-icon>
         </th>
-        <th>
+        <th Style="width: 11%">
           <input
             [ngStyle]="{
               color: typeAsc === 'prenom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('prenom')"
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             name="prenom$"
             ngModel
             type="text"
@@ -82,16 +80,16 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('prenom')"
+            (click)="onSort('prenom', false)"
           ></ion-icon>
         </th>
-        <th>
+        <th Style="width: 11%">
           <input
             [ngStyle]="{
               color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('cin')"
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             type="text"
             name="cin$"
             ngModel
@@ -106,11 +104,11 @@
             [name]="
               ascendant['cin'] == true ? 'arrow-round-down' : 'arrow-round-up'
             "
-            (click)="onSort('cin')"
+            (click)="onSort('cin', false)"
           ></ion-icon>
         </th>
 
-        <th>
+        <th Style="width: 15%">
           <input
             [ngStyle]="{
               color:
@@ -119,7 +117,7 @@
                   : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('qualification')"
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             type="text"
             name="qualification$"
             placeholder="QUALIF."
@@ -139,10 +137,10 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('qualification')"
+            (click)="onSort('qualification', false)"
           ></ion-icon>
         </th>
-        <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
+        <th Style="width: 5%">
           AGE
           <ion-icon
             [ngStyle]="{
@@ -156,10 +154,10 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('dateNaissance')"
+            (click)="onSort('dateNaissance', false)"
           ></ion-icon>
         </th>
-        <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
+        <th Style="width: 11%">
           ANCIENTÉ
           <ion-icon
             [ngStyle]="{
@@ -173,26 +171,26 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('dateRecrutement')"
+            (click)="onSort('dateRecrutement', false)"
           ></ion-icon>
         </th>
-        <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
+        <th Style="width: 5%">
           J_TRV
         </th>
-        <th [ngStyle]="{ color: 'rgba(61, 61, 61, 0.815)' }">
+        <th Style="width: 10%">
           TELE
         </th>
-        <th>
+        <th Style="width: 10%">
           <input
             [ngStyle]="{
               color:
                 typeAsc === 'appreciation' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
             (focus)="onFilterFocus('APPREC.')"
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             type="text"
             name="appreciation$"
-            placeholder="APPREC."
+            placeholder="APREC."
             #oapp
             style="width: 80%"
             ngModel
@@ -207,7 +205,7 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('appreciation')"
+            (click)="onSort('appreciation', false)"
           ></ion-icon>
         </th>
       </tr>
@@ -237,7 +235,7 @@
           />
         </td>
 
-        <td class="tdInput">
+        <td class="tdInput" style="position: relative">
           <input
             (focus)="onFocusQualificationInput(detail)"
             (blur)="onBlurQualificationInput(detail)"
@@ -322,10 +320,10 @@
           (press)="onLongPress(ouv.id)"
           [ngStyle]="{
             'background-color':
-              this.focusID == ouv.id ? 'rgba(255, 0, 0, 0.1)' : ''
+              this.focusID == ouv.id ? 'rgba(255, 0, 0, 0.1)' : '',
+            'font-weight': ouv.isAsso ? 'bold' : 'normal'
           }"
           (dblclick)="addOuvToProjets(ouv.id)"
-          [appHasProjet]="ouv.idProjets"
           (clickOutside)="onUpdateClickedOutside(ouv.id)"
           (click)="onUpdateClick(ouv.id)"
         >
@@ -364,7 +362,7 @@
             />
           </td>
 
-          <td class="">
+          <td class="" style="position: relative">
             <input
               disabled
               (focus)="onFocusQualUpdateInput(qualif)"

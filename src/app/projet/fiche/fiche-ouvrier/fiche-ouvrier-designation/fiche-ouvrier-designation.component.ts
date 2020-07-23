@@ -1,19 +1,26 @@
+import { stateFicheOuvrier } from "./../redux/fiche-ouvrier.selector";
+import { ouvrierDesignationModel } from "./../../../models/ouvrierDesignation.model";
 import { OuvrierModel } from "src/app/projet/models/ouvrier.model";
-
 import { FicheService } from "./../../fiche.service";
 import { nextFiche, validerFiche } from "./../../nav/nav.selector";
 import { ProjetModel } from "./../../../models/projet.model";
-import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
+import { HostListener } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  OnDestroy,
+  AfterViewInit
+} from "@angular/core";
 import { Store } from "@ngrx/store";
 import { FicheOuvrierDesignationService } from "./fiche-ouvrier-designation.service";
 import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
-import { ouvrierDesignationModel } from "src/app/projet/models/ouvrierDesignation.model";
 import { NgForm } from "@angular/forms";
 import * as moment from "moment";
 import { refresh } from "../../header/head.selector";
 import { untilDestroyed } from "ngx-take-until-destroy";
-
+import * as fromFicheOuvrierAction from "../redux/fiche-ouvrier.action";
 @Component({
   selector: "app-fiche-ouvrier-designation",
   templateUrl: "./fiche-ouvrier-designation.component.html",
@@ -40,16 +47,18 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
     "jour"
   ];
   formNamesOnUpdate = ["ouv", "debut", "fin", "travail", "epi", "hSup", "jour"];
-
-  designationOuvrier = [];
-  designationOuvrier$ = [];
+  ready = false;
+  designationOuvrier: ouvrierDesignationModel[] = [];
+  designationOuvrier$: ouvrierDesignationModel[] = [];
+  designationOuvrier$$: ouvrierDesignationModel[] = [];
   //ascendant
   ascendant = true;
   OuvrierToSelect: OuvrierModel[];
   OuvrierToSelect$: OuvrierModel[];
-
+  SearchByNom = "";
+  SearchByQual = "";
   isSelected = false;
-  isUpdate;
+  isUpdate = -1;
   showAlert: Boolean = false;
   errorMsg = "Erreur!";
   Trv: string;
@@ -58,7 +67,11 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   DateAcntMax;
   navPas = 2;
   position = 1;
+  ouvDeleteId = -1;
   size;
+  a = 0;
+  b = this.navPas;
+  screenHeight = "";
   constructor(
     private ficheService: FicheService,
     private ficheOuvrierDesignationService: FicheOuvrierDesignationService,
@@ -66,12 +79,28 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.store.select("projet").subscribe(state => {
+      let d = (state.innerHeight * 0.9).toString().concat("px");
+      if (this.screenHeight !== d) this.screenHeight = d;
+    });
     this.ficheOuvrierDesignationService.onGetOuvrierByProjet();
     this.store
       .select("ficheOuvrier")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
         this.columnDesignation = state.columnDesignation;
+      });
+    this.store
+      .select(stateFicheOuvrier)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.a = state.position.a;
+        this.b = state.position.b;
+        this.position = state.position.position;
+        this.SearchByNom = state.filter.nom;
+        this.SearchByQual = state.filter.qualification;
+        this.ascendant = state.sort;
+        this.onFilter(true);
       });
 
     this.store
@@ -91,18 +120,10 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
           ...state.ficheSelectionner
         };
 
-        if (this.FicheOuvrier.designations.length !== 0) {
-          this.designationOuvrier$ = this.FicheOuvrier.designations;
-          this.designationOuvrier = this.FicheOuvrier.designations.slice(
-            0,
-            this.navPas
-          );
-          this.size = Math.trunc(
-            this.FicheOuvrier.designations.length / this.navPas
-          );
-          if (this.size < this.FicheOuvrier.designations.length / this.navPas)
-            this.size = this.size + 1;
-        }
+        if (this.FicheOuvrier.designations.length !== 0)
+          this.designationOuvrier$$ = this.FicheOuvrier.designations;
+
+        this.onFilter(true);
       });
 
     this.store
@@ -156,16 +177,15 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
       cin: "",
       tempsDebut: this.form.value["debut"],
       tempsFin: this.form.value["fin"],
-      travail: (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi"],
-      hsup: this.form.value["hSup"],
-      jour: this.form.value["jour"],
+      hsup: this.form.value["jour"],
+      jour: this.form.value["hSup"],
       idFiche: this.FicheOuvrier.id,
       valid: this.timeException(
         this.form.value["debut"],
         this.form.value["fin"],
-        this.form.value["hSup"],
-        this.form.value["jour"]
+        hsup,
+        jour
       )
     };
 
@@ -178,18 +198,7 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
 
   OnUpdateOuvrierDesignation() {
-    var jour =
-      this.form.value["jour".concat(this.ouvDsSlIndex.toString())] === ""
-        ? 0
-        : this.form.value["jour".concat(this.ouvDsSlIndex.toString())];
-    var hsup =
-      this.form.value["hSup".concat(this.ouvDsSlIndex.toString())] === ""
-        ? 0
-        : this.form.value["hSup".concat(this.ouvDsSlIndex.toString())];
-
-    let dss = this.FicheOuvrier.designations.find(
-      d => d.id === this.ouvDsSlIndex
-    );
+    let dss = this.designationOuvrier$$.find(d => d.id === this.ouvDsSlIndex);
 
     // calculate total duration
     const ouvDs: ouvrierDesignationModel = {
@@ -201,7 +210,6 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
       cin: dss.cin,
       tempsDebut: this.form.value["debut".concat(this.ouvDsSlIndex.toString())],
       tempsFin: this.form.value["fin".concat(this.ouvDsSlIndex.toString())],
-      travail: (jour * 9 + hsup).toFixed(2),
       epi: this.form.value["epi".concat(this.ouvDsSlIndex.toString())],
       hsup: this.form.value["hSup".concat(this.ouvDsSlIndex.toString())],
       jour: this.form.value["jour".concat(this.ouvDsSlIndex.toString())],
@@ -258,8 +266,8 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
-  onFocusSelectOuvrier(ouvadd) {
-    ouvadd.hidden = false;
+  onFocusSelectOuvrier(ouvAdd) {
+    ouvAdd.hidden = false;
     let vv = this.form.value["ouv"].trim().toUpperCase();
     if (vv !== "")
       this.OuvrierToSelect = this.OuvrierToSelect$.filter(d => {
@@ -273,10 +281,12 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   onClickAddOutside() {
     if (this.isUpdate === 0 && (this.form.dirty || this.isSelected)) {
       let submit = true;
+      this.isUpdate = -1;
+      console.log("hssup", this.form.value["hSup"]);
+
       let debut = this.form.controls["debut"].value;
       let fin = this.form.controls["fin"].value;
       if (!this.calculeDiff(debut, fin)) {
-        this.isUpdate = -1;
         this.store.dispatch(
           new fromFicheAction.ShowFicheAlert({
             showAlert: true,
@@ -288,7 +298,6 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
         this.formNames.forEach((key: any) => {
           if (this.form.controls[key].invalid) {
             submit = false;
-            this.isUpdate = -1;
             this.store.dispatch(
               new fromFicheAction.ShowFicheAlert({
                 showAlert: true,
@@ -351,16 +360,14 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
   /*********** */
   onLongPress(ouvDsId) {
-    this.store.dispatch(new fromFicheAction.StartRemovingDs(ouvDsId));
-  }
-  onDelete() {
+    this.ouvDeleteId = ouvDsId;
     this.store.dispatch(
       new fromFicheAction.ShowFicheAlert({
-        showAlert: false,
-        msg: ""
+        showAlert: true,
+        msg: "Vous etes sure de vouloire supprimer cette designation?",
+        type: "fiche-ouvrier-ds"
       })
     );
-    this.ficheOuvrierDesignationService.OnDeleteOuvrierDesignation();
   }
 
   calculTravail(dateDebut, dateFin) {
@@ -394,48 +401,46 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
     if (duration < 0 || +duration + 2 > +jour * 9 + +hsup) return false;
     else return true;
   }
-  onClickedOutside(i) {
-    if (
-      this.ouvDsSlIndex === i &&
-      this.isUpdate == 1 &&
-      (this.form.dirty || this.isSelected)
-    ) {
-      let submit = true;
-      let debut = this.form.controls["debut".concat(i.toString())].value;
-      let fin = this.form.controls["fin".concat(i.toString())].value;
+  onClickUpdateOutside(id) {
+    if (this.ouvDsSlIndex === id) {
+      if (this.isUpdate == 1 && (this.form.dirty || this.isSelected)) {
+        let submit = true;
+        let debut = this.form.controls["debut".concat(id.toString())].value;
+        let fin = this.form.controls["fin".concat(id.toString())].value;
 
-      if (!this.calculeDiff(debut, fin)) {
-        this.isUpdate = -1;
-        this.rollBack(i);
-        this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
-            showAlert: true,
-            type: "fiche-ouvrier-ds",
-            msg: "Date Debut debut doit etre inferieure a la date de Fin!"
-          })
-        );
-      } else {
-        this.formNamesOnUpdate.forEach((key: any) => {
-          if (this.form.controls[key.concat(i.toString())].invalid) {
-            submit = false;
-            this.store.dispatch(
-              new fromFicheAction.ShowFicheAlert({
-                showAlert: true,
-                type: "fiche-ouvrier-ds",
-                msg: "le champs " + key + " est invalide!"
-              })
-            );
+        if (!this.calculeDiff(debut, fin)) {
+          this.isUpdate = -1;
+          this.rollBack(id);
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "fiche-ouvrier-ds",
+              msg: "Date Debut debut doit etre inferieure a la date de Fin!"
+            })
+          );
+        } else {
+          this.formNamesOnUpdate.forEach((key: any) => {
+            if (this.form.controls[key.concat(id.toString())].invalid) {
+              submit = false;
+              this.store.dispatch(
+                new fromFicheAction.ShowFicheAlert({
+                  showAlert: true,
+                  type: "fiche-ouvrier-ds",
+                  msg: "le champs " + key + " est invalide!"
+                })
+              );
+            }
+          });
+          if (submit) this.form.ngSubmit.emit();
+          else {
+            this.ouvDsSlIndex = -1;
           }
-        });
-        if (submit) this.form.ngSubmit.emit();
-        else {
-          this.ouvDsSlIndex = -1;
         }
+        this.formNamesOnUpdate.forEach((key: any) => {
+          this.form.controls[key.concat(id.toString())].disable();
+        });
       }
-      this.formNamesOnUpdate.forEach((key: any) => {
-        this.form.controls[key.concat(i.toString())].disable();
-      });
-    }
+    } else this.ouvDsSlIndex = -1;
   }
   /*** */
 
@@ -449,30 +454,6 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
     if (duration < 0) return false;
     else return true;
   }
-  rollBack(i) {
-    this.form.controls["debut".concat(i.toString())].setValue(
-      this.FicheOuvrier.designations[i]["tempsDebut"]
-    );
-    this.form.controls["fin".concat(i.toString())].setValue(
-      this.FicheOuvrier.designations[i]["tempsFin"]
-    );
-    this.form.controls["hSup".concat(i.toString())].setValue(
-      this.FicheOuvrier.designations[i]["hsup"]
-    );
-    this.form.controls["jour".concat(i.toString())].setValue(
-      this.FicheOuvrier.designations[i]["jour"]
-    );
-  }
-
-  /*******/
-  onHideAlert() {
-    this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
-        showAlert: false,
-        type: "fiche-ouvrier-ds"
-      })
-    );
-  }
 
   onTrsDoubleToDate(min: number, u) {
     if (u === "H") {
@@ -483,9 +464,9 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   }
 
   onClick(i) {
-    this.isUpdate = true;
-    this.ouvDsSlIndex = i;
     setTimeout(() => {
+      this.isUpdate = 1;
+      this.ouvDsSlIndex = i;
       this.formNamesOnUpdate.forEach((key: any) => {
         this.form.controls[key.concat(i.toString())].enable();
       });
@@ -495,53 +476,67 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
   onPrevious() {
     if (this.position - 1 > 0) {
       this.position = this.position - 1;
-      let a = this.navPas * this.position;
-      let b = a - this.navPas;
-      this.designationOuvrier = this.designationOuvrier$.slice(b, a);
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.designationOuvrier = this.designationOuvrier$.slice(this.a, this.b);
     }
   }
   onNext() {
     if (this.position + 1 <= this.size) {
-      let b = this.navPas * this.position;
+      this.a = this.navPas * this.position;
       this.position = this.position + 1;
-      let a = b + this.navPas;
-      this.designationOuvrier = this.designationOuvrier$.slice(b, a);
+      this.b = this.a + this.navPas;
+      this.designationOuvrier = this.designationOuvrier$.slice(this.a, this.b);
     }
   }
 
-  onFilterFocus(input, type) {
-    input.disabled = false;
-    if (input.value === type) input.value = "";
-  }
-  onFilterBur(input, type) {
-    if (input.value.trim() === "") {
-      input.value = type;
-      this.designationOuvrier$ = this.FicheOuvrier.designations;
-      this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
-      this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
-      if (this.size < this.designationOuvrier$.length / this.navPas)
-        this.size = this.size + 1;
-    }
-  }
+  onFilter(init) {
+    this.designationOuvrier$ = this.slice(this.designationOuvrier$$);
 
-  onFilter(value, type) {
-    if (value.trim() == "") {
-      this.designationOuvrier$ = this.FicheOuvrier.designations;
-    } else {
-      this.designationOuvrier$ = this.FicheOuvrier.designations.filter(d => {
-        return d[type].includes(value.toUpperCase());
-      });
+    if (typeof this.form !== "undefined") {
+      if (typeof this.form.controls["nomOuv$"] !== "undefined") {
+        if (init) {
+          this.form.controls["nomOuv$"].setValue(
+            this.SearchByNom.toLowerCase()
+          );
+          this.form.controls["qualification$"].setValue(
+            this.SearchByQual.toLowerCase()
+          );
+        } else {
+          this.SearchByNom = this.form.controls["nomOuv$"].value
+            .trim()
+            .toUpperCase();
+          this.SearchByQual = this.form.controls["qualification$"].value
+            .trim()
+            .toUpperCase();
+        }
+      }
     }
 
-    this.designationOuvrier = this.designationOuvrier$.slice(0, this.navPas);
+    this.designationOuvrier$ = this.designationOuvrier$.filter(d => {
+      return (
+        d.nom.includes(this.SearchByNom) &&
+        d.qualification.includes(this.SearchByQual)
+      );
+    });
+    this.designationOuvrier = this.designationOuvrier$;
+    this.onSort(true);
+
+    /*if (!init && (this.SearchByNom !== "" || this.SearchByQual !== "")) {
+      this.a = 0;
+      this.b = this.navPas;
+      this.position = 1;
+    }
+    this.designationOuvrier = this.designationOuvrier$.slice(this.a, this.b);
     this.size = Math.trunc(this.designationOuvrier$.length / this.navPas);
     if (this.size < this.designationOuvrier$.length / this.navPas)
       this.size = this.size + 1;
+    this.onSort(true);*/
   }
 
-  onSort() {
+  onSort(init) {
     // descending order z->a
-    this.ascendant = !this.ascendant;
+    if (!init) this.ascendant = !this.ascendant;
     if (!this.ascendant)
       this.designationOuvrier = this.designationOuvrier.sort((a, b) => {
         if (a.nom > b.nom) {
@@ -563,7 +558,59 @@ export class FicheOuvrierDesignationComponent implements OnInit, OnDestroy {
         return 0;
       });
   }
+  slice(Dss) {
+    return [...Dss].map(m => JSON.parse(JSON.stringify(m)));
+  }
+
+  rollBack(id) {
+    let ds = this.designationOuvrier$$.find(d => d.id === id);
+    this.form.controls["debut".concat(id.toString())].setValue(
+      ds["tempsDebut"]
+    );
+    this.form.controls["fin".concat(id.toString())].setValue(ds["tempsFin"]);
+    this.form.controls["hSup".concat(id.toString())].setValue(ds["hsup"]);
+    this.form.controls["jour".concat(id.toString())].setValue(ds["jour"]);
+  }
+  onDelete() {
+    if (this.ouvDeleteId !== -1) {
+      this.ficheOuvrierDesignationService.OnDeleteOuvrierDesignation(
+        this.ouvDeleteId
+      );
+      this.ouvDeleteId = -1;
+      this.store.dispatch(
+        new fromFicheAction.ShowFicheAlert({
+          showAlert: false,
+          msg: ""
+        })
+      );
+    }
+  }
+
+  /*******/
+  onHideAlert() {
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        showAlert: false,
+        type: "fiche-ouvrier-ds"
+      })
+    );
+  }
   ngOnDestroy() {
+    this.store.dispatch(
+      new fromFicheOuvrierAction.getFicheState({
+        position: {
+          a: this.a,
+          b: this.b,
+          position: this.position
+        },
+        filter: {
+          nom: this.SearchByNom,
+          qualification: this.SearchByQual
+        },
+        sort: this.ascendant
+      })
+    );
+
     // To protect you, we'll throw an error if it doesn't exist.
   }
 }

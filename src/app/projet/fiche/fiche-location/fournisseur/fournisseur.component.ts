@@ -1,12 +1,15 @@
 import * as ficheLocationAction from "./../redux/fiche-location.action";
 import { MaterielModel } from "./../../../models/materiel.model";
 import { FournisseurModel } from "../../../models/fournisseur-materiel.model";
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { FicheLocationService } from "../fiche-location.service";
 import { Store } from "@ngrx/store";
 import * as App from "../../../../store/app.reducers";
 import * as fromFicheAction from "../../redux/fiche.action";
 import { untilDestroyed } from "ngx-take-until-destroy";
+import * as _ from "lodash";
+import * as fromFicheLocationAction from "../redux/fiche-location.action";
+import { fourListState } from "../redux/fiche-location.selector";
 
 @Component({
   selector: "app-fournisseur",
@@ -14,6 +17,9 @@ import { untilDestroyed } from "ngx-take-until-destroy";
   styleUrls: ["./fournisseur.component.scss"]
 })
 export class FournisseurComponent implements OnInit, OnDestroy {
+  @ViewChild("keyWord", { static: false })
+  input;
+
   fournisseurs: FournisseurModel[] = [];
   fournisseurs$: FournisseurModel[] = [];
   fournisseurs$$: FournisseurModel[] = [];
@@ -34,12 +40,13 @@ export class FournisseurComponent implements OnInit, OnDestroy {
   materielsShow: MaterielModel[];
   showDetails = [];
   isSearch = false;
-  isFilterByMateriel = false;
   isFilterByMateriel$ = false;
-  oneClick = true;
-  selected = -1;
+  oneClick = false;
+  fourSelectedId = -1;
   navPas = 5;
   position = 1;
+  a = 0;
+  b = this.navPas;
   size;
 
   constructor(
@@ -51,35 +58,50 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     this.ficheLocationService.onGetFournisseurs();
     this.ficheLocationService.OnGetFournisseurMaterielNotAsso();
 
+    this.store.select(fourListState).subscribe(state => {
+      setTimeout(() => {
+        this.a = state.position.a;
+        if (state.position.b > 0) this.b = state.position.b;
+        this.position = state.position.position;
+        this.word = state.filterByNom;
+        this.onFilterByFournisseur(true);
+      }, 0);
+    });
+
     this.store.select("ficheLocation").subscribe(locState => {
-      this.fournisseursNonAsso = locState.fournisseurMaterielNotAsso;
-      this.materiels = locState.materiels;
-      let ff;
-      if (locState.showFournisseurByMateriel.materielNom !== "") {
-        if (
-          locState.showFournisseurByMateriel.materielNom ==
-          "FOURNISSEUR_SANS_MATERIEL"
-        ) {
-          this.isFilterByMateriel$ = true;
-          ff = [...locState.fournisseurs].filter(f => f.materiels.length == 0);
+      setTimeout(() => {
+        this.fourSelectedId = locState.showMaterielByFournisseur.fournisseurId;
+        this.fournisseursNonAsso = locState.fournisseurMaterielNotAsso;
+
+        this.materiels = locState.materiels;
+        if (locState.showFournisseurByMateriel.materielNom !== "") {
+          if (
+            locState.showFournisseurByMateriel.materielNom ==
+            "FOURNISSEUR_SANS_MATERIEL"
+          ) {
+            this.isFilterByMateriel$ = true;
+            this.fournisseurs$$ = [...locState.fournisseurs].filter(
+              f => f.materiels.length == 0
+            );
+          } else {
+            this.isFilterByMateriel$ = true;
+
+            this.fournisseurs$$ = [...locState.fournisseurs].filter(f =>
+              f.materiels
+                .map(m => m.id)
+                .includes(locState.showFournisseurByMateriel.materielId)
+            );
+          }
         } else {
-          this.isFilterByMateriel$ = true;
+          this.isFilterByMateriel$ = false;
 
-          ff = [...locState.fournisseurs].filter(f =>
-            f.materiels
-              .map(m => m.id)
-              .includes(locState.showFournisseurByMateriel.materielId)
-          );
+          this.fournisseurs$$ = [...locState.fournisseurs];
         }
-      } else {
-        this.isFilterByMateriel$ = false;
+        this.fournisseurs$ = this.fournisseurs$$;
+        this.onSortByEnGras();
 
-        this.fournisseurs$$ = [...locState.fournisseurs];
-      }
-      this.fournisseurs$ = this.fournisseurs$$;
-      this.onSortByEnGras();
-
-      this.onFilterByFournisseur(this.word);
+        this.onFilterByFournisseur(true);
+      }, 0);
     });
     this.store
       .select("fiche")
@@ -92,7 +114,7 @@ export class FournisseurComponent implements OnInit, OnDestroy {
       });
   }
 
-  OnaddFounisseur(f, l) {
+  OnAddFounisseur(f, l) {
     setTimeout(() => {
       l.hidden = true;
       if (f.value.trim() !== "") {
@@ -105,8 +127,11 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     this.ficheLocationService.onAddFournisseur(fournisseurNom);
     f.value = "";
   }
-  onAssoFourToProjet(id, d) {
-    if (this.assFrToPrjt || d) this.ficheLocationService.onAssoFourToProjet(id);
+  onAssoFourToProjet(id, d: boolean) {
+    console.log();
+    if (this.assFrToPrjt || d) {
+      this.ficheLocationService.onAssoFourToProjet(id);
+    }
   }
 
   OnBlurUpdateFounisseur(fourInput, four: FournisseurModel) {
@@ -191,32 +216,23 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     );
   }
 
-  OnFilterBlur(input) {
-    let v = input.value.trim();
-    if (v === "") input.value = "FROUNISSEURS";
-    this.isSearch = false;
-  }
+  onFilterByFournisseur(init: boolean) {
+    if (init) this.input.nativeElement.value = this.word.toLowerCase();
 
-  onFilterFocus(input) {
-    let v = input.value.trim();
-    if (v === "FROUNISSEURS") input.value = "";
-    this.isSearch = true;
-  }
+    this.word = this.input.nativeElement.value.trim().toUpperCase();
+    this.fournisseurs$ = this.fournisseurs$$.filter(f => {
+      if (f.fournisseurNom.includes(this.word)) return true;
+      else return false;
+    });
 
-  onFilterByFournisseur(keyWord: string) {
-    this.word = keyWord.toUpperCase().trim();
-    if (this.word !== "FROUNISSEURS")
-      if (this.word === "")
-        this.fournisseurs$ = this.slice(this.fournisseurs$$);
-      else {
-        this.fournisseurs$ = this.fournisseurs$$.filter(f => {
-          if (f.fournisseurNom.includes(this.word)) return true;
-          else return false;
-        });
-      }
-    this.position = 1;
+    if (!init && this.word !== "") {
+      this.a = 0;
+      this.b = this.navPas;
+      this.position = 1;
+    }
+
     let n = this.fournisseurs$.length;
-    this.fournisseurs = this.fournisseurs$.slice(0, this.navPas);
+    this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
     this.size = Math.trunc(n / this.navPas);
     if (this.size < n / this.navPas) this.size = this.size + 1;
   }
@@ -228,12 +244,12 @@ export class FournisseurComponent implements OnInit, OnDestroy {
         ms = ms.concat([...f.materiels]);
       });
       this.fourIndex = -2;
-      this.selected = -2;
+      this.fourSelectedId = -2;
 
       let p = {
         materiels: ms,
         fournisseurNom: "MATERIEL_SANS_FOURNISSEUR",
-        fournisseurId: -1
+        fournisseurId: -2
       };
       this.store.dispatch(new ficheLocationAction.showMaterielByFournisseur(p));
     }
@@ -262,7 +278,6 @@ export class FournisseurComponent implements OnInit, OnDestroy {
   }
   OnFocusAddFounisseur(l) {
     l.hidden = false;
-    this.isFilterByMateriel = false;
   }
 
   onClickedOutside(dsInput, id) {
@@ -271,7 +286,7 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     if (this.fourIndex === id) {
       this.fourIndex = -1;
       this.assFrToPrjt = true;
-      this.oneClick = true;
+      this.oneClick = false;
     }
   }
   onSortByEnGras() {
@@ -286,7 +301,7 @@ export class FournisseurComponent implements OnInit, OnDestroy {
       });
   }
   OnAnnulerFilter() {
-    this.selected = -1;
+    this.fourSelectedId = -1;
     let p = {
       materiels: [],
       fournisseurNom: "",
@@ -297,38 +312,51 @@ export class FournisseurComponent implements OnInit, OnDestroy {
   onPrevious() {
     if (this.position - 1 > 0) {
       this.position = this.position - 1;
-      let a = this.navPas * this.position;
-      let b = a - this.navPas;
-      this.fournisseurs = this.fournisseurs$.slice(b, a);
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
     }
   }
   onNext() {
     if (this.position + 1 <= this.size) {
-      let b = this.navPas * this.position;
+      this.a = this.navPas * this.position;
       this.position = this.position + 1;
-      let a = b + this.navPas;
-      this.fournisseurs = this.fournisseurs$.slice(b, a);
+      this.b = this.a + this.navPas;
+      this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
     }
   }
 
   onClick(dsInput, i, id) {
-    this.oneClick = false;
-    this.isFilterByMateriel = true;
-    if (!this.isFilterByMateriel$) {
-      let p = {
-        materiels: this.fournisseurs[i].materiels,
-        fournisseurNom: this.fournisseurs[i].fournisseurNom,
-        fournisseurId: this.fournisseurs[i].id
-      };
-      this.store.dispatch(new ficheLocationAction.showMaterielByFournisseur(p));
-      this.fourIndex = id;
-      this.selected = id;
-    } else this.fourIndex = id;
-
     setTimeout(() => {
       dsInput.disabled = false;
       this.assFrToPrjt = false;
     }, 200);
+    if (!this.oneClick) {
+      if (!this.isFilterByMateriel$) {
+        let p = {
+          materiels: this.fournisseurs[i].materiels,
+          fournisseurNom: this.fournisseurs[i].fournisseurNom,
+          fournisseurId: this.fournisseurs[i].id
+        };
+        this.store.dispatch(
+          new ficheLocationAction.showMaterielByFournisseur(p)
+        );
+        this.fourIndex = id;
+        this.fourSelectedId = id;
+      } else this.fourIndex = id;
+    }
+    this.oneClick = true;
   }
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    this.store.dispatch(
+      new fromFicheLocationAction.getFourListState({
+        position: {
+          a: this.a,
+          b: this.b,
+          position: this.position
+        },
+        filterByNom: this.word
+      })
+    );
+  }
 }

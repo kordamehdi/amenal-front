@@ -4,11 +4,21 @@ import { visiteurModel } from "src/app/projet/models/fiche-visiteur.model";
 export interface ficheVisiteurState {
   visiteurs: visiteurModel[];
   visiteursAsso: visiteurModel[];
+  positionFiche: {
+    a: number;
+    b: number;
+    position: number;
+  };
 }
 
 const initialState: ficheVisiteurState = {
   visiteurs: [],
-  visiteursAsso: []
+  visiteursAsso: [],
+  positionFiche: {
+    a: 0,
+    b: 2,
+    position: 1
+  }
 };
 
 export function ficheVisiteurReducer(
@@ -16,6 +26,12 @@ export function ficheVisiteurReducer(
   action: fromficheVisiteurAction.FicheVisiteAction
 ): ficheVisiteurState {
   switch (action.type) {
+    case fromficheVisiteurAction.GET_NAVIGATION_FICHE_POSITION: {
+      return {
+        ...state,
+        positionFiche: action.payload
+      };
+    }
     case fromficheVisiteurAction.GET_VISITEUR: {
       return {
         ...state,

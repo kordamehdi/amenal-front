@@ -39,7 +39,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
   SousLotListSelected = false;
   EntreeListSelected = false;
   LotListSelected = false;
-
+  avancementMin = 0;
   listLot = [];
   listLot$ = [];
   selectedSousLot = "";
@@ -54,7 +54,6 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
   isUpdate = -1;
   lotIndex = -1;
   x = true;
-  avancementMin = 0;
   lotWithSousLot: lotAssoModel[] = [
     {
       id: 1,
@@ -65,7 +64,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           designation: "azazaz",
           unite: "H",
           lastPrct: 0,
-          qtCml: 0
+          rls: 0
         }
       ]
     }
@@ -238,7 +237,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     let entreeAsso = this.designation[i].sousLotDesignationPresentations[
       j
     ].entreeDesignationPresentations.map(d => {
-      return { id: d.idEntree, type: d.type };
+      return { id: d.chargeId, type: d.type };
     });
 
     this.listEntree$ = this.sousLotwithEntree
@@ -246,7 +245,8 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       .entreeDesignationNonAssoPresentations.filter(e => {
         let send = true;
         entreeAsso.forEach(element => {
-          if (e.id === element.id && e.type === element.type) send = false;
+          if (e.chargeId === element.id && e.type === element.type)
+            send = false;
         });
         return send;
       });
@@ -294,15 +294,20 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     ) {
       this.EntreeListSelected = false;
       let cmd: entreeDesignationCommandModel = {
+        id: null,
+        chargeId: this.form.value["chargeId".concat(i, "_", j)],
+        rls: this.form.value["eRls".concat(i, "_", j)],
         entreeId: this.form.value["entreeId".concat(i, "_", j)],
         quantite: this.form.value["quantite".concat(i, "_", j)],
         type: this.form.value["type".concat(i, "_", j)]
       };
+
+      console.log("SSSSSSS ", cmd.chargeId);
       this.AddEntreeIndex = "";
       let qt = this.form.value["quantite".concat(i, "_", j)];
 
       if (
-        this.form.controls["entreeId".concat(i, "_", j)].valid &&
+        this.form.controls["chargeId".concat(i, "_", j)].valid &&
         this.form.controls["quantite".concat(i, "_", j)].valid
       ) {
         if (qt > this.max) {
@@ -325,7 +330,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           new fromFicheAction.ShowFicheAlert({
             type: "ficheActivite",
             showAlert: true,
-            msg: "Un des champs son invalide !"
+            msg: "Un des champs est invalid !"
           })
         );
     }
@@ -346,11 +351,14 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       this.entreeIndex = "";
       this.EntreeListSelected = false;
       if (
-        this.form.controls["entreeId".concat(index)].valid &&
+        this.form.controls["id".concat(index)].valid &&
         this.form.controls["quantite".concat(index)].valid
       ) {
         let cmd: entreeDesignationCommandModel = {
+          id: this.form.value["id".concat(index)],
+          rls: this.form.value["eRls".concat(index)],
           entreeId: this.form.value["entreeId".concat(index)],
+          chargeId: this.form.value["chargeId".concat(index)],
           quantite: this.form.value["quantite".concat(index)],
           type: this.form.value["type".concat(index)]
         };
@@ -378,7 +386,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     let entreeAsso = this.designation[i].sousLotDesignationPresentations[
       j
     ].entreeDesignationPresentations.map(d => {
-      return { id: d.idEntree, type: d.type };
+      return { chargeId: d.chargeId, type: d.type };
     });
     let qtt = 0;
     this.listEntree$ = this.sousLotwithEntree
@@ -386,7 +394,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       .entreeDesignationNonAssoPresentations.filter(e => {
         let send = true;
         entreeAsso.forEach(element => {
-          if (e.id === element.id && e.type === element.type) {
+          if (e.chargeId === element.chargeId && e.type === element.type) {
             qtt = e.quantite;
             send = false;
           }
@@ -395,7 +403,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       });
 
     this.listEntree$.sort((a, b) => {
-      return b.quantite - a.quantite;
+      if (a.isRecomander)
+        if (b.isRecomander) return b.quantite - a.quantite;
+        else return 1;
     });
 
     this.listEntree = this.listEntree$;
@@ -457,10 +467,12 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
   /* UPDATE ENTREE FIN*/
 
   /* ADD SOUS LOT DEBUT */
-  onSelectAddSousLot(item, i) {
-    this.avancementMin = item.lastPrct == null ? 0 : item.lastPrct;
+  onSelectAddSousLot(item: sousLotDesignationModel, i) {
     this.fillInputSelectSousLot(i, item);
     this.SousLotListSelected = true;
+    this.avancementMin = item.avancement;
+    this.form.controls["avancement".concat(i)].enable();
+    this.form.controls["slotQuantite".concat(i)].enable();
   }
   onFocusSousLotAdd(sousLotAdd) {
     sousLotAdd.hidden = false;
@@ -471,6 +483,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       if (!this.SousLotListSelected) {
         this.resetSousLotInput(i);
         this.SousLotListSelected = false;
+        this.avancementMin = 0;
       }
     }, 200);
   }
@@ -486,10 +499,12 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     if (this.isUpdate == 0 && this.lotIndex === i && this.form.dirty) {
       this.lotIndex = -1;
       this.isUpdate = -1;
+      this.form.controls["avancement".concat(i)].disable();
+      this.form.controls["slotQuantite".concat(i)].disable();
       let id = this.form.value["slotId".concat(i)];
       let qt = this.form.value["slotQuantite".concat(i)];
       let av = this.form.value["avancement".concat(i)];
-      let qtCml = this.form.value["qtCml".concat(i)];
+      let rls = this.form.value["rls".concat(i)];
       let lastAvc = this.form.value["lastAvc".concat(i)];
 
       if (id == "" || qt == "") {
@@ -500,12 +515,13 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
             msg: "le champs [ SOUS LOT ] et [QUANTITE] sont obligatoire!"
           })
         );
-      } else if (av !== "" && (0 >= av || av >= 100)) {
+      } else if (av !== "" && (lastAvc > av || av > 100)) {
         this.store.dispatch(
           new fromFicheAction.ShowFicheAlert({
             type: "ficheActivite",
             showAlert: true,
-            msg: "l'avancement est un pourcentage (entre 0 et 100)!"
+            msg:
+              "l'avancement est un pourcentage (entre " + lastAvc + " et 100)!"
           })
         );
       } else {
@@ -513,9 +529,10 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           sousLotId: id,
           quantite: qt,
           avancement: av == "" ? 0 : av,
-          qtCml: qtCml,
+          rls: rls,
           lastAvc: lastAvc
         };
+        console.log("sssssssss   ", ds);
         this.ficheActiviteService.onAddSousLotDesignation(sid, ds);
       }
     }
@@ -527,6 +544,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
 
   onSelectUpdateSousLot(item, i, j) {
     this.fillInputSelectSousLot(this.transI_J(i, j), item);
+    this.avancementMin = item.avancement;
     this.SousLotListSelected = true;
   }
   onFocusSousLotUpdate(sousLotAdd) {
@@ -542,7 +560,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
-  onClickSousLot(lot, i, j) {
+  onClickSousLot(lot, i, j, lastAvc) {
     this.selectedLot = -1;
     this.selectedSousLot = "".concat(i, "_", j);
     this.isUpdate = 1;
@@ -550,13 +568,14 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     let selectedLot = this.lotWithSousLot.find(s => s.lot === lot);
     if (selectedLot == null) this.sousLotToSelect = [];
     else this.sousLotToSelect = selectedLot.sousLots;
-
+    this.avancementMin = lastAvc;
     this.form.controls["slotName".concat(this.selectedSousLot)].enable();
     this.form.controls["slotQuantite".concat(this.selectedSousLot)].enable();
     this.form.controls["avancement".concat(this.selectedSousLot)].enable();
   }
-  onClickOutsideSousLot(sLotDs, i, j) {
+  onClickOutsideSousLot(sLotDs: sousLotDesignationModel, i, j) {
     let ii = "".concat(i, "_", j);
+    this.avancementMin = 0;
     if (this.isUpdate == 1 && this.selectedSousLot === ii) {
       this.selectedSousLot = "";
       if (this.InputSousLotUpdateDirty(i, j) || this.SousLotListSelected) {
@@ -568,8 +587,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
         let id = this.form.value["slotId".concat(this.transI_J(i, j))];
         let qt = this.form.value["slotQuantite".concat(this.transI_J(i, j))];
         let av = this.form.value["avancement".concat(this.transI_J(i, j))];
-        let qtCml = this.form.value["qtCml".concat(i, j)];
-        let lastAvc = this.form.value["lastAvc".concat(i, j)];
+
         if (id == null || qt == null || av == null) {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
@@ -586,12 +604,15 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
           this.form.controls["avancement".concat(this.transI_J(i, j))].setValue(
             sLotDs.avancement
           );
-        } else if (av !== "" && (this.avancementMin >= av || av >= 100)) {
+        } else if (av !== "" && (sLotDs.lastAvc > av || av > 100)) {
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               type: "ficheActivite",
               showAlert: true,
-              msg: "l'avancement est un pourcentage (entre 0 et 100)!"
+              msg:
+                "l'avancement est un pourcentage (entre " +
+                sLotDs.lastAvc +
+                " et 100)!"
             })
           );
           this.fillInputSelectSousLotUpdate(this.transI_J(i, j), sLotDs);
@@ -606,8 +627,8 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
             sousLotId: id,
             quantite: qt,
             avancement: av,
-            qtCml: qtCml,
-            lastAvc: lastAvc
+            rls: null,
+            lastAvc: null
           };
           this.ficheActiviteService.onUpdateSousLotDesignation(sLotDs.id, ds);
         }
@@ -665,7 +686,9 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     );
   }
   resetEntreeInput(index) {
+    this.form.controls["chargeId".concat(index)].setValue("");
     this.form.controls["entreeId".concat(index)].setValue("");
+    this.form.controls["eRls".concat(index)].setValue("");
     this.form.controls["type".concat(index)].setValue("");
     this.form.controls["quantite".concat(index)].setValue("");
     this.form.controls["entreeNom".concat(index)].setValue("");
@@ -680,10 +703,12 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
       return true;
     } else return false;
   }
-  fillInputSelectEntree(index: string, item) {
+  fillInputSelectEntree(index: string, item: EntreeDesignationNonAssoModel) {
     this.form.controls["entreeNom".concat(index)].setValue(item.entreeNom);
     this.form.controls["unite".concat(index)].setValue(item.unite);
-    this.form.controls["entreeId".concat(index)].setValue(item.id);
+    this.form.controls["chargeId".concat(index)].setValue(item.chargeId);
+    this.form.controls["entreeId".concat(index)].setValue(item.entreeId);
+    this.form.controls["eRls".concat(index)].setValue(item.rls);
     this.form.controls["type".concat(index)].setValue(item.type);
   }
   resetSousLotInput(index) {
@@ -691,7 +716,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["slotUnite".concat(index)].setValue("");
     this.form.controls["slotId".concat(index)].setValue("");
     this.form.controls["lastAvc".concat(index)].setValue("");
-    this.form.controls["qtCml".concat(index)].setValue("");
+    this.form.controls["rls".concat(index)].setValue("");
   }
   fillInputSelectSousLot(index: string, item) {
     this.form.controls["slotName".concat(index)].setValue(item.designation);
@@ -703,7 +728,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["lastAvc".concat(index)].setValue(
       item.lastPrct == null ? 0 : item.lastPrct
     );
-    this.form.controls["qtCml".concat(index)].setValue(item.qtCml);
+    this.form.controls["rls".concat(index)].setValue(item.rls);
   }
   fillInputSelectSousLotUpdate(index: string, item) {
     this.form.controls["slotName".concat(index)].setValue(item.designation);
@@ -712,7 +737,7 @@ export class FicheActiviteDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["lastAvc".concat(index)].setValue(
       item.lastPrct == null ? 0 : item.lastPrct
     );
-    this.form.controls["qtCml".concat(index)].setValue(item.qtCml);
+    this.form.controls["rls".concat(index)].setValue(item.rls);
   }
   InputSousLotUpdateDirty(i, j) {
     if (

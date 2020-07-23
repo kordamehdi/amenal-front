@@ -1,5 +1,5 @@
 <div class="container">
-  <ng-container *ngIf="false; else elseTmp">
+  <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
     <ng-container *ngIf="!isValid; else elseTemplate">
       <app-fiche-location-desgnation></app-fiche-location-desgnation>
     </ng-container>

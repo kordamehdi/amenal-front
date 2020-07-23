@@ -1,6 +1,7 @@
 export interface locationDesignationModel {
   id: number;
   libelle: string;
+  unite: string;
   idMateriel: number;
   tempsDebut: any;
   tempsFin: any;

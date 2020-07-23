@@ -2,7 +2,6 @@ import { Injectable } from "@angular/core";
 import { Store } from "@ngrx/store";
 import { HttpClient, HttpRequest, HttpParams } from "@angular/common/http";
 import { JwtHelperService } from "@auth0/angular-jwt";
-
 import * as App from "../store/app.reducers";
 import * as fromFicheAction from "../projet/fiche/redux/fiche.action";
 import * as fromProjetAction from "../projet/redux/projet.actions";
@@ -72,6 +71,7 @@ export class LoginService {
   }
   logout() {
     localStorage.removeItem("token");
+    this.store.dispatch(new fromFicheAction.Reset());
     this.store.dispatch(new fromProjetAction.AddProjet(null));
     this.store.dispatch(new fromProjetAction.setCurrentUser(null));
     this.router.navigate(["/login"]);

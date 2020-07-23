@@ -1,5 +1,6 @@
+import { NgForm } from "@angular/forms";
 import { VisiteurService } from "./visiteur.service";
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 import { visiteurModel } from "src/app/projet/models/fiche-visiteur.model";
 import * as App from "../../../../store/app.reducers";
 import { Store } from "@ngrx/store";
@@ -14,6 +15,8 @@ import { HttpClient } from "selenium-webdriver/http";
   styleUrls: ["./visiteur.component.scss"]
 })
 export class VisiteurComponent implements OnInit {
+  @ViewChild("f", { static: false })
+  form: NgForm;
   visiteurs: visiteurModel[];
   isUpdate = -1;
   vstSelectedIndex = -1;
@@ -22,6 +25,7 @@ export class VisiteurComponent implements OnInit {
   errorMsg;
   showAlert;
   assVstToPrjt = true;
+  formName = ["nom", "org", "permanent"];
   constructor(
     private visiteurService: VisiteurService,
     private store: Store<App.AppState>
@@ -44,10 +48,11 @@ export class VisiteurComponent implements OnInit {
     this.isUpdate = 0;
   }
 
-  onAddClickOutside(inputNom, inputOrg) {
+  onAddClickOutside() {
     if (this.isUpdate === 0) {
-      let nom = inputNom.value.trim();
-      let org = inputOrg.value.trim();
+      let nom = this.form.controls["nom"].value.trim();
+      let org = this.form.controls["org"].value.trim();
+      let perm = this.form.controls["permanent"].value;
       if (nom !== "" && org !== "")
         if (nom === "" && org !== "")
           this.store.dispatch(
@@ -70,32 +75,35 @@ export class VisiteurComponent implements OnInit {
             id: null,
             isAsso: null,
             nom: nom,
-            organisme: org
+            organisme: org,
+            permanent: perm
           };
           this.visiteurService.onAddVisiteur(vst);
-          inputNom.value = "";
-          inputOrg.value = "";
+          this.formName.forEach(n => {
+            this.form.controls[n].reset();
+          });
         }
       this.isUpdate = -1;
     }
   }
 
-  onUpdateClick(inputNom, inputOrg, i) {
+  onUpdateClick(id) {
     setTimeout(() => {
       this.assVstToPrjt = false;
-      this.vstSelectedIndex = i;
-      inputNom.disabled = false;
-      inputOrg.disabled = false;
+      this.vstSelectedIndex = id;
+      this.formName.forEach(n => {
+        this.form.controls[n.concat(id.toString())].enable();
+      });
       this.isUpdate = 1;
     }, 200);
   }
-  onUpdateClickOutside(inputNom, inputOrg, id, i) {
-    if (this.isUpdate === 1 && this.vstSelectedIndex === i) {
+  onUpdateClickOutside(id) {
+    if (this.isUpdate === 1 && this.vstSelectedIndex === id) {
       this.assVstToPrjt = true;
-      let nom = inputNom.value.trim();
-      let org = inputOrg.value.trim();
-      let n = this.visiteurs.find(l => l.id === id).nom;
-      let o = this.visiteurs.find(l => l.id === id).organisme;
+      let nom = this.form.controls["nom".concat(id.toString())].value.trim();
+      let org = this.form.controls["org".concat(id.toString())].value.trim();
+      let perm = this.form.controls["permanent".concat(id.toString())].value;
+      let vs = this.visiteurs.find(l => l.id === id);
 
       if (nom === "" || org === "") {
         this.store.dispatch(
@@ -105,23 +113,24 @@ export class VisiteurComponent implements OnInit {
             msg: "Le champs NOM & PRENOM est obligatoire!"
           })
         );
-        inputNom.value = n;
-        inputOrg.value = o;
+        this.onResetInputUpdate(id, vs);
       } else {
-        if (n !== nom || o !== org) {
+        if (vs.nom !== nom || vs.organisme !== org || perm !== vs.permanent) {
           let vst: visiteurModel = {
             id: null,
             isAsso: null,
             nom: nom,
-            organisme: org
+            organisme: org,
+            permanent: perm
           };
           this.visiteurService.onUpdateVisiteur(vst, id);
         }
       }
       this.isUpdate = -1;
       this.vstSelectedIndex = -1;
-      inputNom.disabled = true;
-      inputOrg.disabled = true;
+      this.formName.forEach(n => {
+        this.form.controls[n.concat(id.toString())].disable();
+      });
     }
   }
 
@@ -162,5 +171,11 @@ export class VisiteurComponent implements OnInit {
   }
   getFile(event) {
     this.visiteurService.onImportExcelFileVisiteur(event.target.files[0]);
+  }
+
+  onResetInputUpdate(i, vst: visiteurModel) {
+    this.form.controls["nom".concat(i)].setValue(vst.nom);
+    this.form.controls["org".concat(i)].setValue(vst.organisme);
+    this.form.controls["permanent".concat(i)].setValue(vst.permanent);
   }
 }

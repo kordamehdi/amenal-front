@@ -25,8 +25,11 @@ export class ListeArticleComponent implements OnInit {
   formName = ["designation", "unite", "stockable"];
   errorMsg = "";
   categories: categorieModel[];
-  categories$: categorieModel[];
+  categories$: categorieModel[] = [];
+  categories$$: categorieModel[] = [];
+
   unites: String[] = ["H", "M3", "M2"];
+
   // -1 : rien ; 0 : ajouter ; 1 : modifier
   formState = -1;
   articlesNotAssoToFr: articleModel[] = [];
@@ -38,7 +41,6 @@ export class ListeArticleComponent implements OnInit {
   uniteToAdd = "";
   uniteTodelete;
   ArtAddIndex = "";
-  CatIndex = -1;
   CatId = -1;
   CatSelected = -1;
   articleSelected = "";
@@ -77,24 +79,44 @@ export class ListeArticleComponent implements OnInit {
       this.unites = locState.unites;
     });
     this.store.select("ficheReception").subscribe(state => {
+      if (state.showFournisseurByArticleOrCategorie.itemType === "CATEGORIE")
+        this.CatSelected = state.showFournisseurByArticleOrCategorie.itemId;
+      else if (
+        state.showFournisseurByArticleOrCategorie.itemType === "ARTICLE"
+      ) {
+        let artId = state.showFournisseurByArticleOrCategorie.itemId;
+        if (artId !== -2) {
+          let catId = state.categories.find(c => {
+            let pass = false;
+            c.articles.forEach(a => {
+              if (a.id === artId) pass = true;
+            });
+            return pass;
+          }).id;
+          this.articleSelected = this.transIJ(catId, artId);
+        } else {
+          this.CatSelected = -2;
+        }
+      }
+
       if (state.showArticleByFournisseurId !== -1) {
         if (state.showArticleByFournisseurId === -2) {
           this.fournisseurFilterId = -2;
           let ids = [];
-          this.categories$ = this.slice(state.categories);
+          this.categories$$ = this.slice(state.categories);
           state.fournisseurArticleAsso.forEach(f => {
             f.categories.forEach(c => {
               ids = ids.concat(c.articles.map(a => a.id));
             });
           });
-          this.categories$ = this.categories$.filter(c => {
+          this.categories$$ = this.categories$$.filter(c => {
             let pass = false;
             c.articles.forEach(a => {
-              pass = !ids.includes(a.id);
+              if (!ids.includes(a.id)) pass = true;
             });
             return pass;
           });
-          this.categories$.forEach(c => {
+          this.categories$$.forEach(c => {
             c.articles = c.articles.filter(a => {
               return !ids.includes(a.id);
             });
@@ -104,7 +126,7 @@ export class ListeArticleComponent implements OnInit {
           let four = state.fournisseurArticleAsso.find(
             f => f.id === this.fournisseurFilterId
           );
-          this.categories$ = four.categories;
+          this.categories$$ = this.slice(four.categories);
           this.fournisseurFilterNom = four.fournisseurNom;
           let ids = [];
           four.categories.forEach(
@@ -123,15 +145,14 @@ export class ListeArticleComponent implements OnInit {
         }
         this.articlesNotAssoToFr = this.articlesNotAssoToFr$;
         this.isFilterByFournisseur = true;
-      } else {
+      } else if (!_.isEqual(this.categories$, state.categories)) {
+        this.categories$$ = state.categories;
         this.articlesNotAssoToFr = [];
         this.articlesNotAssoToFr$ = [];
-
-        this.categories$ = state.categories;
         this.isFilterByFournisseur = false;
       }
-      this.categories = this.categories$;
-      this.categories.forEach(c => {
+      this.showDetails = state.showDetails;
+      this.categories$$.forEach(c => {
         if (this.showDetails.find(s => s.id === c.id) === undefined) {
           let s = { id: c.id, show: false };
           this.showDetails.push({ ...s });
@@ -150,6 +171,12 @@ export class ListeArticleComponent implements OnInit {
       }
     });
   }
+  filter(vv: string, type) {
+    let v = vv.trim().toUpperCase();
+    if (type == "A") this.onFilterByArticle(v);
+    else this.onFilterByCategorie(v);
+    this.filterStk();
+  }
 
   onAddCategorie(catInput, list) {
     setTimeout(() => {
@@ -166,6 +193,9 @@ export class ListeArticleComponent implements OnInit {
   onShowDetails(id) {
     let st = this.showDetails.find(s => s.id === id);
     st.show = !st.show;
+    this.store.dispatch(
+      new fromFicheReceptionAction.showDetailCatArticle(this.showDetails)
+    );
   }
   onTestShowDetail(id) {
     let st = this.showDetails.find(s => s.id === id);
@@ -218,8 +248,8 @@ export class ListeArticleComponent implements OnInit {
         this.uniteSelected = false;
         this.formName.forEach(name => {
           if (
-            this.form.controls[name.concat(id)].invalid &&
-            this.form.controls[name.concat(id)].value.trim() !== ""
+            this.form.controls[name.concat(id.toString())].invalid &&
+            this.form.controls[name.concat(id.toString())].value.trim() !== ""
           )
             submit = false;
         });
@@ -278,25 +308,23 @@ export class ListeArticleComponent implements OnInit {
   }
   /*       UPDATE ARTICLE       */
 
-  onClickOutsideCategorieUpdateInput(i, id, input) {
-    this.CatIndex = -1;
-    this.CatId = -1;
+  onClickOutsideCategorieUpdateInput(id, input) {
+    if (this.CatId === id) {
+      this.CatId = -1;
 
-    if (input.value.trim() === "") {
-      this.form.controls["categorie".concat(id)].setValue(
-        this.categories[i].categorie
-      );
-    } else if (input.value !== this.categories[i].categorie) {
-      this.listeArticleService.OnEditCategorie(
-        input.value,
-        this.categories[i].id
-      );
+      let cat = this.categories.find(c => c.id === id);
+
+      if (input.value.trim() === "") {
+        this.form.controls["categorie".concat(id)].setValue(cat.categorie);
+      } else if (input.value !== cat.categorie) {
+        this.listeArticleService.OnEditCategorie(input.value, id);
+      }
+
+      input.disabled = true;
     }
-
-    input.disabled = true;
   }
 
-  onClickCategorieUpdateInput(i, id, input) {
+  onClickCategorieUpdateInput(id, input) {
     if (!this.isFilterByFournisseur) {
       let item = {
         itemId: id,
@@ -308,8 +336,8 @@ export class ListeArticleComponent implements OnInit {
       this.CatSelected = id;
     }
     setTimeout(() => {
-      this.CatIndex = i;
       this.CatId = id;
+      console.log("dddd");
       input.disabled = false;
     }, 10);
   }
@@ -352,7 +380,7 @@ export class ListeArticleComponent implements OnInit {
     let index = catId.toString().concat("_", artId.toString());
     if (this.ArticleUpdateIndex === index) {
       this.ArticleUpdateIndex = "";
-      if (this.form.dirty || this.uniteSelected) {
+      if (this.articleInputDirty(index) || this.uniteSelected) {
         let submit = true;
         this.formName.forEach(name => {
           if (this.form.value[name.concat(index)] !== null)
@@ -430,35 +458,34 @@ export class ListeArticleComponent implements OnInit {
   }
   onFilterByArticle(keyWord: string) {
     let word = keyWord.toUpperCase();
-    if (keyWord.trim() !== "DESIGNATION")
-      if (keyWord.trim() === "") {
-        this.categories = this.slice(this.categories$);
-      } else {
-        let ff = this.slice(this.categories$);
-        this.categories = ff.filter(f => {
-          let isMateriel = false;
-          f.articles.forEach(m => {
-            if (m.designation.includes(word)) {
-              isMateriel = true;
-            }
-          });
-          if (isMateriel) return true;
-          else return false;
+    if (word !== "" && word !== "DESIGNATION") {
+      this.categories$ = this.slice(this.categories$$);
+      this.categories$ = this.categories$.filter(f => {
+        let isMateriel = false;
+        f.articles.forEach(m => {
+          if (m.designation.includes(word)) {
+            isMateriel = true;
+          }
         });
-        this.categories.forEach(f => {
-          f.articles = f.articles.filter(m => m.designation.includes(word));
-        });
-      }
+        if (isMateriel) return true;
+        else return false;
+      });
+      this.categories$.forEach(f => {
+        f.articles = f.articles.filter(m => m.designation.includes(word));
+      });
+    } else if (!_.isEqual(this.categories$, this.categories$$))
+      this.categories$ = this.slice(this.categories$$);
   }
 
   onFilterByCategorie(keyWord: string) {
     let word = keyWord.toUpperCase();
-    if (keyWord.trim() !== "DESIGNATION")
-      if (keyWord.trim() === "") this.categories = this.slice(this.categories$);
-      else {
-        let ff = this.slice(this.categories$);
-        this.categories = ff.filter(c => c.categorie.includes(word));
-      }
+    if (word !== "" && word !== "DESIGNATION") {
+      this.categories$ = this.slice(this.categories$$);
+      this.categories$ = this.categories$.filter(c =>
+        c.categorie.includes(word)
+      );
+    } else if (!_.isEqual(this.categories$, this.categories$$))
+      this.categories$ = this.categories$$;
   }
 
   onClickOutsideFilterStockable(v, type) {
@@ -468,46 +495,29 @@ export class ListeArticleComponent implements OnInit {
   }
 
   filterStk() {
-    let ff = this.slice(this.categories);
-    this.categories = ff.filter(f => {
-      let isMateriel = false;
-      f.articles.forEach(m => {
-        if (m.stockable == this.isStockable) {
-          isMateriel = true;
-        }
+    if (this.filterStockable) {
+      this.categories$ = this.categories$.filter(f => {
+        let isMateriel = false;
+        f.articles.forEach(m => {
+          if (m.stockable == this.isStockable) {
+            isMateriel = true;
+          }
+        });
+        if (isMateriel) return true;
+        else return false;
       });
-      if (isMateriel) return true;
-      else return false;
-    });
-    this.categories.forEach(f => {
-      f.articles = f.articles.filter(m => m.stockable == this.isStockable);
-    });
+      this.categories$.forEach(f => {
+        f.articles = f.articles.filter(m => m.stockable == this.isStockable);
+      });
+      if (!_.isEqual(this.categories$, this.categories))
+        this.categories = this.categories$;
+    } else if (!_.isEqual(this.categories$, this.categories))
+      this.categories = this.categories$;
   }
-  filter(vv: string, type) {
-    this.categories = this.slice(this.categories$);
-    let v = vv.trim().toUpperCase();
-    if (this.filterStockable) {
-      if (type == "A") this.onFilterByArticle(v);
-      else this.onFilterByCategorie(v);
-      this.filterStk();
-    } else {
-      if (type == "A") this.onFilterByArticle(v);
-      else this.onFilterByCategorie(v);
-    }
-  }
-  filterBox(vv: string, type) {
-    this.categories = this.slice(this.categories$);
 
+  filterBox(vv: string, type) {
     this.isStockable = !this.isStockable;
-    let v = vv.trim().toUpperCase();
-    if (this.filterStockable) {
-      if (type == "A") this.onFilterByArticle(v);
-      else this.onFilterByCategorie(v);
-      this.filterStk();
-    } else {
-      if (type == "A") this.onFilterByArticle(v);
-      else this.onFilterByCategorie(v);
-    }
+    this.filter(vv, type);
   }
 
   slice(c: categorieModel[]) {
@@ -620,7 +630,7 @@ export class ListeArticleComponent implements OnInit {
     } else if (this.uniteTodelete !== "") {
       this.ficheMaterielService.onDeleteUnite(this.uniteTodelete);
     }
-    //this.onHideAlert();
+    this.onHideAlert();
   }
   onHideAlert() {
     this.store.dispatch(
@@ -636,5 +646,12 @@ export class ListeArticleComponent implements OnInit {
     this.ArticleToDeleteId = -1;
     this.catToDeleteId = -1;
     this.uniteToAdd = "";
+  }
+
+  articleInputDirty(index) {
+    return (
+      this.form.controls["designation".concat(index)].dirty ||
+      this.form.controls["stockable".concat(index)].dirty
+    );
   }
 }

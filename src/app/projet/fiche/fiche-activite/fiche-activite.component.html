@@ -11,6 +11,18 @@
     <app-fiche-valid-activite-designation></app-fiche-valid-activite-designation>
   </ng-template>
 
+  <div class="header">
+    <span>PROCÈS VERBAL INTERNE</span>
+  </div>
+  <div>
+    <textarea
+      id="pvi"
+      placeholder="TAPEZ ICI VOTRE PVI ..."
+      style="height: 46px; width: 100%; padding: 2px;"
+      class="ng-pristine ng-valid ng-touched"
+    ></textarea>
+  </div>
+
   <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
     <app-lot></app-lot>
   </div>

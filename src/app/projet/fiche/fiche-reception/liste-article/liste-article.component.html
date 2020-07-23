@@ -16,11 +16,8 @@
       <tr class="header">
         <th class="case-left">
           <input
-            (focus)="onFilterFocus(keyWord)"
-            (blur)="OnFilterBlur(keyWord)"
             (input)="filter(keyWord.value, type.value)"
             type="text"
-            value="DESIGNATION"
             name="DESIGNATION$"
             [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
             #keyWord
@@ -86,9 +83,9 @@
               "
               (dblclick)="assoCategorieFournisseurToProjet(cat.id)"
               (clickOutside)="
-                onClickOutsideCategorieUpdateInput(i, cat.id, catUpdateInput)
+                onClickOutsideCategorieUpdateInput(cat.id, catUpdateInput)
               "
-              (click)="onClickCategorieUpdateInput(i, cat.id, catUpdateInput)"
+              (click)="onClickCategorieUpdateInput(cat.id, catUpdateInput)"
               [ngStyle]="{
                 'background-color':
                   CatSelected === cat.id || CatId === cat.id
@@ -135,7 +132,6 @@
                 [ngStyle]="{
                   'background-color':
                     CatSelected === cat.id ||
-                    CatIndex === cat.id ||
                     ArticleUpdateIndex === transIJ(cat.id, article.id) ||
                     articleSelected === transIJ(cat.id, article.id)
                       ? 'rgba(225, 181, 116, 0.5)'
@@ -158,6 +154,7 @@
                 </span>
                 <span class="case-middle">
                   <input
+                    style="padding-left: 40%"
                     disabled
                     (focus)="onFocusUniteInput(detail)"
                     (blur)="onBlurUniteInput(detail)"
@@ -201,7 +198,7 @@
                     type="text"
                     class="article_input"
                     placeholder="DESIGNATION"
-                    name="designation{{ i }}"
+                    name="designation{{ cat.id }}"
                     required
                     ngModel
                   />
@@ -212,7 +209,7 @@
                     (blur)="onBlurUniteInput(detailAdd)"
                     type="text"
                     #uniteInput
-                    name="unite{{ i }}"
+                    name="unite{{ cat.id }}"
                     required
                     placeholder="unite"
                     ngModel
@@ -220,7 +217,7 @@
                   <div hidden="false" class="div-list" #detailAdd>
                     <div
                       (press)="OnDeleteUnite(unite)"
-                      (click)="onSelectAddUnite(unite, i)"
+                      (click)="onSelectAddUnite(unite, cat.id)"
                       *ngFor="let unite of unites"
                       class="div-detail"
                     >
@@ -231,7 +228,7 @@
                 <span class="case-right">
                   <ion-checkbox
                     [ngModel]="0"
-                    name="stockable{{ i }}"
+                    name="stockable{{ cat.id }}"
                     ngModel
                   ></ion-checkbox>
                 </span>
@@ -264,7 +261,11 @@
             name="cat"
             (input)="onSearchArticle(catInput.value)"
             (blur)="onAddCategorie(catInput, listArt)"
-            placeholder="CATEGORIE"
+            [placeholder]="
+              isFilterByFournisseur && fournisseurFilterId != -2
+                ? 'ARTICLE'
+                : 'CATEGORIE'
+            "
             (focus)="onfocusAddArticle(listArt)"
             #catInput
             ngModel

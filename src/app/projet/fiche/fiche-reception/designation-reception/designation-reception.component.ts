@@ -137,7 +137,6 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     st.show = !st.show;
   }
   onTestShowDetail(cat) {
-    console.log(this.showDetails);
     let st = this.showDetails.find(s => s.cat === cat);
     return st.show;
   }
@@ -163,19 +162,14 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
   onClickedAddOutside() {
     if (
       this.isUpdate === 0 &&
-      (this.form.dirty || this.fournisseurSelected || this.articleSelected)
+      (this.formAddIsdirty() ||
+        this.fournisseurSelected ||
+        this.articleSelected)
     ) {
       this.fournisseurSelected = false;
       this.articleSelected = false;
       this.isUpdate = -1;
-      console.log(
-        "fff : ",
-        this.form.value["idFournisseur"],
-        " aaa ",
-        this.form.value["idArticle"],
-        " qqqq ",
-        this.form.value["quantite"]
-      );
+
       if (
         this.form.value["idFournisseur"] === null ||
         this.form.value["idFournisseur"] === "" ||
@@ -192,6 +186,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
               "les champs : fournisseur , article et quantite sont obligatoire!"
           })
         );
+        this.resetAddInput();
       } else {
         this.form.ngSubmit.emit();
       }
@@ -210,8 +205,6 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
         this.categories.forEach((c: ReceptionCategorieModel) => {
           if (fa.article.categorie === c.categorie) {
             c.receptionDesignation.forEach(element => {
-              console.log(element.designation);
-
               if (
                 element.designation === fa.article.designation &&
                 element.fournisseurNom === fa.fournisseurNom
@@ -720,6 +713,15 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     this.form.controls["idFournisseur"].reset();
     this.form.controls["observation"].reset();
     this.form.controls["quantite"].reset();
+  }
+
+  formAddIsdirty() {
+    return (
+      this.form.controls["fournisseur"].dirty ||
+      this.form.controls["designation"].dirty ||
+      this.form.controls["quantite"].dirty ||
+      this.form.controls["observation"].dirty
+    );
   }
 
   ngOnDestroy() {

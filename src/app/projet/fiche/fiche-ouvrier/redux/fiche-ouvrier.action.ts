@@ -12,7 +12,8 @@ export const ALERT_YES = "ALERT_YES";
 export const FINISH_REMOVE_OUVRIER = "FINISH_REMOVE_OUVRIER";
 export const GET_DESIGNATIONS = "GET_DESIGNATIONS";
 export const IS_UPDATE = "IS_UPDATE";
-
+export const GET_FICHE_STATE = "GET_FICHE_STATE";
+export const GET_OUV_LIST_STATE = "GET_OUV_LIST_STATE";
 export class AddOuvrier implements Action {
   readonly type = ADD_OUVRIER;
   payload: OuvrierModel;
@@ -94,6 +95,54 @@ export class IsUpdate implements Action {
     this.payload = payload;
   }
 }
+export class getFicheState implements Action {
+  readonly type = GET_FICHE_STATE;
+  payload: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filter: {
+      nom: string;
+      qualification: string;
+    };
+    sort: boolean;
+  };
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
+export class getOuvListState implements Action {
+  readonly type = GET_OUV_LIST_STATE;
+  payload: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filter: {
+      cin: string;
+      nom: string;
+      prenom: string;
+      qualification: string;
+      appreciation: string;
+    };
+    sort: {
+      order: {
+        cin: boolean;
+        nom: boolean;
+        prenom: boolean;
+        qualification: boolean;
+        appreciation: boolean;
+      };
+      type: string;
+    };
+  };
+  constructor(payload) {
+    this.payload = payload;
+  }
+}
 
 export type FicheAction =
   | StartEditing
@@ -106,4 +155,6 @@ export type FicheAction =
   | AlertYes
   | FinishRemovingOuvrier
   | GetDesignations
-  | IsUpdate;
+  | IsUpdate
+  | getFicheState
+  | getOuvListState;

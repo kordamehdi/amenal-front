@@ -32,9 +32,7 @@
     <tr class="header" (clickOutside)="this.typeAsc = ''">
       <th>
         <input
-          (focus)="onFilterFocus(keyWord)"
-          (blur)="OnFilterBlur(keyWord)"
-          (input)="onFilterByFournisseur(keyWord.value)"
+          (input)="onFilterByFournisseur(false)"
           type="text"
           value="FROUNISSEURS"
           placeholder="FROUNISSEURS"
@@ -49,7 +47,9 @@
       *ngIf="!isFilterByMateriel$ || fournisseurs.length === 0"
       [ngStyle]="{
         'background-color':
-          fourIndex === -2 || selected == -2 ? 'rgba(255, 0, 0, 0.1)' : '',
+          fourIndex === -2 || fourSelectedId === -2
+            ? 'rgba(255, 0, 0, 0.1)'
+            : '',
         'text-align': 'center',
         'font-style': 'italic'
       }"
@@ -70,7 +70,7 @@
       <td
         [ngStyle]="{
           'background-color':
-            fourIndex == four.id || selected == four.id
+            fourIndex === four.id || fourSelectedId === four.id
               ? 'rgba(255, 0, 0, 0.1)'
               : ''
         }"
@@ -78,7 +78,7 @@
         <div>
           <div class="cont_div">
             <span
-              (dblclick)="onAssoFourToProjet(four.id, 'false')"
+              (dblclick)="onAssoFourToProjet(four.id, false)"
               [ngStyle]="
                 four.isAssoWithProjet
                   ? { 'font-weight': 'bold' }
@@ -95,7 +95,7 @@
               />
             </span>
             <span
-              (dblclick)="onAssoFourToProjet(four.id, 'true')"
+              (dblclick)="onAssoFourToProjet(four.id, true)"
               style="font-style: oblique"
             >
               {{ calculNumber(i) }}
@@ -105,7 +105,7 @@
       </td>
     </tr>
     <tr
-      *ngIf="!isFilterByMateriel$ && selected !== -1"
+      *ngIf="!isFilterByMateriel$ && fourSelectedId !== -1"
       [ngStyle]="{
         'text-align': 'center',
         'font-style': 'italic',
@@ -120,7 +120,7 @@
     <tr>
       <input
         class="tdInput"
-        (blur)="OnaddFounisseur(fourInput, listF)"
+        (blur)="OnAddFounisseur(fourInput, listF)"
         (focus)="OnFocusAddFounisseur(listF)"
         type="text"
         placeholder="FOURNISSEUR"

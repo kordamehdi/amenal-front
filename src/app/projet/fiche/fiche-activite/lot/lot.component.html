@@ -5,14 +5,17 @@
   <form style="width: 100%" id="form" #f="ngForm">
     <table>
       <tr class="header">
-        <th style="width: 60%">
+        <th style="width: 70%">
           DESIGNATION
         </th>
-        <th style="width: 20%">
+        <th style="width: 10%">
           UNITE
         </th>
-        <th style="width: 20%">
-          QUT.ESTIMER
+        <th style="width: 10%">
+          BDG
+        </th>
+        <th style="width: 10%">
+          RND
         </th>
       </tr>
       <!--*****************************************************************************************************-->
@@ -20,7 +23,7 @@
       <!--*****************************************************************************************************-->
 
       <tr class="stock-content" *ngFor="let lot of lots; let i = index">
-        <td colspan="3">
+        <td colspan="4">
           <div
             (press)="OnDeleteLot(lot.id, lot.designation)"
             (dblclick)="onAssoLotToProjet(lot.id)"
@@ -71,7 +74,7 @@
                 (clickOutside)="onUpdateSousLotClickOutside(sLot, lot, i, j)"
                 class="cont_div"
               >
-                <span class="border-case" style="width: 60%">
+                <span class="border-case" style="width: 70%">
                   <span
                     (click)="onShowshowDetailOfdetail(i, j)"
                     style="margin-left: 2.5%;padding: 0px"
@@ -86,7 +89,7 @@
                     ngModel
                   />
                 </span>
-                <span class="border-case" style="width: 20%">
+                <span class="border-case" style="width: 10%">
                   <input
                     disabled
                     style="text-align: center"
@@ -99,7 +102,19 @@
                   />
                 </span>
 
-                <span class="border-case" style="width: 20%"> </span>
+                <span class="border-case" style="width: 10%"
+                  ><input
+                    disabled
+                    style="text-align: center"
+                    type="number"
+                    min="0"
+                    name="sLotquantiteEstimer{{ i }}_{{ j }}"
+                    [ngModel]="sLot.bdg"
+                    #bdgSlot
+                    ngModel
+                  />
+                </span>
+                <span class="border-case" style="width: 10%"> </span>
               </div>
               <div
                 hidden
@@ -133,7 +148,7 @@
                     (click)="onUpdateEntreeClick(i, j, k)"
                     class="cont_div"
                   >
-                    <span class="border-case" style="width: 60%">
+                    <span class="border-case" style="width: 70%">
                       <input
                         disabled
                         style="padding-left: 6.5%"
@@ -149,7 +164,7 @@
                         #entreeUpdt
                       />
                     </span>
-                    <span class="border-case" style="width: 20%">
+                    <span class="border-case" style="width: 10%">
                       <input
                         readonly
                         style="text-align: center"
@@ -174,14 +189,26 @@
                       />
                     </span>
 
-                    <span class="border-case" style="width: 20%"
+                    <span class="border-case" style="width: 10%"
                       ><input
                         disabled
                         style="text-align: center"
                         type="number"
                         min="0"
+                        placeholder="QUANTITE ESTIMER"
                         name="quantiteEstimer{{ i }}_{{ j }}_{{ k }}"
                         [ngModel]="entree.bdg"
+                        #bdgArtUpdt
+                        ngModel
+                      />
+                    </span>
+                    <span class="border-case" style="width: 10%">
+                      <input
+                        readonly
+                        style="text-align: center"
+                        type="number"
+                        [value]="onCalculeRnd(bdgSlot.value, bdgArtUpdt.value)"
+                        name="rnd{{ i }}_{{ j }}_{{ k }}"
                         ngModel
                       />
                     </span>
@@ -226,7 +253,7 @@
                 >
                   <span
                     class="border-case"
-                    style="width: 60%;background-color: rgba(255, 0, 0, 0.1);"
+                    style="width: 70%;background-color: rgba(255, 0, 0, 0.1);"
                   >
                     <input
                       style="padding-left: 6.5%"
@@ -254,7 +281,7 @@
                   </span>
                   <span
                     class="border-case"
-                    style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+                    style="width: 10%;background-color: rgba(255, 0, 0, 0.1)"
                   >
                     <input
                       readonly
@@ -268,14 +295,29 @@
 
                   <span
                     class="border-case"
-                    style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+                    style="width: 10%;background-color: rgba(255, 0, 0, 0.1)"
                   >
                     <input
                       style="text-align: center"
                       type="number"
                       min="0"
                       name="quantiteEstimer{{ i }}_{{ j }}"
-                      placeholder="QUANTITE ESTIMER"
+                      placeholder="BDG"
+                      #bdgArtAdd
+                      ngModel
+                    />
+                  </span>
+                  <span
+                    class="border-case"
+                    style="width: 10%;background-color: rgba(255, 0, 0, 0.1)"
+                  >
+                    <input
+                      readonly
+                      style="text-align: center"
+                      [value]="onCalculeRnd(bdgSlot.value, bdgArtAdd.value)"
+                      type="number"
+                      placeholder="RND"
+                      name="rnd{{ i }}_{{ j }}"
                       ngModel
                     />
                   </span>
@@ -288,10 +330,10 @@
                       (click)="onSelectAddEntree(item, i, j)"
                       *ngFor="let item of listEntree"
                     >
-                      <span class="border-case-black" style="width: 75%">{{
+                      <span class="border-case-black" style="width: 87.6%">{{
                         item.entreeNom
                       }}</span>
-                      <span class="border-case-black" style="width: 25%">{{
+                      <span class="border-case-black" style="width: 12.401%">{{
                         item.unite
                       }}</span>
                     </div>
@@ -308,12 +350,14 @@
             <!-- AJOUT DES SOUS LOTS -->
             <div
               (click)="onAddSousLotClick(lot.id)"
-              (clickOutside)="onAddSousLotClickOutside(slot, slotUnt, lot)"
+              (clickOutside)="
+                onAddSousLotClickOutside(slot, slotUnt, slotBdg, lot)
+              "
               class="cont_div"
             >
               <span
                 class="border-case"
-                style="width: 60%;background-color: rgba(255, 0, 0, 0.1);"
+                style="width: 70%;background-color: rgba(255, 0, 0, 0.1);"
               >
                 <input
                   style="padding-left: 3%"
@@ -326,7 +370,7 @@
               </span>
               <span
                 class="border-case"
-                style="width: 20%;background-color: rgba(255, 0, 0, 0.1)"
+                style="width: 10%;background-color: rgba(255, 0, 0, 0.1)"
               >
                 <input
                   style="text-align: center"
@@ -339,13 +383,16 @@
                   #slotUnt
                 />
               </span>
-              <span class="border-case" style="width: 20%"
+              <span
+                class="border-case "
+                style="width: 10%;background-color: rgba(255, 0, 0, 0.1)"
                 ><input
-                  disabled
                   style="text-align: center"
                   type="number"
                   min="0"
+                  placeholder="BDG"
                   name="quantiteEstimer{{ i }}"
+                  #slotBdg
                   ngModel
                 />
               </span>
@@ -366,7 +413,7 @@
         </td>
       </tr>
       <tr>
-        <td class="tdInput" colspan="3">
+        <td class="tdInput" colspan="4">
           <input
             type="text"
             (blur)="OnAddLotBlur(lot)"

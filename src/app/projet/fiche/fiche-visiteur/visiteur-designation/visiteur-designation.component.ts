@@ -11,7 +11,9 @@ import { refresh } from "../../header/head.selector";
 import { VisiteurDesignationService } from "./visiteur-designation.service";
 import { visiteurModel } from "src/app/projet/models/fiche-visiteur.model";
 import * as moment from "moment";
+import * as fromFicheVisiteurAction from "../redux/fiche-visiteur.action";
 import { NgForm } from "@angular/forms";
+import { positionFicheVisiteur } from "../redux/fiche-visiteur.selector";
 
 @Component({
   selector: "app-visiteur-designation",
@@ -24,16 +26,36 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
   errorMsg;
   showAlert;
   ficheVisiteur: FicheModel;
-  designation$;
+  designation$$: VisiteurDesignationModel[];
+  designation$: VisiteurDesignationModel[];
+  designation: VisiteurDesignationModel[];
+  vstDsTodeteID = -1;
   isValid;
-  selectedDsIndex = -1;
   selectedDsId = -1;
   visiteursAsso$: visiteurModel[];
   visiteursAsso: visiteurModel[];
   visiteurSelected = false;
   update = -1;
-  formNames = ["visiteurId", "nom", "organisme", "objet", "depart", "arivee"];
-  now;
+
+  formNames = [
+    "visiteurId",
+    "nom",
+    "organisme",
+    "objet",
+    "debut",
+    "fin",
+    "debut_sys",
+    "fin_sys"
+  ];
+  debut;
+  fin;
+  finUpdate = [];
+  position = 1;
+  size;
+  navPas = 2;
+  a = 0;
+  b = this.navPas;
+
   constructor(
     private store: Store<App.AppState>,
     private ficheService: FicheService,
@@ -41,22 +63,32 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.now = moment().format("YYYY-MM-DD");
     this.visiteurDesignationService.onGetVisiteurAssoToProjet();
+    this.store
+      .select(positionFicheVisiteur)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.a = state.a;
+        this.b = state.b;
+        this.position = state.position;
+      });
     this.store
       .select("fiche")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
+        console.log("12");
+
         if (state.type === "vsDs" || state.type === "fiche") {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
 
-        if (state.ficheSelectionner !== null)
+        if (state.ficheSelectionner !== null) {
           this.ficheVisiteur = state.ficheSelectionner;
-        this.isValid = this.ficheVisiteur.isValidated;
-
-        this.designation$ = this.ficheVisiteur.designations;
+          this.isValid = this.ficheVisiteur.isValidated;
+          this.designation$$ = this.ficheVisiteur.designations;
+          this.onFilter();
+        }
       });
 
     this.store.select("ficheVisiteur").subscribe(state => {
@@ -81,21 +113,7 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
         }
       });
   }
-  OnAddVisiteurDesignation() {
-    let ds: VisiteurDesignationModel = {
-      id: null,
-      nom: this.form.value["nom"],
-      organisme: this.form.value["organisme"],
-      objet: this.form.value["objet"],
-      visiteurId: this.form.value["visiteurId"],
-      arivee: this.form.value["arivee"],
-      depart: this.form.value["depart"],
-      idFiche: this.ficheVisiteur.id
-    };
-    this.visiteurDesignationService.onAddVisiteurDesignation(ds);
-    this.update = -1;
-    this.onReset();
-  }
+  OnAddVisiteurDesignation() {}
   onFocusAddInputVisiteur(list) {
     list.hidden = false;
   }
@@ -111,6 +129,7 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["organisme"].setValue(v.organisme);
   }
   onAddClick() {
+    this.debut = moment().format("MM-DD-YYYY HH:mm");
     this.visiteurSelected = false;
     this.update = 0;
   }
@@ -129,9 +148,32 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
           );
         }
       });
-      if (submit) this.form.ngSubmit.emit();
-      else this.update = -1;
+      if (submit) {
+        let fin_sys = null;
+        if (this.form.value["fin"].trim() !== "")
+          fin_sys = moment().format("MM-DD-YYYY HH:mm");
+
+        let ds: VisiteurDesignationModel = {
+          id: null,
+          nom: this.form.value["nom"],
+          organisme: this.form.value["organisme"],
+          objet: this.form.value["objet"],
+          visiteurId: this.form.value["visiteurId"],
+          debut: this.form.value["debut"],
+          fin: this.form.value["fin"],
+          debut_sys: moment()
+            .format("MM-DD-YYYY HH:mm")
+            .toString(),
+          fin_sys: fin_sys,
+          idFiche: this.ficheVisiteur.id
+        };
+        this.visiteurDesignationService.onAddVisiteurDesignation(ds);
+      }
     }
+    this.onReset();
+    this.debut = null;
+    this.fin = null;
+    this.update = -1;
   }
 
   onFocusUpdateInputVisiteur(vistList, v) {
@@ -154,22 +196,21 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
     this.form.controls["organisme".concat(i)].setValue(v.organisme);
   }
 
-  onUpdateClick(i, id, v: string) {
+  onUpdateClick(id) {
     this.update = 1;
     this.selectedDsId = id;
-
-    this.selectedDsIndex = i;
     this.formNames.forEach(v => {
-      this.form.controls[v.concat(i)].enable();
+      this.form.controls[v.concat(id)].enable();
     });
   }
 
-  onUpdateClickOutside(i) {
-    if (this.selectedDsIndex === i) {
-      if (this.update === 1 && (this.form.dirty || this.visiteurSelected)) {
+  onUpdateClickOutside(id) {
+    if (this.selectedDsId === id) {
+      if (this.form.dirty || this.visiteurSelected) {
+        let ds$ = this.designation$.find(d => d.id === id);
         let submit = true;
         this.formNames.forEach(key => {
-          if (this.form.controls[key.concat(i)].invalid) {
+          if (this.form.controls[key.concat(id)].invalid) {
             submit = false;
             this.store.dispatch(
               new fromFicheAction.ShowFicheAlert({
@@ -179,39 +220,51 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
               })
             );
             this.formNames.forEach(v => {
-              this.form.controls[v.concat(i)].setValue(this.designation$[i][v]);
+              this.form.controls[v.concat(id)].setValue(ds$[v]);
             });
           }
         });
-        if (submit) this.form.ngSubmit.emit();
-        else {
-          this.selectedDsId = -1;
-          this.update = -1;
+        if (submit) {
+          let fin_sys = null;
+          if (ds$.fin_sys.trim() === "") {
+            if (this.form.value["fin".concat(id.toString())] !== "")
+              fin_sys = moment().format("MM-DD-YYYY HH:mm");
+            else fin_sys = null;
+          } else fin_sys = ds$.fin_sys.trim();
+
+          let ds: VisiteurDesignationModel = {
+            id: null,
+            nom: this.form.value["nom".concat(id.toString())],
+            organisme: this.form.value["organisme".concat(id.toString())],
+            objet: this.form.value["objet".concat(id.toString())],
+            visiteurId: this.form.value["visiteurId".concat(id.toString())],
+            debut: this.form.value["debut".concat(id.toString())],
+            debut_sys: ds$.debut_sys,
+            fin:
+              this.form.value["fin".concat(id.toString())] === ""
+                ? ds$.fin
+                : this.form.value["fin".concat(id.toString())],
+            fin_sys: fin_sys,
+            idFiche: this.ficheVisiteur.id
+          };
+          this.visiteurDesignationService.onUpdateVisiteurDesignation(ds, id);
         }
-      } else this.selectedDsIndex = -1;
+      }
+      this.selectedDsId = -1;
+      this.update = -1;
       this.formNames.forEach(v => {
-        this.form.controls[v.concat(i)].disable();
+        this.form.controls[v.concat(id)].disable();
       });
     }
   }
-  OnUpdateVisiteurDesignation() {
-    let ds: VisiteurDesignationModel = {
-      id: null,
-      nom: this.form.value["nom".concat(this.selectedDsIndex.toString())],
-      organisme: this.form.value[
-        "organisme".concat(this.selectedDsIndex.toString())
-      ],
-      objet: this.form.value["objet".concat(this.selectedDsIndex.toString())],
-      visiteurId: this.form.value[
-        "visiteurId".concat(this.selectedDsIndex.toString())
-      ],
-      arivee: this.form.value["arivee".concat(this.selectedDsIndex.toString())],
-      depart: this.form.value["depart".concat(this.selectedDsIndex.toString())],
-      idFiche: this.ficheVisiteur.id
-    };
-    this.visiteurDesignationService.onUpdateVisiteurDesignation(
-      ds,
-      this.selectedDsId
+  onDeleteVisiteurDesignation(id) {
+    this.vstDsTodeteID = id;
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        type: "vsDs",
+        showAlert: true,
+        msg: "Vous etes sure de vouloire supprimer cette designation?"
+      })
     );
   }
   onSearchVisiteur(v: string) {
@@ -221,6 +274,25 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
       this.visiteursAsso = this.visiteursAsso$.filter(vv =>
         vv.nom.includes(v.trim().toUpperCase())
       );
+  }
+  onInputFin() {
+    this.fin = moment().format("MM-DD-YYYY HH:mm");
+  }
+  onInputFinUpdate(id) {
+    let ds = this.designation.find(d => d.id === id);
+    if (ds.fin_sys.trim() === "")
+      ds.fin_sys = moment().format("MM-DD-YYYY HH:mm");
+  }
+
+  onContinue() {
+    if (this.vstDsTodeteID !== -1) {
+      this.visiteurDesignationService.onDeleteVisiteurDesignation(
+        this.vstDsTodeteID
+      );
+      this.vstDsTodeteID = -1;
+    }
+
+    this.onHideAlert();
   }
 
   onHideAlert() {
@@ -232,9 +304,63 @@ export class VisiteurDesignationComponent implements OnInit, OnDestroy {
       })
     );
   }
+
+  onFilter() {
+    let inputSearchName = ["organisme", "nom"];
+    this.designation$ = this.slice(this.designation$$);
+    if (typeof this.form !== "undefined")
+      inputSearchName.forEach((key: string) => {
+        if (typeof this.form.value[key.concat("$")] !== "undefined") {
+          let vv = this.form.value[key.concat("$")].trim().toUpperCase();
+          if (vv !== "")
+            this.designation$ = this.designation$.filter(d => {
+              return d[key].includes(vv);
+            });
+        }
+      });
+    this.designation = this.designation$.slice(this.a, this.b);
+    this.size = Math.trunc(this.designation$.length / this.navPas);
+    if (this.size < this.designation$.length / this.navPas)
+      this.size = this.size + 1;
+  }
+
+  onPrevious() {
+    if (this.position - 1 > 0) {
+      this.position = this.position - 1;
+      this.b = this.navPas * this.position;
+      this.a = this.b - this.navPas;
+      this.designation = this.designation$.slice(this.a, this.b);
+      this.store.dispatch(
+        new fromFicheVisiteurAction.getNavigationState({
+          a: this.a,
+          b: this.b,
+          position: this.position
+        })
+      );
+    }
+  }
+  onNext() {
+    if (this.position + 1 <= this.size) {
+      this.a = this.navPas * this.position;
+      this.position = this.position + 1;
+      this.b = this.a + this.navPas;
+      this.designation = this.designation$.slice(this.a, this.b);
+      this.store.dispatch(
+        new fromFicheVisiteurAction.getNavigationState({
+          a: this.a,
+          b: this.b,
+          position: this.position
+        })
+      );
+    }
+  }
+
+  slice(Dss) {
+    return [...Dss].map(m => JSON.parse(JSON.stringify(m)));
+  }
   onReset() {
-    ["visiteurId", "nom", "organisme", "objet", "depart"].forEach(v => {
-      this.form.controls[v].reset();
+    this.formNames.forEach(v => {
+      this.form.controls[v].setValue("");
     });
   }
 

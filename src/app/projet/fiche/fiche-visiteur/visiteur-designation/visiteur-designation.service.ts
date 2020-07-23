@@ -122,4 +122,33 @@ export class VisiteurDesignationService {
         }
       );
   }
+
+  public onDeleteVisiteurDesignation(id) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .delete<any>(
+        this.SERVER_ADDRESS + "/designations/visiteurs/" + id,
+
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        vss => {
+          this.ficheService.onGetFicheByType("VISITEUR", null);
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "vsDs",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
 }

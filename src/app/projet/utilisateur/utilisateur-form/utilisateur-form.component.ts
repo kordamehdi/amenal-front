@@ -109,29 +109,20 @@ export class UtilisateurFormComponent implements OnInit {
 
   onDelete(usr, id) {
     let users = this.userWithRoles.map(u => u.username);
-    if (usr !== "root")
-      if (users.includes(usr))
-        this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
-            type: "userFrom",
-            showAlert: true,
-            msg: "Vous ne pouvez pas supprimez cette utilisateur"
-          })
-        );
-      else {
-        this.selectedDsId = id;
+    if (usr !== "root") {
+      this.selectedDsId = id;
 
-        this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
-            type: "userFrom",
-            showAlert: true,
-            msg:
-              "Est ce que vous etes sure de vouloire suprimer l' utilisateur [ " +
-              usr +
-              " ]"
-          })
-        );
-      }
+      this.store.dispatch(
+        new fromFicheAction.ShowFicheAlert({
+          type: "userFrom",
+          showAlert: true,
+          msg:
+            "Est ce que vous etes sure de vouloire suprimer l' utilisateur [ " +
+            usr +
+            " ]"
+        })
+      );
+    }
   }
 
   onContinue() {

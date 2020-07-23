@@ -54,3 +54,22 @@ input {
   margin-top: 30px;
   margin-bottom: 30px;
 }
+textarea {
+  border-radius: 13px;
+  background-color: rgba(255, 255, 255, 0.5);
+  max-width: 99%;
+  min-width: 50%;
+  min-height: 46px;
+  border-radius: 6px;
+}
+
+.header {
+  height: 20px;
+  width: 50%;
+  text-align: center;
+  display: inline-block;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}

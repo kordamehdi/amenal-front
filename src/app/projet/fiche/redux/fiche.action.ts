@@ -26,7 +26,7 @@ export const PREVIOUS_DAY_FICHE = "PREVIOUS_DAY_FICHE";
 export const NEXT_DAY_FICHE = "NEXT_DAY_FICHE";
 
 export const FILTER_BY_DATE = "FILTER_BY_DATE";
-
+export const RESET = "RESET";
 export class SetFichePosition implements Action {
   readonly type = SET_FICHE_POSITION;
   payload: any;
@@ -135,6 +135,11 @@ export class filterByDate implements Action {
     this.payload = payload;
   }
 }
+export class Reset implements Action {
+  readonly type = RESET;
+
+  constructor() {}
+}
 export type FicheAction =
   | SearchByDateAction
   | SearchByDateActionDone
@@ -150,4 +155,5 @@ export type FicheAction =
   | SetFichePosition
   | listAll
   | filterByDate
-  | RefreshFiche;
+  | RefreshFiche
+  | Reset;

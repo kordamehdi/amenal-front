@@ -13,7 +13,7 @@ export interface sousLotAssoModel {
   id: number;
   designation: string;
   unite: string;
-  qtCml: number;
+  rls: number;
   lastPrct: number;
 }
 export interface sousLotDesignationModel {
@@ -21,7 +21,7 @@ export interface sousLotDesignationModel {
   designation: string;
   unite: string;
   quantite: string;
-  qtCml: number;
+  rls: number;
   lastAvc: number;
   slotid: number;
   avancement: number;
@@ -30,23 +30,29 @@ export interface sousLotDesignationModel {
 }
 export interface entreeDesignationModel {
   id: number;
+  entreeId: number;
+  chargeId: number;
   unite: string;
   entreeNom: string;
-  idEntree: number;
   type: string;
   quantite: number;
   isRecomander: boolean;
 }
 
 export interface entreeDesignationCommandModel {
+  id: number;
+  entreeId: number;
+  chargeId: number;
   type: string;
   quantite: number;
-  entreeId: number;
+  rls: number;
 }
 
 export interface EntreeDesignationNonAssoModel {
-  id: number;
+  entreeId: number;
+  chargeId: number;
   unite: string;
+  rls: number;
   entreeNom: string;
   type: string;
   quantite: number;

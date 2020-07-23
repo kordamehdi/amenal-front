@@ -100,9 +100,11 @@ import { HTTP_INTERCEPTORS } from "@angular/common/http";
 import { IsAuthGuard } from "./projet/service/isAuth.guard";
 import { CanShowFicheGuard } from "./projet/service/can-activate.guard";
 import { LotComponent } from "./projet/fiche/fiche-activite/lot/lot.component";
+import { AutoSize } from "./directives/auto-size.directive";
 
 @NgModule({
   declarations: [
+    AutoSize,
     LotComponent,
     FicheActiviteComponent,
     LoginComponent,
@@ -165,7 +167,9 @@ import { LotComponent } from "./projet/fiche/fiche-activite/lot/lot.component";
     ClickOutsideModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({
+      scrollPadding: false
+    }),
     AppRoutingModule,
     StoreModule.forRoot(reducers),
     HttpClientModule,

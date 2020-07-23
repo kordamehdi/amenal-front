@@ -9,6 +9,7 @@ export interface sousLotModel {
   designation: string;
   isAsso: boolean;
   unite: string;
+  bdg: number;
   entrees: entreeModel[];
 }
 export interface entreeModel {

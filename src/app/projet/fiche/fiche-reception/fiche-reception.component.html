@@ -12,7 +12,9 @@
   </ng-template>
 
   <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
-    <app-liste-article style="margin-right: 50px"></app-liste-article>
+    <app-liste-article
+      style="margin-right: 50px ;position: relative;"
+    ></app-liste-article>
     <app-fournisseur-article></app-fournisseur-article>
   </div>
 </div>

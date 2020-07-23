@@ -18,7 +18,7 @@
       <tr class="header">
         <th style="width: 29.1%">
           <input
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             (blur)="onFilterBur(sds)"
             type="text"
             placeholder="DESIGNATION"
@@ -36,7 +36,7 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('libelle')"
+            (click)="onSort('libelle', false)"
           ></ion-icon>
         </th>
         <th style="width: 6%">
@@ -53,7 +53,7 @@
         </th>
         <th style="width: 20%">
           <input
-            (input)="onFilter()"
+            (input)="onFilter(false)"
             (blur)="onFilterBur(dd)"
             type="text"
             #dd
@@ -74,7 +74,7 @@
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('fournisseurNom')"
+            (click)="onSort('fournisseurNom', false)"
           ></ion-icon>
         </th>
         <th style="width: 18%">
@@ -88,10 +88,13 @@
       <ng-container *ngIf="designtions?.length > 0; else elseTemplate">
         <tr
           [ngStyle]="{
-            'background-color': this.dsIndex == i ? 'rgba(255, 0, 0, 0.1)' : '',
+            'background-color':
+              this.dsID == locDs.id ? 'rgba(255, 0, 0, 0.1)' : '',
             'border-bottom': locDs.tempsFin ? null : '2px solid red'
           }"
           *ngFor="let locDs of designtions; let i = index"
+          (clickOutside)="onUpdateClickedOutside(locDs.id)"
+          (click)="onUpdateClick(locDs.id)"
         >
           <td>
             {{ locDs.libelle }}

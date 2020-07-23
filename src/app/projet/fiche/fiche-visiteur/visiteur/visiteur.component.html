@@ -21,59 +21,76 @@
       <ion-icon name="arrow-round-up"></ion-icon>
     </span>
   </div>
-  <table>
-    <tr class="header">
-      <th style="width: 50%">
-        NOM & PRENOM
-      </th>
-      <th style="width: 50%">
-        ORGANISME
-      </th>
-    </tr>
-    <tr
-      (click)="onAddClick()"
-      (clickOutside)="onAddClickOutside(nom, org)"
-      class="inputs"
-    >
-      <td class="tdInput">
-        <input type="text" name="nom" placeholder="NOM & PRENOM" #nom />
-      </td>
-      <td class="tdInput">
-        <input type="text" name="org" placeholder="ORGANISME" #org />
-      </td>
-    </tr>
-    <!--*****************************************************************************************************-->
-    <tr
-      [ngStyle]="{
-        'font-weight': item.isAsso ? 'bold' : 'normal',
-        'background-color': vstSelectedIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
-      }"
-      (dblclick)="onAssoVisiteurWithProjet(item.id)"
-      (press)="onDelete(item.id)"
-      (click)="onUpdateClick(nomU, orgU, i)"
-      (clickOutside)="onUpdateClickOutside(nomU, orgU, item.id, i)"
-      *ngFor="let item of visiteurs; let i = index"
-    >
-      <td>
-        <input
-          disabled
-          type="text"
-          name="nom{{ i }}"
-          [ngModel]="item.nom"
-          placeholder="NOM & PRENOM"
-          #nomU
-        />
-      </td>
-      <td>
-        <input
-          disabled
-          type="text"
-          [ngModel]="item.organisme"
-          name="org{{ i }}"
-          placeholder="ORGANISME"
-          #orgU
-        />
-      </td>
-    </tr>
-  </table>
+  <form #f="ngForm">
+    <table>
+      <tr class="header">
+        <th style="width: 40%">
+          NOM & PRENOM
+        </th>
+        <th style="width: 40%">
+          ORGANISME
+        </th>
+        <th style="width: 20%">
+          PERMANENT
+        </th>
+      </tr>
+      <tr
+        (click)="onAddClick()"
+        (clickOutside)="onAddClickOutside()"
+        class="inputs"
+      >
+        <td class="tdInput">
+          <input type="text" name="nom" placeholder="NOM & PRENOM" ngModel />
+        </td>
+        <td class="tdInput">
+          <input type="text" name="org" placeholder="ORGANISME" ngModel />
+        </td>
+        <td class="tdInput">
+          <ion-checkbox [ngModel]="0" name="permanent" ngModel></ion-checkbox>
+        </td>
+      </tr>
+      <!--*****************************************************************************************************-->
+      <tr
+        [ngStyle]="{
+          'font-weight': item.isAsso ? 'bold' : 'normal',
+          'background-color':
+            vstSelectedIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
+        }"
+        (dblclick)="onAssoVisiteurWithProjet(item.id)"
+        (press)="onDelete(item.id)"
+        (click)="onUpdateClick(item.id)"
+        (clickOutside)="onUpdateClickOutside(item.id)"
+        *ngFor="let item of visiteurs; let i = index"
+      >
+        <td>
+          <input
+            disabled
+            type="text"
+            name="nom{{ item.id }}"
+            [ngModel]="item.nom"
+            placeholder="NOM & PRENOM"
+            ngModel
+          />
+        </td>
+        <td>
+          <input
+            disabled
+            type="text"
+            [ngModel]="item.organisme"
+            name="org{{ item.id }}"
+            placeholder="ORGANISME"
+            ngModel
+          />
+        </td>
+        <td>
+          <ion-checkbox
+            [ngModel]="item.permanent"
+            name="permanent{{ item.id }}"
+            disabled
+            ngModel
+          ></ion-checkbox>
+        </td>
+      </tr>
+    </table>
+  </form>
 </div>

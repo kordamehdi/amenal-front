@@ -1,5 +1,7 @@
+import { ficheOuvrierState } from "./fiche-ouvrier.reducers";
 import { OuvrierModel } from "./../../../models/ouvrier.model";
 import * as fromFicheOuvrierAction from "./fiche-ouvrier.action";
+import { reduce } from "rxjs/operators";
 
 export interface ficheOuvrierState {
   ouvriers: OuvrierModel[];
@@ -13,6 +15,42 @@ export interface ficheOuvrierState {
   typeOuvDialog: string;
   AlertCtn: Boolean;
   isOuvrierUpdate: number;
+  ficheState: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filter: {
+      nom: string;
+      qualification: string;
+    };
+    sort: boolean;
+  };
+  ouvListState: {
+    position: {
+      a: number;
+      b: number;
+      position: number;
+    };
+    filter: {
+      cin: string;
+      nom: string;
+      prenom: string;
+      qualification: string;
+      appreciation: string;
+    };
+    sort: {
+      order: {
+        cin: boolean;
+        nom: boolean;
+        prenom: boolean;
+        qualification: boolean;
+        appreciation: boolean;
+      };
+      type: string;
+    };
+  };
 }
 
 const InitialState: ficheOuvrierState = {
@@ -46,13 +84,68 @@ const InitialState: ficheOuvrierState = {
   AlertCtn: false,
   errorOuvMsg: "",
   typeOuvDialog: "",
-  isOuvrierUpdate: -1
+  isOuvrierUpdate: -1,
+  ficheState: {
+    position: {
+      a: 0,
+      b: 2,
+      position: 1
+    },
+    filter: {
+      nom: "",
+      qualification: ""
+    },
+    sort: true
+  },
+  ouvListState: {
+    position: {
+      a: 0,
+      b: 3,
+      position: 1
+    },
+    filter: {
+      cin: "",
+      nom: "",
+      prenom: "",
+      qualification: "",
+      appreciation: ""
+    },
+    sort: {
+      order: {
+        cin: true,
+        nom: true,
+        prenom: true,
+        qualification: true,
+        appreciation: true
+      },
+      type: ""
+    }
+  }
 };
+
 export function OuvrierReducer(
   state = InitialState,
   action: fromFicheOuvrierAction.FicheAction
-) {
+): ficheOuvrierState {
   switch (action.type) {
+    case fromFicheOuvrierAction.GET_OUV_LIST_STATE: {
+      return {
+        ...state,
+        ouvListState: action.payload
+      };
+    }
+    case fromFicheOuvrierAction.GET_FICHE_STATE: {
+      return {
+        ...state,
+        ficheState: action.payload
+      };
+    }
+    case fromFicheOuvrierAction.GET_FICHE_STATE: {
+      return {
+        ...state,
+        ficheState: action.payload
+      };
+    }
     case fromFicheOuvrierAction.IS_UPDATE: {
       return {
         ...state,

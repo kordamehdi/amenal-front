@@ -26,6 +26,7 @@ export class UtilisateurComponent implements OnInit {
   update = -1;
   projetSelected = false;
   userSelected = false;
+  roleUserAssoId = -1;
   formNames = ["username", "projet", "role"];
   errorMsg;
   userWithRoles: UtilisateurModel[] = [];
@@ -85,6 +86,16 @@ export class UtilisateurComponent implements OnInit {
     this.projetSelected = true;
     this.form.controls["projet"].setValue(p.abreveation);
   }
+  onDeleteUserRole(id) {
+    this.roleUserAssoId = id;
+    this.store.dispatch(
+      new fromFicheAction.ShowFicheAlert({
+        type: "user",
+        showAlert: true,
+        msg: "Vous Etes sure de supprimer se previlege?"
+      })
+    );
+  }
   onAddUtilisateur() {
     let user: UtilisateurWithRoleCommandeModel = {
       username: this.form.value["username"],
@@ -134,6 +145,10 @@ export class UtilisateurComponent implements OnInit {
 
   /*** */
   onContinue() {
+    if (this.roleUserAssoId !== -1) {
+      this.utilisateurService.onSupprimerUserRoleAsso(this.roleUserAssoId);
+      this.roleUserAssoId = -1;
+    }
     this.onCancel();
   }
   onShowshowDetail(i) {
