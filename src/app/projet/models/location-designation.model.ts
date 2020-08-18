@@ -10,6 +10,7 @@ export interface locationDesignationModel {
   fournisseurId: number;
   fournisseurNom: string;
   observation: string;
+  brf: string;
   idFiche: number;
   idProjet: number;
 }

@@ -20,38 +20,19 @@ export interface ficheLocationState {
     materielId: number;
     materielNom: string;
   };
-  FournisseurListState: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
-    filterByNom: string;
-  };
-  MaterielListState: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
-    filterByNom: string;
-  };
+  fourFilterKeyWord: string;
+  MaterielFilterKeyWord: string;
+
   fournisseurMaterielNotAsso: FournisseurModel[];
   ficheLocState: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
     filter: {
       libelle: string;
       fournisseurNom: string;
+      brf: string;
     };
+
     sort: {
-      order: {
-        libelle: boolean;
-        fournisseurNom: boolean;
-      };
+      order: any;
       type: string;
     };
   };
@@ -67,22 +48,8 @@ const initialState: ficheLocationState = {
     materielId: -1,
     materielNom: ""
   },
-  FournisseurListState: {
-    position: {
-      a: 0,
-      b: -1,
-      position: 1
-    },
-    filterByNom: ""
-  },
-  MaterielListState: {
-    position: {
-      a: 0,
-      b: -1,
-      position: 1
-    },
-    filterByNom: ""
-  },
+  fourFilterKeyWord: "",
+  MaterielFilterKeyWord: "",
   fournisseurs: [],
   materiels: [],
   showList: false,
@@ -91,20 +58,44 @@ const initialState: ficheLocationState = {
   unites: [],
   fournisseurMaterielNotAsso: [],
   ficheLocState: {
-    position: {
-      a: 0,
-      b: -1,
-      position: 1
-    },
     filter: {
       libelle: "",
-      fournisseurNom: ""
+      fournisseurNom: "",
+      brf: ""
     },
     sort: {
-      order: {
-        libelle: true,
-        fournisseurNom: true
-      },
+      order: [
+        {
+          type: "libelle",
+          order: true,
+          isFocus: true
+        },
+        {
+          type: "tempsFin",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "tempsDebut",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "travailleLoc",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "fournisseurNom",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "brf",
+          order: true,
+          isFocus: false
+        }
+      ],
       type: "libelle"
     }
   }
@@ -115,16 +106,16 @@ export function ficheLocationReducer(
   action: fromFicheLocationAction.FicheLocationAction
 ): ficheLocationState {
   switch (action.type) {
-    case fromFicheLocationAction.GET_LIST_MAT_STATE: {
+    case fromFicheLocationAction.GET_MAT_FILTER_KEY_WORD: {
       return {
         ...state,
-        MaterielListState: action.payload
+        MaterielFilterKeyWord: action.payload
       };
     }
-    case fromFicheLocationAction.GET_LIST_FOURNISSEUR_STATE: {
+    case fromFicheLocationAction.GET_FOUR_FILTER_KEY_WORD: {
       return {
         ...state,
-        FournisseurListState: action.payload
+        fourFilterKeyWord: action.payload
       };
     }
     case fromFicheLocationAction.GET_FICHE_LOC_STATE: {

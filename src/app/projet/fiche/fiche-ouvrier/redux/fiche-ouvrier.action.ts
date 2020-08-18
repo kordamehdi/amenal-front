@@ -14,6 +14,10 @@ export const GET_DESIGNATIONS = "GET_DESIGNATIONS";
 export const IS_UPDATE = "IS_UPDATE";
 export const GET_FICHE_STATE = "GET_FICHE_STATE";
 export const GET_OUV_LIST_STATE = "GET_OUV_LIST_STATE";
+export const GET_APPRREC = "GET_APPRREC";
+export const GET_VILLE = "GET_VILLE";
+export const VILLE_ADED = "VILLE_ADED";
+
 export class AddOuvrier implements Action {
   readonly type = ADD_OUVRIER;
   payload: OuvrierModel;
@@ -67,6 +71,22 @@ export class CancelOuvrier implements Action {
   }
 }
 
+export class GetVilles implements Action {
+  readonly type = GET_VILLE;
+  payload: string[];
+  constructor(payload: string[]) {
+    this.payload = payload;
+  }
+}
+
+export class GetApprec implements Action {
+  readonly type = GET_APPRREC;
+  payload: string[];
+  constructor(payload: string[]) {
+    this.payload = payload;
+  }
+}
+
 export class ShowAlert implements Action {
   readonly type = SHOW_ALERT_OUVRIER;
   payload: {
@@ -107,7 +127,10 @@ export class getFicheState implements Action {
       nom: string;
       qualification: string;
     };
-    sort: boolean;
+    sort: {
+      order: any;
+      type: string;
+    };
   };
   constructor(payload) {
     this.payload = payload;
@@ -116,11 +139,6 @@ export class getFicheState implements Action {
 export class getOuvListState implements Action {
   readonly type = GET_OUV_LIST_STATE;
   payload: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
     filter: {
       cin: string;
       nom: string;
@@ -129,19 +147,17 @@ export class getOuvListState implements Action {
       appreciation: string;
     };
     sort: {
-      order: {
-        cin: boolean;
-        nom: boolean;
-        prenom: boolean;
-        qualification: boolean;
-        appreciation: boolean;
-      };
+      order: any;
       type: string;
     };
   };
   constructor(payload) {
     this.payload = payload;
   }
+}
+export class villeAded implements Action {
+  readonly type = VILLE_ADED;
+  constructor() {}
 }
 
 export type FicheAction =
@@ -157,4 +173,7 @@ export type FicheAction =
   | GetDesignations
   | IsUpdate
   | getFicheState
-  | getOuvListState;
+  | getOuvListState
+  | GetApprec
+  | GetVilles
+  | villeAded;

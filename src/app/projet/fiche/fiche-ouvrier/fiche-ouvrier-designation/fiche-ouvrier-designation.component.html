@@ -1,8 +1,4 @@
-<div
-  (onclick)="click()"
-  class="container"
-  [ngStyle]="{ height: 'auto', 'max-height': screenHeight }"
->
+<div class="container" HeightFiche>
   <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -13,21 +9,9 @@
     "
     #f="ngForm"
   >
-    <div class="header-title">
-      <!--  <span class="left" (click)="onPrevious()"
-        ><ion-icon name="arrow-dropleft"></ion-icon>
-      </span>-->
-
-      <span class="middle">FICHE OUVRIER</span>
-
-      <!-- <span class="left" (click)="onNext()">
-        <ion-icon name="arrow-dropright"></ion-icon>
-      </span>-->
-    </div>
-
     <table>
       <tr class="header">
-        <th style="width: 22%">
+        <th style="width: 20%">
           <input
             (input)="onFilter(false)"
             type="text"
@@ -37,11 +21,14 @@
             style="width: 80%"
           />
           <ion-icon
-            [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
-            (click)="onSort(false)"
+            [name]="
+              orderByType('nom') == true ? 'arrow-round-down' : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'nom')"
+            [ngStyle]="{ color: this.orderTypeFocus('nom') ? 'black' : 'gray' }"
           ></ion-icon>
         </th>
-        <th style="width: 15%">
+        <th style="width: 7%">
           CIN
         </th>
         <th style="width: 20%">
@@ -53,21 +40,87 @@
             ngModel
             style="width: 80%"
           />
+          <ion-icon
+            [name]="
+              orderByType('qualification') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'qualification')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('qualification') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 7%">
+        <th style="width: 9%">
           DEBUT
+          <ion-icon
+            [name]="
+              orderByType('tempsDebut') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'tempsDebut')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('tempsDebut') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 7%">
+        <th style="width: 9%">
           FIN
+          <ion-icon
+            [name]="
+              orderByType('tempsFin') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'tempsFin')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('tempsFin') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 8.5%">
-          TRAVAIL
+        <th style="width: 8%">
+          TRV
+          <ion-icon
+            [name]="
+              orderByType('tempsDiff') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'tempsDiff')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('tempsDiff') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 5%">
+        <th style="width: 8%">
           JOUR
+          <ion-icon
+            [name]="
+              orderByType('jour') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'jour')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('jour') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 5%">
+        <th style="width: 8%">
           H.SUP
+          <ion-icon
+            [name]="
+              orderByType('hsup') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'hsup')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('hsup') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
         <th style="width: 5%">
           EPI
@@ -78,19 +131,22 @@
       </tr>
       <tr
         class="inputs"
+        [clickOutsideEnabled]="isUpdate === 0"
         (clickOutside)="onClickAddOutside()"
         (click)="onClickAdd()"
       >
-        <td style="width: 22.8% ;position: relative " class="tdInput">
+        <td style="width: 22.8%  " class="tdInput">
           <input
             type="text"
             name="ouv"
+            style="text-align: left;"
             (input)="onSearch()"
-            placeholder="OUVRIER"
+            placeholder="NOM & PRENOM"
             required
             ngModel
             (focus)="onFocusSelectOuvrier(ouvadd)"
-            (blur)="onBlurSelectOuvrier(ouvadd)"
+            (blur)="onBlurSelectOuvrier(ouvadd, dateDebut)"
+            #ouv
           />
           <input hidden type="text" name="ouvID" required ngModel />
           <div hidden #ouvadd style="width :254%" class="div-list">
@@ -119,7 +175,14 @@
           {{ ouvrierQualification }}
         </td>
         <td style="width: 7%" class="tdInput">
-          <input type="time" name="debut" required ngModel #dateDebut />
+          <input
+            type="time"
+            name="debut"
+            (blur)="onClickAddOutside()"
+            required
+            ngModel
+            #dateDebut
+          />
         </td>
         <td style="width: 7%" class="tdInput">
           <input type="time" name="fin" ngModel #dateFin />
@@ -131,6 +194,12 @@
             name="travail"
             ngModel
             [ngModel]="calculTravail(dateDebut.value, dateFin.value)"
+            [ngStyle]="{
+              color:
+                calculTravail(dateDebut.value, dateFin.value) === '--H --M'
+                  ? 'gray'
+                  : 'black'
+            }"
           />
         </td>
         <td style="width:5%" class="tdInput">
@@ -140,19 +209,19 @@
             max="1"
             step="0.1"
             name="jour"
-            placeholder="jour"
+            placeholder="JOUR"
             ngModel
           />
         </td>
         <td style="width:5%" class="tdInput">
-          <input type="number" name="hSup" placeholder="hSup" ngModel />
+          <input type="number" name="hSup" placeholder="H.SUP" ngModel />
         </td>
         <td style="width:5%" class="tdInput">
           <input
             [ngModel]="false"
             type="checkbox"
             name="epi"
-            placeholder="epi"
+            placeholder="EPI"
             ngModel
             #epiInput
           />
@@ -160,7 +229,9 @@
         <td style="width:5%" class="tdInput"></td>
       </tr>
 
-      <!--****************************************************************************************************************************-->
+      <!--   [clickOutsideEnabled]="
+            isUpdate === 1 && this.ouvDsSlIndex == ouvDs.id
+          " ****************************************************************************************************************************-->
       <!--****************************************************************************************************************************-->
       <!--****************************************************************************************************************************-->
 
@@ -171,33 +242,30 @@
           class="overflow"
           [ngStyle]="{
             'background-color':
-              this.ouvDsSlIndex == ouvDs.id ? 'rgba(255, 0, 0, 0.1)' : '',
-            'border-bottom': timeException(
-              tempsDebut.value,
-              tempsFin.value,
-              hSup.value,
-              jour.value
-            )
-              ? ''
-              : '2px solid red'
+              ouvDsSlIndex == ouvDs.id ? 'rgba(255, 0, 0, 0.1)' : ''
           }"
           (press)="onLongPress(ouvDs.id)"
           *ngFor="let ouvDs of designationOuvrier; let i = index"
+          [attachOutsideOnClick]="true"
           (clickOutside)="onClickUpdateOutside(ouvDs.id)"
-          (click)="onClick(ouvDs.id)"
+          (click)="onUpdateClick(ouvDs.id)"
         >
-          <td style="width: 22.8% ; position: relative; " tabindex="1">
+          <td
+            style="width: 22.8% ; position: relative;text-align: left; "
+            tabindex="1"
+          >
             <input
               disabled
+              style="text-align: left;"
               type="text"
               name="ouv{{ ouvDs.id }}"
               (input)="onSearchUpdate(onSearchUpdate)"
-              placeholder="OUVRIER"
+              placeholder="NOM & PRENOM"
               [ngModel]="ouvDs.nom"
               required
               ngModel
               (focus)="onFocusSelectOuvrierUpdate(ouvUpdate)"
-              (blur)="onBlurSelectOuvrierUpdate(ouvUpdate, ouvDs.id, ouvDs)"
+              (blur)="onBlurSelectOuvrierUpdate(ouvUpdate, ouvDs, tempsDebut)"
             />
             <input
               hidden
@@ -239,9 +307,10 @@
             </div>
           </td>
 
-          <td style="width: 14.5%" tabindex="1">
+          <td style="width: 14.5% ; text-align: left;" tabindex="1">
             <input
               readonly
+              style="text-align: left;"
               type="text"
               name="cin{{ ouvDs.id }}"
               [ngModel]="ouvDs.cin"
@@ -250,8 +319,9 @@
             />
           </td>
 
-          <td style="width: 20%" tabindex="1">
+          <td style="width: 20% ; " tabindex="1">
             <input
+              style="text-align: left;"
               readonly
               type="text"
               name="qualification{{ ouvDs.id }}"
@@ -270,6 +340,7 @@
               required
               ngModel
               #tempsDebut
+              (blur)="goToNext(tempsFin)"
             />
           </td>
           <td style="width: 7%">
@@ -278,9 +349,10 @@
               [ngModel]="ouvDs.tempsFin"
               [type]="this.ouvDsSlIndex == ouvDs.id ? 'time' : 'text'"
               name="fin{{ ouvDs.id }}"
-              placeholder="fin"
+              placeholder="FIN"
               ngModel
               #tempsFin
+              (blur)="goToNext(jour)"
             />
           </td>
           <td style="width: 8.5%">
@@ -290,7 +362,10 @@
               name="travail{{ ouvDs.id }}"
               placeholder="travail"
               ngModel
-              [ngModel]="calculTravail(tempsDebut.value, tempsFin.value)"
+              [ngModel]="ouvDs.tempsDiff | minToHrs: 'M'"
+              [ngStyle]="{
+                color: ouvDs.tempsDiff === -1 ? 'gray' : 'black'
+              }"
               #trv
             />
           </td>
@@ -303,9 +378,13 @@
               max="1"
               step="0.1"
               name="jour{{ ouvDs.id }}"
-              placeholder="jour"
+              placeholder="JOUR"
               ngModel
               #jour
+              [ngStyle]="{
+                color: ouvDs.jourValid ? 'black' : 'red'
+              }"
+              (blur)="goToNext(hSup)"
             />
           </td>
           <td style="width: 5%">
@@ -314,9 +393,13 @@
               [ngModel]="ouvDs.hsup"
               type="number"
               name="hSup{{ ouvDs.id }}"
-              placeholder="hSup"
+              placeholder="HSUP"
               ngModel
               #hSup
+              [ngStyle]="{
+                color: ouvDs.hsupValid ? 'black' : 'red'
+              }"
+              (blur)="onClickUpdateOutside(ouvDs.id)"
             />
           </td>
           <td style="width: 5%">
@@ -324,7 +407,7 @@
               disabled
               type="checkbox"
               name="epi{{ ouvDs.id }}"
-              placeholder="epi"
+              placeholder="EPI"
               [ngModel]="ouvDs.epi"
               ngModel
             />

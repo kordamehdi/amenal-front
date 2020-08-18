@@ -8,8 +8,11 @@ export interface ouvrierDesignationModel {
   idFiche: number;
   tempsDebut: any;
   tempsFin: any;
+  tempsDiff: string;
   jour: number;
   hsup: any;
   epi: boolean;
+  jourValid: boolean;
+  hsupValid: boolean;
   valid: boolean;
 }

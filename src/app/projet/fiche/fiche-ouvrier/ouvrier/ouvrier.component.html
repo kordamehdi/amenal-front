@@ -1,4 +1,4 @@
-<div class="scrol_cont" [ngStyle]="{ height: screenHeight }">
+<div HeightList class="scrol_cont">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -8,9 +8,6 @@
     #f="ngForm"
   >
     <div class="header-title">
-      <!--   <span class="left" (click)="onPrevious()"
-        ><ion-icon name="arrow-dropleft"></ion-icon>
-      </span>-->
       <label for="file" class="left"
         ><ion-icon name="download">
           <input
@@ -24,22 +21,14 @@
 
       <span class="middle">LISTE DES OUVRIERS </span>
 
-      <span class="left" (click)="OnCancel()">
+      <span class="left">
         <ion-icon name="arrow-round-up"></ion-icon>
       </span>
-      <!-- <span class="left" (click)="onNext()">
-        <ion-icon name="arrow-dropright"></ion-icon>
-      </span>-->
     </div>
     <table style="width:100% ;">
       <tr>
-        <th Style="width: 11%">
+        <th Style="width: 12%">
           <input
-            [ngStyle]="{
-              color: typeAsc === 'nom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus('nom')"
-            (input)="onFilter(false)"
             type="text"
             placeholder="NOM"
             name="nom$"
@@ -49,21 +38,14 @@
           />
           <ion-icon
             [ngStyle]="{
-              color: typeAsc === 'nom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('nom') ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
-            [name]="
-              ascendant['nom'] == true ? 'arrow-round-down' : 'arrow-round-up'
-            "
+            [name]="orderByType('nom') ? 'arrow-round-down' : 'arrow-round-up'"
             (click)="onSort('nom', false)"
           ></ion-icon>
         </th>
         <th Style="width: 11%">
           <input
-            [ngStyle]="{
-              color: typeAsc === 'prenom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus('prenom')"
-            (input)="onFilter(false)"
             name="prenom$"
             ngModel
             type="text"
@@ -73,23 +55,18 @@
           />
           <ion-icon
             [ngStyle]="{
-              color: typeAsc === 'prenom' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+              color: this.orderTypeFocus('prenom')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['prenom'] == true
-                ? 'arrow-round-down'
-                : 'arrow-round-up'
+              orderByType('prenom') ? 'arrow-round-down' : 'arrow-round-up'
             "
             (click)="onSort('prenom', false)"
           ></ion-icon>
         </th>
-        <th Style="width: 11%">
+        <th Style="width: 9%">
           <input
-            [ngStyle]="{
-              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus('cin')"
-            (input)="onFilter(false)"
             type="text"
             name="cin$"
             ngModel
@@ -99,58 +76,67 @@
           />
           <ion-icon
             [ngStyle]="{
-              color: typeAsc === 'cin' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('cin') ? 'black' : 'rgba(61, 61, 61, 0.815)'
+            }"
+            [name]="orderByType('cin') ? 'arrow-round-down' : 'arrow-round-up'"
+            (click)="onSort('cin', false)"
+          ></ion-icon>
+        </th>
+        <th Style="width: 8%">
+          <input
+            type="text"
+            name="ville$"
+            ngModel
+            placeholder="VILLE"
+            #oville
+            style="width: 80%"
+          />
+          <ion-icon
+            [ngStyle]="{
+              color: orderTypeFocus('ville')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['cin'] == true ? 'arrow-round-down' : 'arrow-round-up'
+              orderByType('ville') ? 'arrow-round-down' : 'arrow-round-up'
             "
-            (click)="onSort('cin', false)"
+            (click)="onSort('ville', false)"
           ></ion-icon>
         </th>
 
         <th Style="width: 15%">
           <input
-            [ngStyle]="{
-              color:
-                typeAsc === 'qualification'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
-            }"
-            (focus)="onFilterFocus('qualification')"
-            (input)="onFilter(false)"
             type="text"
             name="qualification$"
-            placeholder="QUALIF."
+            placeholder="QUALIFICATION"
             #oqual
             style="width: 80%"
             ngModel
           />
           <ion-icon
             [ngStyle]="{
-              color:
-                typeAsc === 'qualification'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('qualification')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['qualification'] == true
+              orderByType('qualification')
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
             (click)="onSort('qualification', false)"
           ></ion-icon>
         </th>
-        <th Style="width: 5%">
+        <th Style="width: 6%">
           AGE
           <ion-icon
             [ngStyle]="{
-              color:
-                typeAsc === 'dateNaissance'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('dateNaissance')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['dateNaissance'] == true
+              orderByType('dateNaissance')
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
@@ -161,33 +147,30 @@
           ANCIENTÉ
           <ion-icon
             [ngStyle]="{
-              color:
-                typeAsc === 'dateRecrutement'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('dateRecrutement')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['dateRecrutement'] == true
+              orderByType('dateRecrutement')
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
             (click)="onSort('dateRecrutement', false)"
           ></ion-icon>
         </th>
-        <th Style="width: 5%">
-          J_TRV
+        <th Style="width: 4%;padding-top: 9px">
+          TRV
         </th>
-        <th Style="width: 10%">
+        <th Style="width: 9% ; padding-top: 10px;">
           TELE
         </th>
-        <th Style="width: 10%">
+        <th Style="width: 8%">
           <input
             [ngStyle]="{
               color:
                 typeAsc === 'appreciation' ? 'black' : 'rgba(61, 61, 61, 0.815)'
             }"
-            (focus)="onFilterFocus('APPREC.')"
-            (input)="onFilter(false)"
             type="text"
             name="appreciation$"
             placeholder="APREC."
@@ -197,11 +180,12 @@
           />
           <ion-icon
             [ngStyle]="{
-              color:
-                typeAsc === 'appreciation' ? 'black' : 'rgba(61, 61, 61, 0.815)'
+              color: orderTypeFocus('appreciation')
+                ? 'black'
+                : 'rgba(61, 61, 61, 0.815)'
             }"
             [name]="
-              ascendant['appreciation'] == true
+              orderByType('appreciation')
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
@@ -210,32 +194,51 @@
         </th>
       </tr>
 
-      <tr (clickOutside)="onAddClickOutside()" (click)="onAddClick()">
+      <tr
+        [attachOutsideOnClick]="true"
+        (clickOutside)="onAddClickOutside()"
+        (click)="onAddClick()"
+      >
         <td class="tdInput">
-          <input type="text" name="nom" placeholder="nom" required ngModel />
+          <input type="text" name="nom" placeholder="NOM" required ngModel />
         </td>
         <td class="tdInput">
           <input
             type="text"
             name="prenom"
-            placeholder="prenom"
+            placeholder="PRENOM"
             required
             ngModel
           />
         </td>
         <td class="tdInput">
+          <input type="text" name="cin" placeholder="CIN" required ngModel />
+        </td>
+        <td class="tdInput">
           <input
+            (focus)="onFocusVilleInput(villeListAdd)"
+            (blur)="onBlurVilleInput(villeListAdd)"
+            (input)="onVilleSearch(villeInputAdd.value)"
+            #villeInputAdd
             type="text"
-            name="cin"
-            placeholder="CIN"
+            name="ville"
+            placeholder="VILLE"
             required
-            maxlength="7"
-            minlength="7"
             ngModel
           />
+          <div hidden="false" class="div-list" #villeListAdd>
+            <div
+              (press)="onLongPressVille(v)"
+              (click)="onSelectVille(v)"
+              *ngFor="let v of villes; let i = index"
+              class="div-detail"
+            >
+              {{ v }}
+            </div>
+          </div>
         </td>
 
-        <td class="tdInput" style="position: relative">
+        <td class="tdInput">
           <input
             (focus)="onFocusQualificationInput(detail)"
             (blur)="onBlurQualificationInput(detail)"
@@ -244,7 +247,7 @@
             #qualInput
             name="qual"
             required
-            placeholder="qualification"
+            placeholder="QUALIFICATION"
             ngModel
           />
 
@@ -284,32 +287,33 @@
           />
         </td>
         <td class="tdInput">
-          <input
-            readonly
-            (focus)="isUpdate = false"
-            type="text"
-            name="J_TRV"
-            placeholder="J_TRV"
-            ngModel
-          />
+          <input readonly type="text" name="TRV" placeholder="TRV" ngModel />
+        </td>
+        <td class="tdInput">
+          <input type="tel" name="tele" placeholder="TELE" required ngModel />
         </td>
         <td class="tdInput">
           <input
-            type="tel"
-            name="tele"
-            placeholder="telephone"
-            required
-            ngModel
-          />
-        </td>
-        <td class="tdInput">
-          <input
+            (focus)="onFocusApprecInput(aprecListAdd)"
+            (blur)="onBlurApprecInput(aprecListAdd)"
+            (input)="onApprecSearch(aprecInputAdd.value)"
             type="text"
+            #aprecInputAdd
             name="appreciation"
-            placeholder="appreciation"
-            required
+            placeholder="APREC."
             ngModel
           />
+
+          <div hidden="false" class="div-list" #aprecListAdd>
+            <div
+              (press)="onLongPressApprec(aprc)"
+              (click)="onSelectApprec(aprc)"
+              *ngFor="let aprc of apprecs; let i = index"
+              class="div-detail"
+            >
+              {{ aprc }}
+            </div>
+          </div>
         </td>
       </tr>
 
@@ -324,6 +328,7 @@
             'font-weight': ouv.isAsso ? 'bold' : 'normal'
           }"
           (dblclick)="addOuvToProjets(ouv.id)"
+          [attachOutsideOnClick]="true"
           (clickOutside)="onUpdateClickedOutside(ouv.id)"
           (click)="onUpdateClick(ouv.id)"
         >
@@ -349,19 +354,41 @@
               ngModel
             />
           </td>
+
           <td class="">
             <input
               disabled
               type="text"
               name="cin{{ ouv.id }}"
               required
-              maxlength="7"
-              minlength="7"
               [ngModel]="ouv.cin"
               ngModel
             />
           </td>
-
+          <td class="" style="position : relative">
+            <input
+              disabled
+              (focus)="onFocusVilleInput(villesListUpdt)"
+              (blur)="onBlurVilleInput(villesListUpdt)"
+              (input)="onVilleSearch(villeInputUpdt.value)"
+              type="text"
+              #villeInputUpdt
+              name="ville{{ ouv.id }}"
+              [ngModel]="ouv.ville"
+              required
+              ngModel
+            />
+            <div hidden="false" class="div-list" #villesListUpdt>
+              <div
+                (press)="onLongPressVille(v)"
+                (click)="onSelectVilleUpdate(v, ouv.id)"
+                *ngFor="let v of villes; let i = index"
+                class="div-detail"
+              >
+                {{ v }}
+              </div>
+            </div>
+          </td>
           <td class="" style="position: relative">
             <input
               disabled
@@ -378,6 +405,7 @@
             />
             <div hidden="false" class="div-list" #qualif>
               <div
+                (press)="onLongPressQualification(item)"
                 (click)="onSelectQualUpdate(item, ouv.id)"
                 *ngFor="let item of qualifications"
                 class="div-detail"
@@ -434,7 +462,7 @@
                 display: this.focusID != ouv.id ? 'block' : 'none'
               }"
             >
-              {{ dateRec.value | diffFromNow }}
+              {{ dateRec.value | diffFromNow: "" }}
             </span>
           </td>
           <td class="">
@@ -444,7 +472,7 @@
               type="text"
               name="J_TRV{{ ouv.id }}"
               [ngModel]="ouv.j_trv"
-              placeholder="J_TRV"
+              placeholder="TRV"
               ngModel
             />
           </td>
@@ -458,16 +486,29 @@
               ngModel
             />
           </td>
-          <td class="">
+          <td class="" style="position: relative;">
             <input
+              (focus)="onFocusApprecInput(aprecListupdt)"
+              (blur)="onBlurApprecInput(aprecListupdt)"
+              (input)="onApprecSearch(aprecInputupdt.value)"
               disabled
               type="text"
               name="appreciation{{ ouv.id }}"
               [ngModel]="ouv.appreciation"
-              placeholder="appreciation"
-              required
+              placeholder="APPREC."
+              #aprecInputupdt
               ngModel
             />
+            <div hidden="false" class="div-list" #aprecListupdt>
+              <div
+                (press)="onLongPressApprec(aprc)"
+                (click)="onSelectApprecUpdate(aprc, ouv.id)"
+                *ngFor="let aprc of apprecs; let i = index"
+                class="div-detail"
+              >
+                {{ aprc }}
+              </div>
+            </div>
           </td>
         </tr>
       </ng-container>

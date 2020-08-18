@@ -1,4 +1,4 @@
-<div (onclick)="click()" class="container">
+<div class="container" HeightFiche>
   <app-dialog (OnCtn)="onCtnAlert()" (Cancel)="onHideAlert()" *ngIf="showAlert">
     {{ errorMsg }}
   </app-dialog>
@@ -8,80 +8,115 @@
     "
     #f="ngForm"
   >
-    <div class="header-nav">
-      <span class="left" (click)="onPrevious()"
-        ><ion-icon name="arrow-dropleft"></ion-icon>
-      </span>
-
-      <span class="middle"> FICHE LOCATION : {{ position }}/{{ size }}</span>
-
-      <span class="left" (click)="onNext()">
-        <ion-icon name="arrow-dropright"></ion-icon>
-      </span>
-    </div>
     <table>
       <tr class="header">
-        <th style="width: 29.1%">
+        <th style="width: 25%">
           <input
             (input)="onFilter(false)"
-            (blur)="onFilterBur(sds)"
             type="text"
             placeholder="DESIGNATION"
             name="libelle$"
             ngModel
-            #sds
             style="width: 80%"
           />
           <ion-icon
-            [ngStyle]="{
-              color: typeAsc === 'libelle' ? 'black' : 'rgba(61, 61, 61, 0.815)'
-            }"
             [name]="
-              ascendant['libelle'] == true
+              orderByType('libelle') == true
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('libelle', false)"
+            (click)="onSort(false, 'libelle')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('libelle') ? 'black' : 'gray'
+            }"
           ></ion-icon>
         </th>
-        <th style="width: 6%">
+        <th style="width: 7%">
           UNITE
         </th>
-        <th style="width: 7%">
+        <th style="width: 10%">
           DEBUT
-        </th>
-        <th style="width: 7%">
-          FIN
+          <ion-icon
+            [name]="
+              orderByType('tempsDebut') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'tempsDebut')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('tempsDebut') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
         <th style="width: 8%">
-          QUANTITE
+          FIN
+          <ion-icon
+            [name]="
+              orderByType('tempsFin') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'tempsFin')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('tempsFin') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
         </th>
-        <th style="width: 20%">
+        <th style="width: 13%">
+          QUANTITE
+          <ion-icon
+            [name]="
+              orderByType('travailleLoc') == true
+                ? 'arrow-round-down'
+                : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'travailleLoc')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('travailleLoc') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
+        </th>
+        <th style="width: 17%">
           <input
             (input)="onFilter(false)"
-            (blur)="onFilterBur(dd)"
             type="text"
-            #dd
-            placeholder="FOURNISSEUR"
+            placeholder="FOUR."
             name="fournisseurNom$"
             ngModel
             style="width: 80%"
           />
           <ion-icon
-            [ngStyle]="{
-              color:
-                typeAsc === 'fournisseurNom'
-                  ? 'black'
-                  : 'rgba(61, 61, 61, 0.815)'
-            }"
             [name]="
-              ascendant['fournisseurNom'] == true
+              orderByType('fournisseurNom') == true
                 ? 'arrow-round-down'
                 : 'arrow-round-up'
             "
-            (click)="onSort('fournisseurNom', false)"
+            (click)="onSort(false, 'fournisseurNom')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('fournisseurNom') ? 'black' : 'gray'
+            }"
           ></ion-icon>
         </th>
+        <th style="width: 18%">
+          <input
+            (input)="onFilter(false)"
+            type="text"
+            placeholder="BRF"
+            name="brf$"
+            ngModel
+            style="width: 80%"
+          />
+          <ion-icon
+            [name]="
+              orderByType('brf') == true ? 'arrow-round-down' : 'arrow-round-up'
+            "
+            (click)="onSort(false, 'brf')"
+            [ngStyle]="{
+              color: this.orderTypeFocus('brf') ? 'black' : 'gray'
+            }"
+          ></ion-icon>
+        </th>
+
         <th style="width: 18%">
           OBSERVATION
         </th>
@@ -89,7 +124,11 @@
           <ion-icon name="reverse-camera"></ion-icon>
         </th>
       </tr>
-      <tr (clickOutside)="onAddClickOutside()" (click)="onAddClick()">
+      <tr
+        [attachOutsideOnClick]="true"
+        (clickOutside)="onAddClickOutside()"
+        (click)="onAddClick()"
+      >
         <td class="tdInput">
           <input
             (input)="OnSearch(inputSrch.value)"
@@ -131,7 +170,6 @@
             type="time"
             name="tempsDebut"
             placeholder="debut"
-            (input)="OnInputDate(tempsDebut.value, tempsFin.value)"
             ngModel
             required
             #tempsDebut
@@ -141,7 +179,6 @@
           <input
             type="time"
             name="tempsFin"
-            (input)="OnInputDate(tempsDebut.value, tempsFin.value)"
             placeholder="fin"
             ngModel
             #tempsFin
@@ -160,7 +197,7 @@
         <td class="tdInput">
           <input
             disabled
-            placeholder="FOURNISSEUR"
+            placeholder="FOUR."
             name="fournisseurNom"
             required
             ngModel
@@ -182,6 +219,9 @@
           </div>
         </td>
         <td class="tdInput">
+          <input placeholder="BRF" name="brf" ngModel type="text" />
+        </td>
+        <td class="tdInput">
           <input
             type="text"
             name="observation"
@@ -201,6 +241,7 @@
           }"
           (press)="OnDeleteDs(locDs.id)"
           *ngFor="let locDs of designtions; let i = index"
+          [attachOutsideOnClick]="true"
           (clickOutside)="onUpdateClickedOutside(i, locDs.id)"
           (click)="onUpdateClick(i, locDs.id, inputUpdateSrch.value, locDs)"
         >
@@ -254,9 +295,7 @@
             <input
               disabled
               [ngModel]="locDs.tempsDebut"
-              (input)="OnInputDate(tempsDebutUpt.value, tempsFinUpt.value, i)"
-              (focus)="isUpdate = false"
-              type="time"
+              [type]="this.dsID == locDs.id ? 'time' : 'text'"
               name="tempsDebut{{ locDs.id }}"
               placeholder="debut"
               required
@@ -267,10 +306,8 @@
           <td>
             <input
               disabled
-              (input)="OnInputDate(tempsDebutUpt.value, tempsFinUpt.value, i)"
               [ngModel]="locDs.tempsFin"
-              (focus)="isUpdate = false"
-              type="time"
+              [type]="this.dsID == locDs.id ? 'time' : 'text'"
               name="tempsFin{{ locDs.id }}"
               placeholder="fin"
               ngModel
@@ -280,8 +317,7 @@
           <td>
             <input
               readonly
-              (focus)="isUpdate = false"
-              [ngModel]="locDs.travailleLocString"
+              [ngModel]="locDs.travailleLoc | minToHrs: 'M'"
               type="text"
               name="quantite{{ locDs.id }}"
               placeholder="quantite"
@@ -291,11 +327,9 @@
 
           <td>
             <input
-              placeholder="FOURNISSEUR"
+              placeholder="FOUR."
               name="fournisseurNom{{ locDs.id }}"
-              (focus)="
-                onUpdateFournisseurFocus(inputUpdateSrch.value, listfrUpdate)
-              "
+              (focus)="onUpdateFournisseurFocus(listfrUpdate)"
               (input)="OnSearchFournisseur(matFrInput.value)"
               [ngModel]="locDs.fournisseurNom"
               (blur)="onUpdateFournisseurBlur(listfrUpdate)"
@@ -314,9 +348,7 @@
                 <span>{{ locDs.fournisseurNom }}</span>
               </div>
               <div
-                (click)="
-                  onSelectUpdateFr(fournisseur.fournisseurNom, i, locDs.id)
-                "
+                (click)="onSelectUpdateFr(fournisseur.fournisseurNom, locDs.id)"
                 *ngFor="let fournisseur of fournisseurs"
                 style="border: 1px solid rgb(0, 0, 0);
               ;width : 100%"
@@ -328,8 +360,17 @@
           <td>
             <input
               disabled
+              [ngModel]="locDs.brf"
+              type="text"
+              name="brf{{ locDs.id }}"
+              placeholder="BRF"
+              ngModel
+            />
+          </td>
+          <td>
+            <input
+              disabled
               [ngModel]="locDs.observation"
-              (focus)="isUpdate = false"
               type="text"
               name="observation{{ locDs.id }}"
               placeholder="observation"
@@ -341,7 +382,7 @@
       </ng-container>
       <ng-template #elseTemplate>
         <tr style="text-align: center ; font-style: italic">
-          <td colspan="8">rien a signaler jusqu'au moment</td>
+          <td colspan="9">rien a signaler jusqu'au moment</td>
         </tr>
       </ng-template>
     </table>

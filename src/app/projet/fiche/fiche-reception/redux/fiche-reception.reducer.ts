@@ -5,6 +5,10 @@ import { fournisseurArticleModel } from "src/app/projet/models/fournisseur-artic
 import { FournisseurModel } from "src/app/projet/models/fournisseur-materiel.model";
 
 export interface FicheReceptionState {
+  ListRecState: {
+    showDetails: [];
+    sortState: any;
+  };
   categories: categorieModel[];
   fournisseurArticleAsso: fournisseurArticleModel[];
   fournisseurArticleNonAsso: FournisseurModel[];
@@ -14,6 +18,7 @@ export interface FicheReceptionState {
   showFournisseurByArticleOrCategorie: {
     itemId: number;
     itemType: string;
+    itemName: string;
   };
   showArticleByFournisseurId: number;
   showDetails: [
@@ -24,9 +29,30 @@ export interface FicheReceptionState {
   ];
 }
 const InitialState: FicheReceptionState = {
+  ListRecState: {
+    showDetails: [],
+    sortState: [
+      {
+        name: "designation",
+        asc: true,
+        isFocus: false
+      },
+      {
+        name: "fournisseurNom",
+        asc: true,
+        isFocus: false
+      },
+      {
+        name: "brf",
+        asc: true,
+        isFocus: false
+      }
+    ]
+  },
   showFournisseurByArticleOrCategorie: {
     itemId: -1,
-    itemType: ""
+    itemType: "",
+    itemName: ""
   },
   showArticleByFournisseurId: -1,
   categories: [],
@@ -47,6 +73,12 @@ export function FicheReducer(
   action: fromFicheReceptionAction.FicheReceptionAction
 ) {
   switch (action.type) {
+    case fromFicheReceptionAction.SHOW_DETAIL_LIST_REC: {
+      return {
+        ...state,
+        ListRecState: action.payload
+      };
+    }
     case fromFicheReceptionAction.SHOW_DETAIL_CAT_ARTICLE: {
       return {
         ...state,

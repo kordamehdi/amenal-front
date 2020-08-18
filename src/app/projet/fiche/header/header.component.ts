@@ -70,9 +70,14 @@ export class HeaderComponent implements OnInit {
     });
     this.store.select(typeChange).subscribe(type => {
       this.typeShow = type;
-      this.router.navigate([type.toLocaleLowerCase()], {
-        relativeTo: this.route
-      });
+      if (this.typeShow !== "") {
+        this.router.navigate(["/fiche/" + type.toLocaleLowerCase()], {
+          relativeTo: this.route
+        });
+        setTimeout(() => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        }, 500);
+      }
     });
   }
   onRefresh() {
@@ -95,12 +100,11 @@ export class HeaderComponent implements OnInit {
       if (this.ficheSelectionner !== null)
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          true,
           this.ficheSelectionner.date
         );
       else {
         let firstType = this.projetSelectionner.fichierTypes[0];
-        this.ficheService.onGetFicheWithRoute(firstType, this.route);
+        this.ficheService.onGetFicheWithRoute(firstType);
       }
     } else {
       this.makeItGray = true;
@@ -108,10 +112,9 @@ export class HeaderComponent implements OnInit {
       if (this.ficheSelectionner !== null)
         this.ficheService.onGetFicheByTypeAndDate(
           type,
-          true,
           this.ficheSelectionner.date
         );
-      else this.ficheService.onGetFicheWithRoute(type, this.route);
+      else this.ficheService.onGetFicheWithRoute(type);
     }
     types.hidden = false;
     this.store.dispatch(new fromFicheAction.ValiderFiche(""));
@@ -132,7 +135,6 @@ export class HeaderComponent implements OnInit {
   onFilterByDate(date) {
     this.ficheService.onGetFicheByTypeAndDate(
       this.ficheSelectionner.type,
-      null,
       date
     );
   }

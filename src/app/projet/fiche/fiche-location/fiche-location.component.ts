@@ -1,3 +1,4 @@
+import { Platform } from "@ionic/angular";
 import { Component, OnInit } from "@angular/core";
 import * as App from "../../../store/app.reducers";
 import { Store } from "@ngrx/store";
@@ -13,7 +14,8 @@ export class FicheLocationComponent implements OnInit {
   role;
   lister: Boolean = false;
   isRoot;
-  constructor(private store: Store<App.AppState>) {}
+  screenHeight;
+  constructor(private store: Store<App.AppState>, private platform: Platform) {}
 
   ngOnInit() {
     this.store.select("projet").subscribe(state => {

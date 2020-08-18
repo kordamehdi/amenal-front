@@ -6,6 +6,15 @@
   text-align: center;
   font-size: 12px;
 }
+.stock-detail {
+  position: relative;
+  left: 5px;
+  top: 3px;
+  width: 7px;
+  height: 7px;
+  background-color: red;
+  border-radius: 40px;
+}
 .cont_div {
   display: flex;
   font-style: italic;

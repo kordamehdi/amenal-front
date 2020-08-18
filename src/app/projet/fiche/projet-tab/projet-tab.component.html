@@ -7,15 +7,13 @@
     (onClose)="showSideBar = false"
     *ngIf="showSideBar"
   ></app-sidebar>
-  <div (onclick)="click()" class="container">
-    <div
-      class="container-header"
-      (swiperight)="onShowSideBar($event)"
-      (swipeleft)="onHideSideBar($event)"
-    >
-      <span (click)="onRefresh()" class="side_left" style="padding: 6px"
-        >. . .
-      </span>
+  <div
+    (swiperight)="onShowSideBar()"
+    (swipeleft)="onHideSideBar()"
+    class="container"
+  >
+    <div class="container-header">
+      <span class="side_left" style="padding: 6px">. . . </span>
       <span class="content" style="align-content: center">
         GESTION DES PROJETS
       </span>
@@ -53,6 +51,7 @@
         </tr>
         <tr
           (click)="onAddClick()"
+          [attachOutsideOnClick]="true"
           (clickOutside)="onAddClickOutside()"
           class="inputs"
         >
@@ -97,6 +96,7 @@
         <!--*****************************************************************************************************-->
         <tr
           (click)="onClickUpdate(i)"
+          [attachOutsideOnClick]="true"
           (clickOutside)="onClickOutsideUpdate(i, item.id)"
           (press)="onDelete(item.id)"
           *ngFor="let item of projets; let i = index"

@@ -1,18 +1,17 @@
 .container {
   width: 100%;
+  height: auto;
   margin: auto;
-  margin-top: 15px;
   text-align: center;
   overflow: scroll;
-  padding-bottom: 5px;
+  padding-top: 16px;
+  padding-bottom: 52px;
 }
 table {
   width: 100%;
   border-collapse: collapse;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
-  font-size: 12px;
-  table-layout: fixed;
 }
 
 tr:last-child td:first-child {
@@ -42,7 +41,10 @@ td:last-child {
   background-color: rgba(255, 255, 255, 0.5);
 }
 .tdInput {
-  background-color: rgba(255, 0, 0, 0.1);
+  z-index: 3;
+  position: sticky;
+  top: 6px;
+  background-color: rgb(216, 194, 164);
 }
 
 input {
@@ -75,7 +77,6 @@ input {
   text-align: center;
   padding-top: 5px;
   display: inline-block;
-  font-size: 12px;
   font-weight: bold;
 }
 .left {
@@ -90,6 +91,8 @@ ion-icon {
   font-size: 15px;
 }
 .div-list {
+  top: 18px;
+  text-align: left;
   align-items: baseline;
   background-color: white;
   position: absolute;
@@ -102,15 +105,16 @@ ion-icon {
   border: 1px solid rgb(0, 0, 0);
   display: inline-block;
   width: 100%;
+  height: 18px;
   //padding-top: 2px;
   // padding-bottom: 2px;
 }
 .header-title {
+  width: 100%;
   height: 25px;
   position: sticky;
-  top: 0;
+  top: -17px;
   z-index: 3;
-  width: 100%;
   display: inline-block;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
@@ -120,7 +124,7 @@ ion-icon {
 th {
   z-index: 3;
   position: sticky;
-  top: 25px;
+  top: -17px;
   width: 10%;
   border-left: 1px solid rgba(255, 255, 255, 0.5);
   background-color: rgba(255, 255, 255);
@@ -136,4 +140,9 @@ th:last-child {
 th:first-child {
   border-top-left-radius: 10px;
   border-left: none;
+}
+
+ion-icon {
+  position: relative;
+  top: 4px;
 }

@@ -1,6 +1,5 @@
 import { IsRootGuard } from "./projet/service/isRoot.guard";
 import { FicheVisiteurComponent } from "./projet/fiche/fiche-visiteur/fiche-visiteur.component";
-import { ProjetTabComponent } from "./projet/fiche/projet-tab/projet-tab.component";
 import { FicheAccidentComponent } from "./projet/fiche/fiche-accident/fiche-accident.component";
 import { FicheDocumentComponent } from "./projet/fiche/fiche-document/fiche-document.component";
 import { FicheLivraisonComponent } from "./projet/fiche/fiche-livraison/fiche-livraison.component";
@@ -11,13 +10,16 @@ import { FicheLocationComponent } from "./projet/fiche/fiche-location/fiche-loca
 import { FicheOuvrierComponent } from "./projet/fiche/fiche-ouvrier/fiche-ouvrier.component";
 import { AccueilComponent } from "./accueil/accueil.component";
 import { FicheComponent } from "./projet/fiche/fiche.component";
+import { FicheActiviteComponent } from "./projet/fiche/fiche-activite/fiche-activite.component";
+import { CanShowFicheGuard } from "./projet/service/can-activate.guard";
+
+import { ProjetTabComponent } from "./projet/fiche/projet-tab/projet-tab.component";
+
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 import { UtilisateurComponent } from "./projet/utilisateur/utilisateur.component";
 import { LoginComponent } from "./login/login.component";
 import { IsAuthGuard } from "./projet/service/isAuth.guard";
-import { CanShowFicheGuard } from "./projet/service/can-activate.guard";
-import { FicheActiviteComponent } from "./projet/fiche/fiche-activite/fiche-activite.component";
 
 const routes: Routes = [
   {
@@ -35,62 +37,14 @@ const routes: Routes = [
     canActivate: [IsAuthGuard, IsRootGuard]
   },
   {
+    path: "fiche",
+    loadChildren: "./projet/fiche/fiche.module#FicheModule"
+  },
+
+  {
     path: "",
     redirectTo: "fiche",
     pathMatch: "full"
-  },
-  {
-    path: "fiche",
-    component: FicheComponent,
-    canActivate: [IsAuthGuard],
-    children: [
-      {
-        path: "accueil",
-        component: AccueilComponent
-      },
-      {
-        path: "ouvrier",
-        component: FicheOuvrierComponent
-      },
-      {
-        path: "location",
-        component: FicheLocationComponent
-      },
-      {
-        path: "reception",
-        component: FicheReceptionComponent
-      },
-      {
-        path: "stock",
-        component: FicheStockComponent
-      },
-      {
-        path: "besoin",
-        component: FicheBesionComponent
-      },
-      {
-        path: "livraison",
-        component: FicheLivraisonComponent
-      },
-      {
-        path: "document",
-        component: FicheDocumentComponent
-      },
-      {
-        path: "accident",
-        component: FicheAccidentComponent
-      },
-
-      {
-        path: "visiteur",
-        component: FicheVisiteurComponent
-      },
-      {
-        path: "activite",
-        component: FicheActiviteComponent
-      },
-      { path: "", redirectTo: "accueil", pathMatch: "full" }
-    ]
   }
 ];
 

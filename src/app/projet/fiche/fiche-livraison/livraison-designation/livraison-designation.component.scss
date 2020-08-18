@@ -13,7 +13,6 @@
   display: flex;
   font-style: italic;
   border-top: 1px solid rgb(255, 255, 255);
-  background-color: rgba(255, 255, 255, 0);
   width: 100%;
 }
 .label-radio {
@@ -41,10 +40,11 @@ input {
 
 .tdInput {
   background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.384);
+  border-top: 1px solid rgba(255, 255, 255, 0.384);
+  border-left: 1px solid rgba(255, 255, 255, 0.384);
 }
 .border-case {
-  border: 1px solid rgb(255, 255, 255);
+  border-left: 1px solid rgb(255, 255, 255);
   display: inline-block;
   //padding-top: 2px;
   // padding-bottom: 2px;
@@ -57,10 +57,9 @@ input {
 }
 
 .categorie {
+  border-top: 1px solid rgba(255, 255, 255, 0.384);
   font-weight: bold;
-  border-top: 1px solid rgb(255, 255, 255);
   display: flex;
-  background-color: rgba(255, 255, 255, 0.3);
   width: 100%;
   padding-top: 2px;
   padding-bottom: 2px;
@@ -69,7 +68,6 @@ input {
 }
 
 tr {
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
   padding-top: 3px;
   padding-bottom: 3px;
   background-color: rgba(255, 255, 255, 0.5);
@@ -103,6 +101,5 @@ th {
   background-color: rgba(0, 0, 0, 0.233);
   padding-top: 3px;
   padding-bottom: 3px;
-  border: 2px solid rgba(235, 231, 231, 0.651);
   text-align: center;
 }

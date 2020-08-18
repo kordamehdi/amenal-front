@@ -29,6 +29,8 @@
           <div
             (press)="OnDeleteDesignation(ds)"
             (click)="onClickDesignation(i, lotUpt)"
+            [attachOutsideOnClick]="true"
+
             (clickOutside)="onClickOutsideDesignation(i, lotUpt)"
             [ngStyle]="{
               'background-color':
@@ -55,6 +57,8 @@
           <div *ngIf="showSousLot[i]">
             <div
               (click)="onClickSousLot(ds.lot, i, j, sLot.lastAvc)"
+              [attachOutsideOnClick]="true"
+
               (clickOutside)="onClickOutsideSousLot(sLot, i, j)"
               *ngFor="
                 let sLot of ds.sousLotDesignationPresentations;
@@ -203,6 +207,8 @@
                   <div
                     (press)="OnDeleteEntree(entree.id, entree.entreeNom)"
                     (clickOutside)="onUpdateEntreeClickOutside(i, j, k, entree)"
+                    [attachOutsideOnClick]="true"
+
                     (click)="onUpdateEntreeClick(entree, sLot, i, j, k)"
                     class="cont_div"
                   >
@@ -213,12 +219,7 @@
                         type="text"
                         (focus)="
                           onFocusEntreeUpdate(
-                            entreeListUpdate,
-                            sLot,
-                            entree.id,
-                            entreeUpdt,
-                            i,
-                            j
+                            entreeListUpdate
                           )
                         "
                         (blur)="onBlurEntreeUpdate(entreeListUpdate, entree)"
@@ -300,7 +301,7 @@
                       />
                       <input
                         hidden
-                        name="entreeId{{ i }}_{{ j }}_{{ k }}"
+                        name="id{{ i }}_{{ j }}_{{ k }}"
                         type="text"
                         ngModel
                         [ngModel]="entree.id"
@@ -356,6 +357,8 @@
                 <div
                   class="cont_div"
                   (clickOutside)="onAddEntreeClickOutside(i, j, sLot)"
+                  [attachOutsideOnClick]="true"
+
                   (click)="onAddEntreeClick(i, j)"
                 >
                   <span
@@ -494,6 +497,8 @@
             <!--AJOUT SOUS LOTS-->
             <div
               (click)="onAddSousLotClick(ds.lot, i)"
+              [attachOutsideOnClick]="true"
+
               (clickOutside)="onAddSousLotClickOutside(i, ds.id)"
               class="cont_div"
             >
@@ -609,7 +614,7 @@
             <ng-container *ngIf="listLot.length > 0; else elseTemplate">
               <div
                 *ngFor="let lot of listLot"
-                (click)="onSelectLotAdd(lot, lotAddInput)"
+                (click)="onSelectLotAdd(lot)"
               >
                 <span class="border-case-black" style="width: 100%">{{
                   lot.lot

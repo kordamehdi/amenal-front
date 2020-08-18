@@ -1,7 +1,7 @@
+import { innerHeight } from "./projet/redux/projet.selector";
 import { DataStorageService } from "./projet/service/data-storage.service";
-import { Component } from "@angular/core";
 import { ScreenOrientation } from "@ionic-native/screen-orientation/ngx";
-
+import { Component, OnInit, AfterViewInit } from "@angular/core";
 import { Platform } from "@ionic/angular";
 import { SplashScreen } from "@ionic-native/splash-screen/ngx";
 import { StatusBar } from "@ionic-native/status-bar/ngx";
@@ -15,7 +15,7 @@ import * as fromProjetAction from "./projet/redux/projet.actions";
   templateUrl: "app.component.html",
   styleUrls: ["app.component.scss"]
 })
-export class AppComponent {
+export class AppComponent implements OnInit, AfterViewInit {
   public appPages = [
     {
       title: "Home",
@@ -34,16 +34,19 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private screenOrientation: ScreenOrientation,
-    private store: Store<App.AppState>
+    private store: Store<App.AppState>,
+    private screenOrientation: ScreenOrientation
   ) {
-    this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
-
     this.initializeApp();
   }
   ngOnInit() {
     this.loginService.getUser();
-    //this.dataStorageService.testConnection();
+    // set to landscape
+  }
+  ngAfterViewInit() {
+    this.store.dispatch(
+      new fromProjetAction.GetInnerHeight(window.innerHeight)
+    );
     this.screenOrientation.onChange().subscribe(() => {
       this.store.dispatch(
         new fromProjetAction.GetInnerHeight(window.innerHeight)
@@ -55,6 +58,9 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+      this.screenOrientation.lock(
+        this.screenOrientation.ORIENTATIONS.LANDSCAPE_PRIMARY
+      );
     });
   }
 }

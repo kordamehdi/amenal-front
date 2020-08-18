@@ -1,4 +1,4 @@
-<div class="container">
+<div style="height: 100%;" class="container">
   <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
     <ng-container *ngIf="!isValid; else elseTemplate">
       <app-fiche-location-desgnation></app-fiche-location-desgnation>
@@ -11,7 +11,13 @@
     <app-fiche-valide-location-desgnation></app-fiche-valide-location-desgnation>
   </ng-template>
 
-  <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
+  <div style="height:45px "></div>
+
+  <div
+    HeightList
+    *ngIf="(role === 'ADMIN' || isRoot) && lister"
+    style="margin-bottom: 28px"
+  >
     <app-materiel></app-materiel>
     <app-fournisseur></app-fournisseur>
   </div>

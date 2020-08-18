@@ -1,5 +1,5 @@
-<div (onclick)="click()" class="container">
-  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+<div class="container">
+  <app-dialog *ngIf="showAlert" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
 

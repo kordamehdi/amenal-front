@@ -1,7 +1,21 @@
-ion-content {
+.content {
   --background: #fff url("../../../assets/bg2.png") no-repeat center center /
     cover;
+  background-position: 50% 50%;
+  padding-bottom: 0 !important;
   font-size: 12px;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  height: 100%;
+  padding-top: 80px;
+}
+.header {
+  z-index: 4;
+  position: fixed;
+  top: 0;
+  background: linear-gradient(to bottom, #b8b680 80%, rgba(0, 0, 0, 0));
+  height: 73px;
+  width: 100%;
 }
 td {
   border-left: 1px rgba(255, 255, 255, 0.5);
@@ -13,12 +27,7 @@ tr {
   text-align: center;
   background-color: rgba(255, 255, 255, 0.5);
 }
-.container {
-  width: 100%;
-  margin: auto;
-  margin-top: 15px;
-  text-align: center;
-}
+
 input {
   background: transparent;
   border: none;

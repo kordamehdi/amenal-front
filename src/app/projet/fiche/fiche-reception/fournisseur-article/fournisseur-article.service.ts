@@ -72,8 +72,6 @@ export class FournisseurArticleService {
       )
       .subscribe(
         fs => {
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
-
           this.store.dispatch(
             new fromFicheReceptionAction.getFournisseurArticleAsso(fs)
           );
@@ -83,6 +81,7 @@ export class FournisseurArticleService {
               this.foursSelecetionnerId
             )
           );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
           this.store.dispatch(
@@ -97,11 +96,11 @@ export class FournisseurArticleService {
       );
   }
 
-  OnAddFournisseur(idFr, nom) {
+  OnAddFournisseur(nom) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
       .post<any>(
-        this.SERVER_ADDRESS + "/reception/fournisseurs/" + idFr,
+        this.SERVER_ADDRESS + "/reception/fournisseurs/",
         { id: null, fournisseurNom: nom },
         {
           observe: "body",
@@ -110,8 +109,39 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
-          this.getFournisseurNotAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        }
+      );
+  }
+  assoArticleToFournisseur(fourId, artId) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS +
+          "/reception/fournisseurs/" +
+          fourId +
+          "/articles/" +
+          artId,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        () => {
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -127,13 +157,13 @@ export class FournisseurArticleService {
       );
   }
 
-  assoArticleToFournisseur(idFr, idArt) {
+  assoArticleToFournisseurAndAddFournisseur(fourName, idArt) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
       .put<any>(
         this.SERVER_ADDRESS +
-          "/reception/fournisseurs/" +
-          idFr +
+          "/reception/fournisseurs/nom/" +
+          fourName +
           "/articles/" +
           idArt,
         {
@@ -143,7 +173,7 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -174,7 +204,7 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -206,7 +236,6 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
@@ -256,6 +285,38 @@ export class FournisseurArticleService {
         }
       );
   }
+  assoArticleToProjet(idArt) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS +
+          "/reception/articles/" +
+          idArt +
+          "/projets/" +
+          this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        () => {
+          this.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        }
+      );
+  }
   assoCategorieFournisseurToProjet(idFr, idCat) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
@@ -274,7 +335,38 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "fournisseur_article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        }
+      );
+  }
+
+  assoCategorieToProjet(idCat) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS +
+          "/reception/categories/" +
+          idCat +
+          "/projets/" +
+          this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        () => {
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
@@ -302,8 +394,8 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
-          this.getFournisseurNotAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -334,8 +426,8 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(
@@ -365,8 +457,8 @@ export class FournisseurArticleService {
       )
       .subscribe(
         () => {
-          this.getFournisseurAsso();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(

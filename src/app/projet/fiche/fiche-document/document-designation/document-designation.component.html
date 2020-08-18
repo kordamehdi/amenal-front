@@ -1,12 +1,8 @@
-<div (onclick)="click()" class="container">
-  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+<div class="container">
+  <app-dialog *ngIf="showAlert" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
-  <form
-    id="form"
-    #f="ngForm"
-    (ngSubmit)="isUpdate == 1 ? onUpdateProjet() : onAddProjet()"
-  >
+  <form id="form" #f="ngForm">
     <table>
       <tr class="header">
         <th style="width: 75%">
@@ -28,6 +24,7 @@
           }"
           (click)="onClick(i)"
           (clickOutside)="onClickOutside(item.id, i, disop.value)"
+          [attachOutsideOnClick]="true"
           *ngFor="let item of designation$; let i = index"
         >
           <td>

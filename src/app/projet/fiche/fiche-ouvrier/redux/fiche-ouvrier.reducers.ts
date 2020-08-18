@@ -8,8 +8,9 @@ export interface ficheOuvrierState {
   ouvrierEditingId: number;
   ouvrierRemovingId: number;
   columnDesignation: String[];
-  columnOuvrier: String[];
   qualifications: String[];
+  villes: string[];
+  appreciations: string[];
   showOuvAlert: Boolean;
   errorOuvMsg: string;
   typeOuvDialog: string;
@@ -25,14 +26,9 @@ export interface ficheOuvrierState {
       nom: string;
       qualification: string;
     };
-    sort: boolean;
+    sort: any;
   };
   ouvListState: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
     filter: {
       cin: string;
       nom: string;
@@ -40,23 +36,18 @@ export interface ficheOuvrierState {
       qualification: string;
       appreciation: string;
     };
-    sort: {
-      order: {
-        cin: boolean;
-        nom: boolean;
-        prenom: boolean;
-        qualification: boolean;
-        appreciation: boolean;
-      };
-      type: string;
-    };
+    sort: any;
   };
+  villeAded: boolean;
 }
 
 const InitialState: ficheOuvrierState = {
   ouvriers: null,
   ouvrierEditingId: -1,
   ouvrierRemovingId: -1,
+  villes: ["AGADIR"],
+  appreciations: ["AAA"],
+
   columnDesignation: [
     "NOM & PRENOM",
     "CIN",
@@ -68,17 +59,7 @@ const InitialState: ficheOuvrierState = {
     "H.SUP",
     "EPI"
   ],
-  columnOuvrier: [
-    "appreciation",
-    "tele",
-    "J_TRV",
-    "ancienter",
-    "age",
-    "qual",
-    "prenom",
-    "nom",
-    "cin"
-  ],
+
   qualifications: [],
   showOuvAlert: false,
   AlertCtn: false,
@@ -95,14 +76,48 @@ const InitialState: ficheOuvrierState = {
       nom: "",
       qualification: ""
     },
-    sort: true
+    sort: {
+      order: [
+        {
+          type: "nom",
+          order: true,
+          isFocus: true
+        },
+        {
+          type: "qualification",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "tempsDebut",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "tempsFin",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "tempsDiff",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "hsup",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "jour",
+          order: true,
+          isFocus: false
+        }
+      ],
+      type: "nom"
+    }
   },
   ouvListState: {
-    position: {
-      a: 0,
-      b: 3,
-      position: 1
-    },
     filter: {
       cin: "",
       nom: "",
@@ -111,16 +126,53 @@ const InitialState: ficheOuvrierState = {
       appreciation: ""
     },
     sort: {
-      order: {
-        cin: true,
-        nom: true,
-        prenom: true,
-        qualification: true,
-        appreciation: true
-      },
-      type: ""
+      order: [
+        {
+          type: "cin",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "nom",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "prenom",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "ville",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "qualification",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "appreciation",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "dateNaissance",
+          order: true,
+          isFocus: false
+        },
+        {
+          type: "dateRecrutement",
+          order: true,
+          isFocus: false
+        }
+      ],
+
+      type: "nom"
     }
-  }
+  },
+  villeAded: false
 };
 
 export function OuvrierReducer(
@@ -128,6 +180,24 @@ export function OuvrierReducer(
   action: fromFicheOuvrierAction.FicheAction
 ): ficheOuvrierState {
   switch (action.type) {
+    case fromFicheOuvrierAction.VILLE_ADED: {
+      return {
+        ...state,
+        villeAded: !state.villeAded
+      };
+    }
+    case fromFicheOuvrierAction.GET_VILLE: {
+      return {
+        ...state,
+        villes: action.payload
+      };
+    }
+    case fromFicheOuvrierAction.GET_APPRREC: {
+      return {
+        ...state,
+        appreciations: action.payload
+      };
+    }
     case fromFicheOuvrierAction.GET_OUV_LIST_STATE: {
       return {
         ...state,

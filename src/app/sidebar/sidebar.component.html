@@ -18,19 +18,19 @@
       <li class="link">
         <img src="../../assets/home.png" />
         <label style="font-size: 12px">
-          <a href="" routerLink="/">ACCUEIL</a>
+          <a routerLink="/">ACCUEIL</a>
         </label>
       </li>
       <li *ngIf="isRoot" class="link">
         <img src="../../assets/user.png" />
         <label style="font-size: 12px">
-          <a href="" routerLink="/utilisateur">GESTION DES UTILISATEURS</a>
+          <a [routerLink]="['/utilisateur']">GESTION DES UTILISATEURS</a>
         </label>
       </li>
       <li *ngIf="isRoot" class="link">
         <img src="../../assets/docu.png" />
         <label style="font-size: 12px">
-          <a href="" routerLink="/projet">GESTION DES PROJETS</a>
+          <a [routerLink]="['/projet']">GESTION DES PROJETS</a>
         </label>
       </li>
     </ul>

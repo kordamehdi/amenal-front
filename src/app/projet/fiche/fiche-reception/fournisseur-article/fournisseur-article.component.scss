@@ -1,42 +1,27 @@
 .container {
+  height: 100%;
+  padding-bottom: 20px;
   width: 45%;
   font-size: 12px;
   display: inline-block;
-  text-align: center;
-  height: 320px;
+  position: relative;
   overflow: scroll;
-  padding-bottom: 20px;
-}
-.header {
-  background-color: rgba(0, 0, 0, 0.233);
-  padding-top: 3px;
-  padding-bottom: 3px;
-  border: 2px solid rgba(235, 231, 231, 0.651);
-  text-align: center;
 }
 th {
-  width: 10%;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  text-align: center;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-.header-nav {
-  height: 25px;
-  width: 80%;
-  display: inline-block;
-
-  border-top-right-radius: 10px;
   border-top-left-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.3);
-  padding-bottom: 10px;
+  border-top-right-radius: 10px;
+  z-index: 3;
+  position: sticky;
+  top: 25px;
+  background-color: rgba(255, 255, 255);
+  text-align: center;
+  overflow-wrap: break-word;
+  padding-top: 4px;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
 }
@@ -93,18 +78,14 @@ table {
   width: 100%;
 }
 
-[hidden] {
-  display: none !important;
-}
-
 .div-list {
-  width: 45%;
+  width: 100%;
   background-color: rgb(250, 250, 250);
   position: absolute;
   z-index: 1;
   border: 1px solid rgb(15, 13, 13);
   height: 50px;
-  overflow: auto;
+  overflow: scroll;
 }
 
 .span-detail {
@@ -119,8 +100,13 @@ table {
   background-color: rgba(255, 0, 0, 0.1);
 }
 
+tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
 tr {
-  border: 1px solid rgba(235, 231, 231, 0.651);
+  border-top: 1px solid rgba(235, 231, 231, 0.651);
   text-align: center;
   background-color: rgba(255, 255, 255, 0.5);
 }
@@ -141,8 +127,24 @@ input {
   background-color: rgba(255, 0, 0, 0.1);
 }
 .tdInput {
-  clear: both;
-  display: block;
-
-  background-color: rgba(255, 0, 0, 0.1);
+  position: sticky;
+  top: 45px;
+  background-color: rgb(216, 194, 164);
+}
+.header-title {
+  height: 25px;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0px;
+  z-index: 3;
+  width: 100%;
+  display: inline-block;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: rgba(189, 185, 167, 0.904);
+}
+.header {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  text-align: center;
 }

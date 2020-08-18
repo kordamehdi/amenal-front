@@ -1,4 +1,4 @@
-<div (onclick)="click()" class="container">
+<div class="container">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -36,6 +36,7 @@
       </tr>
       <tr
         (click)="onAddClick()"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onAddClickOutside()"
         class="inputs"
       >
@@ -59,6 +60,7 @@
         (dblclick)="onAssoVisiteurWithProjet(item.id)"
         (press)="onDelete(item.id)"
         (click)="onUpdateClick(item.id)"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onUpdateClickOutside(item.id)"
         *ngFor="let item of visiteurs; let i = index"
       >

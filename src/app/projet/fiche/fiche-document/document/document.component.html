@@ -1,4 +1,4 @@
-<div (onclick)="click()" class="container">
+<div class="container">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -17,7 +17,7 @@
 
     <span class="middle">LISTE DES DOCUMENTS</span>
 
-    <span class="left" (click)="OnCancel()">
+    <span class="left">
       <ion-icon name="arrow-round-up"></ion-icon>
     </span>
   </div>
@@ -38,6 +38,7 @@
     </tr>
     <tr
       (click)="onAddClick()"
+      [attachOutsideOnClick]="true"
       (clickOutside)="onAddClickOutside(intitule)"
       class="inputs"
     >
@@ -50,6 +51,7 @@
       (dblclick)="onAssoDocumentWithProjet(item.id)"
       (click)="onUpdateClick(inputUpdate, i)"
       (clickOutside)="onUpdateClickOutside(inputUpdate, item.id, i)"
+      [attachOutsideOnClick]="true"
       (press)="onDelete(item.id)"
       *ngFor="let item of documents; let i = index"
     >

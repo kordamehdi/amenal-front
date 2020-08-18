@@ -1,12 +1,11 @@
-<div (onclick)="click()" class="container">
-  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
+<div class="container">
+  <app-dialog *ngIf="showAlert" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
   <table>
     <tr class="header">
       <th style="width: 15%">
         <input
-          (input)="onFilter()"
           type="text"
           placeholder="NOM & PRENOM"
           name="nom$"
@@ -16,7 +15,6 @@
       </th>
       <th style="width: 15%">
         <input
-          (input)="onFilter()"
           type="text"
           placeholder="ORGANISME"
           name="organisme$"
@@ -48,8 +46,8 @@
           'background-color':
             selectedDsIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
         }"
-        (press)="onDelete(item.id)"
         (click)="onUpdateClick(i)"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onUpdateClickOutside(i)"
         *ngFor="let item of designation$; let i = index"
       >
@@ -96,7 +94,7 @@
         <td>
           <input
             readonly
-            [type]="text"
+            type="text"
             [ngModel]="item.debut_sys"
             name="debut_sys{{ item.id }}"
             placeholder="DEBUT_SYS"
@@ -107,7 +105,6 @@
         <td>
           <input
             disabled
-            (input)="onInputFinUpdate(item.id)"
             type="text"
             [ngModel]="item.fin"
             name="fin{{ item.id }}"
@@ -119,7 +116,7 @@
         <td>
           <input
             readonly
-            [type]="text"
+            type="text"
             [ngModel]="item.fin_sys"
             name="fin_sys{{ item.id }}"
             placeholder="FIN_SYS"

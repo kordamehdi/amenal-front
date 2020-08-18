@@ -1,4 +1,4 @@
-<div (onclick)="click()" class="container">
+<div class="container">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
@@ -17,6 +17,7 @@
     <!--**********************************************************************************-->
     <ng-container *ngIf="!isValid; else elseTemplate">
       <tr
+        [attachOutsideOnClick]="true"
         (click)="OnAddClick()"
         (clickOutside)="OnAddClickOutside(objet, heure)"
       >
@@ -38,6 +39,7 @@
       <tr
         (press)="onDelete(objetUpdate.value, item.id)"
         (click)="OnUpdateClick(objetUpdate, heureUpdate, i)"
+        [attachOutsideOnClick]="true"
         (clickOutside)="
           OnUpdateClickOutside(objetUpdate, heureUpdate, item.id, i)
         "

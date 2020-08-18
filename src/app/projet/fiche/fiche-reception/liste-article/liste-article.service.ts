@@ -51,7 +51,7 @@ export class ListeArticleService {
       .subscribe(
         () => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.OnGetCategorie();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(
@@ -75,7 +75,7 @@ export class ListeArticleService {
       .subscribe(
         () => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.OnGetCategorie();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(
@@ -99,8 +99,6 @@ export class ListeArticleService {
       })
       .subscribe(
         () => {
-          this.OnGetCategorie();
-          this.fournisseurArticleService.getFournisseurAsso();
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
@@ -126,8 +124,7 @@ export class ListeArticleService {
       .subscribe(
         () => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.OnGetCategorie();
-          this.fournisseurArticleService.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(
@@ -145,14 +142,19 @@ export class ListeArticleService {
   OnGetCategorie() {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
-      .get<any>(this.SERVER_ADDRESS + "/articles/categories", {
-        observe: "body",
-        responseType: "json"
-      })
+      .get<any>(
+        this.SERVER_ADDRESS +
+          "/articles/categories/" +
+          this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         gats => {
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(new fromFicheReceptionAction.getGategories(gats));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
@@ -176,10 +178,8 @@ export class ListeArticleService {
       )
       .subscribe(
         () => {
-          this.OnGetCategorie();
-          this.fournisseurArticleService.getFournisseurAsso();
-          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
@@ -190,6 +190,34 @@ export class ListeArticleService {
               msg: resp.error.message
             })
           );
+        }
+      );
+  }
+  assoArticleToFournisseurAndAddArticle(fourId, art) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS + "/reception/fournisseurs/" + fourId + "/articles",
+        art,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        () => {
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              type: "article",
+              showAlert: true,
+              msg: resp.error.message
+            })
+          );
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
         }
       );
   }
@@ -204,8 +232,7 @@ export class ListeArticleService {
       .subscribe(
         () => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.OnGetCategorie();
-          this.fournisseurArticleService.getFournisseurAsso();
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(

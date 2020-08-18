@@ -28,6 +28,7 @@
   <span class="content" (click)="onShowList(types)">
     <label
       [ngStyle]="{ color: makeItGray ? 'grey' : 'black' }"
+      [attachOutsideOnClick]="true"
       (clickOutside)="onShowTypesClickOutside(types)"
       class="label-show "
       >{{ typeShow }}</label
@@ -49,11 +50,9 @@
     </div>
   </span>
 
-  <span (press)="onListeProjet()" class="content" style="padding: 10px">
+  <span (press)="onListeProjet()" class="content" style="padding: 5px">
     <select #t (change)="OnSelectProjet(t.value)" class="Select_options">
-      <option [selected]="projetSelectionner === 'null'" value=""
-        >Selectionner les projet...</option
-      >
+      <option value="">Selectionner les projet...</option>
       <option
         [selected]="projetSelectionner?.id === projet.id"
         class="content"

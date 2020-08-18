@@ -1,13 +1,7 @@
 .container {
   position: relative;
-  max-height: 150px;
-  margin-top: 20px;
   width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-  font-size: 12px;
-  padding-bottom: 20px;
+  overflow: scroll;
 }
 .header-nav {
   height: 25px;
@@ -24,7 +18,6 @@
   height: 25px;
   width: 80%;
   display: inline-block;
-  font-size: 12px;
   font-weight: bold;
 }
 .left {
@@ -44,11 +37,11 @@ table {
   margin: 0px;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
-  font-size: 12px;
   table-layout: fixed;
 }
 
 td {
+  position: relative;
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.5);
   overflow-wrap: break-word;
@@ -58,7 +51,10 @@ td:last-child {
 }
 
 .tdInput {
-  background-color: rgba(255, 0, 0, 0.1);
+  z-index: 3;
+  position: sticky;
+  top: 24px;
+  background-color: rgb(216, 194, 164);
 }
 
 th {
@@ -123,7 +119,7 @@ input {
   width: 100%;
 }
 .div-list-fr {
-  width: 20%;
+  width: 100%;
   background-color: rgb(250, 250, 250);
   position: absolute;
   z-index: 1;
@@ -133,7 +129,7 @@ input {
 }
 
 .div-list {
-  width: 29.2%;
+  width: 100%;
   position: absolute;
   z-index: 1;
   height: 50px;

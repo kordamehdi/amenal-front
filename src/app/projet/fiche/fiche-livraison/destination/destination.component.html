@@ -16,13 +16,27 @@
 
     <span class="middle">LISTE DES DESTINATIONS</span>
 
-    <span class="left" (click)="OnCancel()">
+    <span class="left">
       <ion-icon name="arrow-round-up"></ion-icon>
     </span>
   </div>
   <table style="width:100%">
-    <tr (clickOutside)="this.typeAsc = ''">
-      <th>DESTINATIONS</th>
+    <tr>
+      <th>
+        <input
+          (input)="filter(dst$.value)"
+          type="text"
+          placeholder="DESTINATION"
+          ngModel
+          #dst$
+          name="destination$"
+          style="width: 60%"
+        />
+        <ion-icon
+          [name]="ascendant == true ? 'arrow-round-down' : 'arrow-round-up'"
+          (click)="onSort()"
+        ></ion-icon>
+      </th>
     </tr>
     <tr
       (press)="OnDeleteDestination(dst.id, dst.destination)"
@@ -56,8 +70,8 @@
     <tr
       style="  background-color: rgba(255, 255, 255, 0.5);
     "
+      [attachOutsideOnClick]="true"
       (clickOutside)="onAddClickedOutside(dstInput)"
-      (click)="onAddClick()"
     >
       <td>
         <input

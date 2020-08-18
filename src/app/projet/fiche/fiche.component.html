@@ -4,16 +4,22 @@
     (onClose)="showSideBar = false"
     *ngIf="showSideBar"
   ></app-sidebar>
-  <div (swiperight)="onShowSideBar($event)" (swipeleft)="onHideSideBar($event)">
+  <div
+    class="header"
+    (swiperight)="onShowSideBar()"
+    (swipeleft)="onHideSideBar()"
+  >
     <app-header></app-header>
     <app-nav></app-nav>
+    <div style="height: 15px;"></div>
   </div>
   <div
-    style="height: 100%;"
-    (swipedown)="onSwipeDown($event)"
+    class="content"
+    (swipedown)="onSwipeDown()"
     (swipeleft)="onSwipeLeft()"
     (swiperight)="onSwipeRight()"
   >
     <router-outlet></router-outlet>
   </div>
+  <div></div>
 </ion-content>

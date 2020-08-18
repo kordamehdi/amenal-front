@@ -2,119 +2,87 @@
   <app-dialog *ngIf="showAlert" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
-  <div class="header-nav">
+  <div class="header-title">
     <label for="file" class="left"
       ><ion-icon name="download">
-        <input
-          type="file"
-          id="file"
-          (change)="getFile($event)"
-          style="visibility: hidden;"
-        />
+        <input type="file" id="file" style="visibility: hidden;" />
       </ion-icon>
     </label>
 
     <span class="middle">LISTE DES FOURNISSEURS </span>
 
-    <span class="left" (click)="OnCancel()">
+    <span class="left">
       <ion-icon name="arrow-round-up"></ion-icon>
     </span>
   </div>
   <table>
-    <tr class="header" (clickOutside)="this.typeAsc = ''">
+    <tr class="header">
       <th>
         <input
-          (focus)="onFilterFocus(keyWord)"
-          (blur)="OnFilterBlur(keyWord)"
           (input)="onFilterByFournisseur(keyWord.value)"
           type="text"
-          value="FROUNISSEURS"
           placeholder="FROUNISSEUR"
           #keyWord
           style="width: 70%"
         />
       </th>
     </tr>
-    <tr
-      *ngIf="!isFilterByArticle || fournisseursAsso.length === 0"
-      [ngStyle]="{
-        'background-color': fourSelected === -2 ? 'rgba(255, 0, 0, 0.1)' : '',
-        'text-align': 'center',
-        'font-style': 'italic'
-      }"
-      (click)="OnSelectArticleWithNoFournisseur()"
-    >
-      <td>
-        Article sans fournisseur
-      </td>
-    </tr>
-    <tr
-      id="{{ four.id }}"
-      #fournisseur
-      *ngFor="let four of fournisseursAsso; let i = index"
-    >
-      <td>
-        <div>
-          <div
-            [ngStyle]="{
-              'background-color':
-                this.fourId == four.id || fourSelected == four.id
-                  ? 'rgba(255, 0, 0, 0.1)'
-                  : '',
-              'font-weight': four.isAssoWithProjet ? 'bold' : 'normal'
-            }"
-            class="cont_div"
-            (clickOutside)="onClickedOutside(four.id)"
-            (click)="onClick(i, four.id)"
-            style=" padding-top: 2px;
-            padding-bottom: 2px;"
-          >
+    <tr (click)="OnClickAddFournisseur(fourInput)">
+      <td class="tdInput">
+        <input
+          [disabled]="fourSelected !== -1 ? true : false"
+          type="text"
+          style="width : 100%;"
+          placeholder="FOURNISSEUR"
+          (focus)="list.hidden = false"
+          (input)="OnInputFournisseurNonasso(fourInput.value)"
+          (blur)="OnBlurAddFounisseur(fourInput, list)"
+          #fourInput
+        />
+        <div #list hidden="false" class="div-list">
+          <div *ngFor="let item of fournisseursNonAsso" style="width : 100%">
             <span
-              (press)="OnDeleteFournisseur(four)"
-              (dblclick)="onAssoFourToProjet(four.id)"
-              style="width: 85%;text-align: left"
+              (click)="onselectFournisseur(fourInput, item.fournisseurNom)"
+              style=" display: inline-block; border: 1px solid rgba(0, 0, 0, 0.781);width:100%"
+              >{{ item.fournisseurNom }}</span
             >
-              {{ four.fournisseurNom }}
-            </span>
-            <span (click)="onShowCategories(i)" style="font-style: oblique">
-              {{ descFr[i] }}
-            </span>
           </div>
         </div>
       </td>
     </tr>
     <tr
-      *ngIf="!isFilterByArticle && fourSelected !== -1"
-      [ngStyle]="{
-        'text-align': 'center',
-        'font-style': 'italic',
-        'font-weight': 'bold'
-      }"
-      (click)="OnAnnulerFilter()"
+      [attachOutsideOnClick]="true"
+      (clickOutside)="onClickedOutside(fourUpdateInput)"
+      (click)="onClickUpdateFournisseur(fourUpdateInput, four)"
+      (press)="OnDeleteFournisseur(i, four.fournisseurNom)"
+      #fournisseur
+      id="{{ four.id }}"
+      *ngFor="let four of fournisseursAsso; let i = index"
+      (dblclick)="onAssoFourToProjet(four.id)"
     >
       <td>
-        Annuler le filter
-      </td>
-    </tr>
-    <tr (clickOutside)="OnaddFounisseur(fourInput)">
-      <input
-        class="tdInput"
-        type="text"
-        style="width : 100%;"
-        placeholder="FOURNISSEUR"
-        (focus)="list.hidden = false"
-        (blur)="onBlurAddFr(list)"
-        #fourInput
-      />
-      <div #list hidden="false" class="div-list">
-        <div *ngFor="let item of fournisseursNonAsso" style="width : 100%">
-          <span
-            (click)="onselectFournisseur(item.fournisseurNom, fourInput)"
-            style=" display: inline-block; border: 1px solid rgba(0, 0, 0, 0.781);width:100%"
-            >{{ item.fournisseurNom }}</span
-          >
+        <div
+          [ngStyle]="{
+            'background-color':
+              fourSelected == four.id ? 'rgba(255, 0, 0, 0.1)' : '',
+            'font-weight': four.isAssoWithProjet ? 'bold' : 'normal'
+          }"
+          class="cont_div"
+          style=" padding-top: 2px;padding-bottom: 2px;"
+        >
+          <span style="width: 85%;text-align: left">
+            <input
+              disabled
+              type="text"
+              [ngModel]="four.fournisseurNom"
+              #fourUpdateInput
+            />
+          </span>
+          <span style="font-style: oblique">
+            {{ descFr[i] }}
+          </span>
         </div>
-      </div>
+      </td>
     </tr>
   </table>
 </div>

@@ -34,10 +34,7 @@
           </div>
           <div #detail *ngIf="showDetails[i]">
             <div
-              [ngStyle]="{
-                'background-color':
-                  this.dsSelected == transIJ(i, j) ? 'rgba(255, 0, 0, 0.1)' : ''
-              }"
+              [attachOutsideOnClick]="true"
               (clickOutside)="onClickOutside(i, j)"
               (click)="onClick(i, j)"
               class="cont_div"

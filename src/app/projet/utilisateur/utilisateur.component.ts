@@ -96,6 +96,8 @@ export class UtilisateurComponent implements OnInit {
       })
     );
   }
+  onRefresh() {}
+  onUpdateUtilisateur() {}
   onAddUtilisateur() {
     let user: UtilisateurWithRoleCommandeModel = {
       username: this.form.value["username"],
@@ -138,8 +140,7 @@ export class UtilisateurComponent implements OnInit {
     this.showSideBar = false;
   }
 
-  onShowSideBar(ev) {
-    console.log(ev);
+  onShowSideBar() {
     this.showSideBar = true;
   }
 

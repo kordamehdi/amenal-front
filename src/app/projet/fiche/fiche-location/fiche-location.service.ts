@@ -28,10 +28,8 @@ export class FicheLocationService {
     private ficheService: FicheService
   ) {
     this.store.select("ficheLocation").subscribe(locState => {
-      if (locState.showMaterielByFournisseur.fournisseurNom !== "") {
-        this.fournisseurIdFilter =
-          locState.showMaterielByFournisseur.fournisseurId;
-      }
+      this.fournisseurIdFilter =
+        locState.showMaterielByFournisseur.fournisseurId;
     });
     this.store
       .select("projet")
@@ -63,17 +61,19 @@ export class FicheLocationService {
             new fromFicheLocationAction.getFournisseur(fours)
           );
 
-          let f = fours.find(ff => ff.id == this.fournisseurIdFilter);
+          if (this.fournisseurIdFilter > 0) {
+            let f = fours.find(ff => ff.id == this.fournisseurIdFilter);
 
-          if (typeof f !== "undefined") {
-            let p = {
-              materiels: f.materiels,
-              fournisseurNom: f.fournisseurNom,
-              fournisseurId: f.id
-            };
-            this.store.dispatch(
-              new ficheLocationAction.showMaterielByFournisseur(p)
-            );
+            if (typeof f !== "undefined") {
+              let p = {
+                materiels: f.materiels,
+                fournisseurNom: f.fournisseurNom,
+                fournisseurId: f.id
+              };
+              this.store.dispatch(
+                new ficheLocationAction.showMaterielByFournisseur(p)
+              );
+            }
           }
 
           this.store.dispatch(new fromProjetAction.IsBlack(false));
@@ -185,12 +185,16 @@ export class FicheLocationService {
       );
   }
 
-  OnAssoMaterielToFournisseur(fourID, MatID) {
+  AssosierMaterielToFournisseurAndAddMateriel(fourID, matNom) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
 
     this.httpClient
       .put<any>(
-        this.SERVER_ADDRESS + "/fournisseurs/" + fourID + "/materiels/" + MatID,
+        this.SERVER_ADDRESS +
+          "/fournisseurs/" +
+          fourID +
+          "/materiels/nom/" +
+          matNom,
         {
           observe: "body",
           responseType: "json"
@@ -199,6 +203,40 @@ export class FicheLocationService {
       .subscribe(
         fours => {
           this.onGetFournisseurs();
+          this.onGetMateriel();
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              msg: resp.error.message,
+              type: "fournisseur"
+            })
+          );
+        }
+      );
+  }
+  AssosierMaterielToFournisseurAndAddFournisseur(fourName, MatID) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS +
+          "/fournisseurs/nom/" +
+          fourName +
+          "/materiels/" +
+          MatID,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        fours => {
+          this.onGetFournisseurs();
+          this.OnGetFournisseurMaterielNotAsso();
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -245,6 +283,38 @@ export class FicheLocationService {
       );
   }
 
+  onAssoMatWithAllFourToProjet(matId) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .put<any>(
+        this.SERVER_ADDRESS +
+          "/projets/" +
+          this.projetSelectionner.id +
+          "/materiel/" +
+          matId,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
+      .subscribe(
+        fours => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              msg: resp.error.message,
+              type: "fournisseur"
+            })
+          );
+        }
+      );
+  }
+
   onAssoMatToProjet(fourId, matId) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
@@ -264,7 +334,6 @@ export class FicheLocationService {
       .subscribe(
         fours => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
-          this.onGetFournisseurs();
           this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
@@ -284,10 +353,13 @@ export class FicheLocationService {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
 
     this.httpClient
-      .get<MaterielModel[]>(this.SERVER_ADDRESS + "/materiels", {
-        observe: "body",
-        responseType: "json"
-      })
+      .get<MaterielModel[]>(
+        this.SERVER_ADDRESS + "/materiels/" + this.projetSelectionner.id,
+        {
+          observe: "body",
+          responseType: "json"
+        }
+      )
       .subscribe(
         materiels => {
           this.store.dispatch(

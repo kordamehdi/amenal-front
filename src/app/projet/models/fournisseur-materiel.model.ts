@@ -4,5 +4,6 @@ export interface FournisseurModel {
   materiel: MaterielModel;
   fournisseurNom: string;
   materiels: MaterielModel[];
+  matIndicator: string;
   isAssoWithProjet: Boolean;
 }

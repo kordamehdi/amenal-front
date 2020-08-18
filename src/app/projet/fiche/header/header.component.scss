@@ -9,7 +9,7 @@
 span {
   vertical-align: baseline;
   padding: 2px;
-  height: 31px;
+  height: 23px;
   display: inline-block;
   margin-left: 2px;
   margin-right: 2px;
@@ -84,6 +84,7 @@ ion-icon {
   background-size: cover;
 }
 .div-list {
+  top: 28px;
   background-color: white;
   position: absolute;
   z-index: 1;
@@ -106,5 +107,5 @@ ion-icon {
   background: transparent;
   border: none;
   display: inline-block;
-  padding-top: 11px;
+  padding-top: 5px;
 }

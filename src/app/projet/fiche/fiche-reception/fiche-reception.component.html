@@ -10,11 +10,14 @@
   <ng-template #elseTmp>
     <app-designation-reception-valid></app-designation-reception-valid>
   </ng-template>
+  <div style="height:45px "></div>
 
-  <div *ngIf="(role === 'ADMIN' || isRoot) && lister" class="separate">
-    <app-liste-article
-      style="margin-right: 50px ;position: relative;"
-    ></app-liste-article>
+  <div
+    HeightList
+    *ngIf="(role === 'ADMIN' || isRoot) && lister"
+    style="text-align: center; margin-bottom: 28px"
+  >
+    <app-liste-article></app-liste-article>
     <app-fournisseur-article></app-fournisseur-article>
   </div>
 </div>

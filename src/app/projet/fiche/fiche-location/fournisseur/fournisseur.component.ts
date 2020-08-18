@@ -1,3 +1,4 @@
+import { refresh } from "./../../header/head.selector";
 import * as ficheLocationAction from "./../redux/fiche-location.action";
 import { MaterielModel } from "./../../../models/materiel.model";
 import { FournisseurModel } from "../../../models/fournisseur-materiel.model";
@@ -9,7 +10,12 @@ import * as fromFicheAction from "../../redux/fiche.action";
 import { untilDestroyed } from "ngx-take-until-destroy";
 import * as _ from "lodash";
 import * as fromFicheLocationAction from "../redux/fiche-location.action";
-import { fourListState } from "../redux/fiche-location.selector";
+import {
+  fourFilterKeyWord,
+  fourListState,
+  matListState
+} from "../redux/fiche-location.selector";
+import { innerHeight } from "src/app/projet/redux/projet.selector";
 
 @Component({
   selector: "app-fournisseur",
@@ -25,6 +31,7 @@ export class FournisseurComponent implements OnInit, OnDestroy {
   fournisseurs$$: FournisseurModel[] = [];
 
   fournisseursNonAsso: FournisseurModel[];
+  fournisseursNonAsso$: FournisseurModel[];
 
   filterType = "";
   word = "";
@@ -34,44 +41,57 @@ export class FournisseurComponent implements OnInit, OnDestroy {
   showAlert = false;
   ctn = false;
   errorMsg = "";
-  materielDeleteId = [];
+  materielFourAsso = {
+    matId: -1,
+    fourId: -1,
+    apply: false
+  };
   assFrToPrjt = true;
   materiels: MaterielModel[];
   materielsShow: MaterielModel[];
   showDetails = [];
   isSearch = false;
   isFilterByMateriel$ = false;
+  matId = -1;
   oneClick = false;
   fourSelectedId = -1;
   navPas = 5;
   position = 1;
   a = 0;
   b = this.navPas;
+  ascendant = false;
   size;
-
+  screenHeight;
   constructor(
     private store: Store<App.AppState>,
     private ficheLocationService: FicheLocationService
   ) {}
 
   ngOnInit() {
+    this.store.select(innerHeight).subscribe(state => {
+      this.screenHeight = (state.innerHeight * 0.5).toString().concat("px");
+    });
     this.ficheLocationService.onGetFournisseurs();
     this.ficheLocationService.OnGetFournisseurMaterielNotAsso();
 
-    this.store.select(fourListState).subscribe(state => {
+    this.store.select(fourFilterKeyWord).subscribe(state => {
       setTimeout(() => {
-        this.a = state.position.a;
-        if (state.position.b > 0) this.b = state.position.b;
-        this.position = state.position.position;
-        this.word = state.filterByNom;
+        this.word = state;
         this.onFilterByFournisseur(true);
       }, 0);
     });
+    this.store
+      .select(matListState)
+      .subscribe(
+        locState =>
+          (this.fourSelectedId =
+            locState.showMaterielByFournisseur.fournisseurId)
+      );
 
-    this.store.select("ficheLocation").subscribe(locState => {
+    this.store.select(fourListState).subscribe(locState => {
       setTimeout(() => {
-        this.fourSelectedId = locState.showMaterielByFournisseur.fournisseurId;
-        this.fournisseursNonAsso = locState.fournisseurMaterielNotAsso;
+        this.matId = -1;
+        this.fournisseursNonAsso$ = locState.fournisseurMaterielNotAsso;
 
         this.materiels = locState.materiels;
         if (locState.showFournisseurByMateriel.materielNom !== "") {
@@ -83,13 +103,33 @@ export class FournisseurComponent implements OnInit, OnDestroy {
             this.fournisseurs$$ = [...locState.fournisseurs].filter(
               f => f.materiels.length == 0
             );
+            this.fournisseursNonAsso$ = this.fournisseursNonAsso.concat(
+              (this.fournisseurs$$ = [...locState.fournisseurs].filter(
+                f => f.materiels.length == 0
+              ))
+            );
           } else {
             this.isFilterByMateriel$ = true;
+            this.matId = locState.showFournisseurByMateriel.materielId;
 
-            this.fournisseurs$$ = [...locState.fournisseurs].filter(f =>
+            this.fournisseurs$$ = this.slice(locState.fournisseurs).filter(f =>
               f.materiels
                 .map(m => m.id)
                 .includes(locState.showFournisseurByMateriel.materielId)
+            );
+
+            this.fournisseurs$$.forEach(f => {
+              let mat = f.materiels.find(m => m.id === this.matId);
+              f.isAssoWithProjet = mat.isAssoWithProjet;
+            });
+
+            this.fournisseursNonAsso$ = this.fournisseursNonAsso.concat(
+              [...locState.fournisseurs].filter(
+                f =>
+                  !f.materiels
+                    .map(m => m.id)
+                    .includes(locState.showFournisseurByMateriel.materielId)
+              )
             );
           }
         } else {
@@ -98,6 +138,7 @@ export class FournisseurComponent implements OnInit, OnDestroy {
           this.fournisseurs$$ = [...locState.fournisseurs];
         }
         this.fournisseurs$ = this.fournisseurs$$;
+        this.fournisseursNonAsso = this.fournisseursNonAsso$;
         this.onSortByEnGras();
 
         this.onFilterByFournisseur(true);
@@ -112,25 +153,50 @@ export class FournisseurComponent implements OnInit, OnDestroy {
           this.showAlert = state.showAlert;
         }
       });
+    this.store
+      .select(refresh)
+      .pipe(untilDestroyed(this))
+      .subscribe(type => {
+        if (type.refresh === "LOCATION") {
+          this.ficheLocationService.onGetFournisseurs();
+          this.ficheLocationService.OnGetFournisseurMaterielNotAsso();
+        }
+      });
   }
 
-  OnAddFounisseur(f, l) {
+  OnBlurAddFounisseur(input, l) {
     setTimeout(() => {
       l.hidden = true;
-      if (f.value.trim() !== "") {
-        this.ficheLocationService.onAddFournisseur(f.value);
-        f.value = "";
+      let value = input.value.trim().toUpperCase();
+      if (value !== "") {
+        if (!this.fournisseurs.map(f => f.fournisseurNom).includes(value))
+          this.onselectFournisseur(input, value);
+        else input.value = "";
       }
-    }, 200);
+    }, 100);
   }
   onselectFournisseur(f, fournisseurNom) {
-    this.ficheLocationService.onAddFournisseur(fournisseurNom);
+    if (this.matId !== -1)
+      this.ficheLocationService.AssosierMaterielToFournisseurAndAddFournisseur(
+        fournisseurNom,
+        this.matId
+      );
+    else this.ficheLocationService.onAddFournisseur(fournisseurNom);
     f.value = "";
   }
   onAssoFourToProjet(id, d: boolean) {
-    console.log();
     if (this.assFrToPrjt || d) {
       this.ficheLocationService.onAssoFourToProjet(id);
+    }
+  }
+  OnInputfournisseur(value) {
+    let word = value.toUpperCase();
+    if (value.trim() === "") {
+      this.fournisseursNonAsso = [...this.fournisseursNonAsso$];
+    } else {
+      this.fournisseursNonAsso = this.fournisseursNonAsso$.filter(f =>
+        f.fournisseurNom.includes(word)
+      );
     }
   }
 
@@ -166,31 +232,57 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     return "(" + j.toString() + "/" + g.toString() + ")";
   }
   OnDeleteFournisseur(fourID, i) {
-    this.fourDeleteID = fourID;
-    let msg =
-      "Est ce que vous voullez vraiment supprimer les fournisseur [" +
-      this.fournisseurs[i].fournisseurNom +
-      "]?";
-    if (this.fournisseurs[i].isAssoWithProjet) {
-      msg = msg.concat(".Ce fournisseur est associer au projet courant!");
-    }
+    let msg;
+    if (this.fourSelectedId === fourID)
+      if (this.matId > -1) {
+        msg =
+          "vous etes sure de vouloire supprimer ce fournisseur de ce materiel?";
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "fournisseur",
+            showAlert: true,
+            msg: msg
+          })
+        );
+        this.materielFourAsso.fourId = fourID;
+        this.materielFourAsso.matId = this.matId;
+        this.materielFourAsso.apply = true;
+      } else if (this.fournisseurs[i].isAssoWithProjet) {
+        msg = "Ce fournisseur est associer au projet courant!";
 
-    this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
-        type: "fournisseur",
-        showAlert: true,
-        msg: msg
-      })
-    );
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "fournisseur",
+            showAlert: true,
+            msg: msg
+          })
+        );
+      } else {
+        this.fourDeleteID = fourID;
+
+        msg =
+          "Est ce que vous voullez vraiment supprimer les fournisseur [" +
+          this.fournisseurs[i].fournisseurNom +
+          "]?";
+
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "fournisseur",
+            showAlert: true,
+            msg: msg
+          })
+        );
+      }
   }
 
   onDelete() {
-    if (this.materielDeleteId.length > 0) {
+    if (this.materielFourAsso.apply) {
       this.ficheLocationService.OnDesAssoMaterielToFournisseur(
-        this.materielDeleteId[0],
-        this.materielDeleteId[1]
+        this.materielFourAsso.fourId,
+        this.materielFourAsso.matId
       );
-      this.materielDeleteId = [];
+      this.materielFourAsso.apply = false;
+      this.OnAnnulerFilter();
     } else if (this.fourDeleteID != -1) {
       if (!this.ctn) {
         this.ficheLocationService.OnDeleteFournisseur(
@@ -230,11 +322,12 @@ export class FournisseurComponent implements OnInit, OnDestroy {
       this.b = this.navPas;
       this.position = 1;
     }
-
-    let n = this.fournisseurs$.length;
+    if (!_.isEqual(this.fournisseurs, this.fournisseurs$))
+      this.fournisseurs = this.fournisseurs$;
+    /* let n = this.fournisseurs$.length;
     this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
     this.size = Math.trunc(n / this.navPas);
-    if (this.size < n / this.navPas) this.size = this.size + 1;
+    if (this.size < n / this.navPas) this.size = this.size + 1;*/
   }
 
   OnSelectMaterielWithNoFournisseur() {
@@ -253,6 +346,31 @@ export class FournisseurComponent implements OnInit, OnDestroy {
       };
       this.store.dispatch(new ficheLocationAction.showMaterielByFournisseur(p));
     }
+  }
+
+  onSort() {
+    // descending order z->a
+    this.ascendant = !this.ascendant;
+    if (this.ascendant)
+      this.fournisseurs = this.fournisseurs.sort((a, b) => {
+        if (a.fournisseurNom > b.fournisseurNom) {
+          return -1;
+        }
+        if (a.fournisseurNom < b.fournisseurNom) {
+          return 1;
+        }
+        return 0;
+      });
+    if (!this.ascendant)
+      this.fournisseurs = this.fournisseurs.sort((a, b) => {
+        if (a.fournisseurNom < b.fournisseurNom) {
+          return -1;
+        }
+        if (b.fournisseurNom < a.fournisseurNom) {
+          return 1;
+        }
+        return 0;
+      });
   }
 
   onHideAlert() {
@@ -276,18 +394,39 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     });
     return four;
   }
+  onClickAddFournisseur(fourInput) {
+    if (this.fourSelectedId !== -1) this.OnAnnulerFilter();
+    else fourInput.focus();
+  }
   OnFocusAddFounisseur(l) {
     l.hidden = false;
   }
+  onClickUpdate(dsInput, i, id) {
+    dsInput.disabled = false;
 
-  onClickedOutside(dsInput, id) {
-    dsInput.disabled = true;
+    if (this.fourIndex !== id) {
+      setTimeout(() => {
+        this.assFrToPrjt = false;
+      }, 200);
+      setTimeout(() => {
+        this.fourIndex = id;
+      }, 0);
+      this.fourSelectedId = id;
 
-    if (this.fourIndex === id) {
-      this.fourIndex = -1;
-      this.assFrToPrjt = true;
-      this.oneClick = false;
+      let p = {
+        materiels: this.fournisseurs[i].materiels,
+        fournisseurNom: this.fournisseurs[i].fournisseurNom,
+        fournisseurId: this.fournisseurs[i].id
+      };
+      this.store.dispatch(new ficheLocationAction.showMaterielByFournisseur(p));
     }
+  }
+
+  onClickUpdateOutside(dsInput) {
+    dsInput.disabled = true;
+    this.fourIndex = -1;
+    this.assFrToPrjt = true;
+    this.oneClick = false;
   }
   onSortByEnGras() {
     // descending order z->a
@@ -309,54 +448,10 @@ export class FournisseurComponent implements OnInit, OnDestroy {
     };
     this.store.dispatch(new ficheLocationAction.showMaterielByFournisseur(p));
   }
-  onPrevious() {
-    if (this.position - 1 > 0) {
-      this.position = this.position - 1;
-      this.b = this.navPas * this.position;
-      this.a = this.b - this.navPas;
-      this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
-    }
-  }
-  onNext() {
-    if (this.position + 1 <= this.size) {
-      this.a = this.navPas * this.position;
-      this.position = this.position + 1;
-      this.b = this.a + this.navPas;
-      this.fournisseurs = this.fournisseurs$.slice(this.a, this.b);
-    }
-  }
 
-  onClick(dsInput, i, id) {
-    setTimeout(() => {
-      dsInput.disabled = false;
-      this.assFrToPrjt = false;
-    }, 200);
-    if (!this.oneClick) {
-      if (!this.isFilterByMateriel$) {
-        let p = {
-          materiels: this.fournisseurs[i].materiels,
-          fournisseurNom: this.fournisseurs[i].fournisseurNom,
-          fournisseurId: this.fournisseurs[i].id
-        };
-        this.store.dispatch(
-          new ficheLocationAction.showMaterielByFournisseur(p)
-        );
-        this.fourIndex = id;
-        this.fourSelectedId = id;
-      } else this.fourIndex = id;
-    }
-    this.oneClick = true;
-  }
   ngOnDestroy() {
     this.store.dispatch(
-      new fromFicheLocationAction.getFourListState({
-        position: {
-          a: this.a,
-          b: this.b,
-          position: this.position
-        },
-        filterByNom: this.word
-      })
+      new fromFicheLocationAction.getFourFilterKeyWord(this.word)
     );
   }
 }

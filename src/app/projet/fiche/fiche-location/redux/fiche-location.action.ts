@@ -16,8 +16,8 @@ export const SHOW_FOURNISSEUR_BY_MATERIEL = "SHOW_FOURNISSEUR_BY_MATERIEL";
 export const GET_FOURNISSEUR_LOCATION_NOT_ASSO =
   "GET_FOURNISSEUR_LOCATION_NOT_ASSO";
 export const GET_FICHE_LOC_STATE = "GET_FICHE_LOC_STATE";
-export const GET_MAT_LIST_STATE = "GET_MAT_LIST_STATE";
-export const GET_LIST_FOURNISSEUR_STATE = "GET_LIST_FOURNISSEUR_STATE";
+export const GET_MAT_FILTER_KEY_WORD = "GET_MAT_FILTER_KEY_WORD";
+export const GET_FOUR_FILTER_KEY_WORD = "GET_FOUR_FILTER_KEY_WORD";
 export const GET_LIST_MAT_STATE = "GET_LIST_MAT_STATE";
 export class showFournisseurByMateriel implements Action {
   readonly type = SHOW_FOURNISSEUR_BY_MATERIEL;
@@ -107,20 +107,13 @@ export class getFournisseurByProjet implements Action {
 export class getFicheState implements Action {
   readonly type = GET_FICHE_LOC_STATE;
   payload: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
     filter: {
       libelle: string;
       fournisseurNom: string;
+      brf: string;
     };
     sort: {
-      order: {
-        libelle: boolean;
-        fournisseurNom: boolean;
-      };
+      order: any;
       type: string;
     };
   };
@@ -128,30 +121,16 @@ export class getFicheState implements Action {
     this.payload = payload;
   }
 }
-export class getFourListState implements Action {
-  readonly type = GET_LIST_FOURNISSEUR_STATE;
-  payload: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
-    filterByNom: string;
-  };
+export class getFourFilterKeyWord implements Action {
+  readonly type = GET_FOUR_FILTER_KEY_WORD;
+  payload: string;
   constructor(payload) {
     this.payload = payload;
   }
 }
-export class getMatListState implements Action {
-  readonly type = GET_LIST_MAT_STATE;
-  payload: {
-    position: {
-      a: number;
-      b: number;
-      position: number;
-    };
-    filterByNom: string;
-  };
+export class getMatFilterKetWord implements Action {
+  readonly type = GET_MAT_FILTER_KEY_WORD;
+  payload: string;
   constructor(payload) {
     this.payload = payload;
   }
@@ -168,5 +147,5 @@ export type FicheLocationAction =
   | showFournisseurByMateriel
   | getFournisseurLocationNotAsso
   | getFicheState
-  | getFourListState
-  | getMatListState;
+  | getFourFilterKeyWord
+  | getMatFilterKetWord;

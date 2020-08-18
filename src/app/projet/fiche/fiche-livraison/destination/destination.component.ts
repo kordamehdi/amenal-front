@@ -14,9 +14,12 @@ export class DestinationComponent implements OnInit {
   culumn = ["DESTINATION"];
   dstIndex = -1;
   destinations: destinationModel[];
+  destinations$: destinationModel[];
+
   errorMsg;
   showAlert;
   destinationDeleteId = -1;
+  ascendant = true;
 
   constructor(
     private store: Store<App.AppState>,
@@ -26,7 +29,7 @@ export class DestinationComponent implements OnInit {
   ngOnInit() {
     this.destinationService.onGetDestinations();
     this.store.select("ficheLivraison").subscribe(state => {
-      this.destinations = state.destinations;
+      this.destinations$ = state.destinations;
       this.onSortByEnGras();
     });
 
@@ -112,7 +115,7 @@ export class DestinationComponent implements OnInit {
   onSortByEnGras() {
     // descending order z->a
     if (this.destinations !== null)
-      this.destinations = this.destinations.sort((a, b) => {
+      this.destinations$ = this.destinations$.sort((a, b) => {
         if (a.isAsso && b.isAsso) return 0;
         if (a.isAsso) {
           return -1;
@@ -120,7 +123,47 @@ export class DestinationComponent implements OnInit {
           return 1;
         } else return 0;
       });
+    this.destinations = this.slice(this.destinations$);
   }
+
+  onSort() {
+    // descending order z->a
+    this.ascendant = !this.ascendant;
+    if (this.ascendant)
+      this.destinations = this.destinations.sort((a, b) => {
+        if (a.destination > b.destination) {
+          return -1;
+        }
+        if (a.destination < b.destination) {
+          return 1;
+        }
+        return 0;
+      });
+    if (!this.ascendant)
+      this.destinations = this.destinations.sort((a, b) => {
+        if (a.destination < b.destination) {
+          return -1;
+        }
+        if (b.destination < a.destination) {
+          return 1;
+        }
+        return 0;
+      });
+  }
+
+  slice(Dss) {
+    return [...Dss].map(m => JSON.parse(JSON.stringify(m)));
+  }
+
+  filter(vv) {
+    let word = vv.trim().toUpperCase();
+    this.destinations = this.slice(this.destinations$);
+    this.destinations = this.destinations.filter(m =>
+      m.destination.includes(word)
+    );
+    // this.onSortByEnGras();
+  }
+
   onHideAlert() {
     this.store.dispatch(
       new fromFicheAction.ShowFicheAlert({

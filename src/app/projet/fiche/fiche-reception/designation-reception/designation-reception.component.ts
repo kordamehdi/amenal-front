@@ -14,8 +14,9 @@ import { Store } from "@ngrx/store";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 import * as App from "../../../../store/app.reducers";
 import { NgForm } from "@angular/forms";
-import * as fromFicheAction from "../../redux/fiche.action";
+import * as fromFicheReceptionAction from "../redux/fiche-reception.action";
 import { untilDestroyed } from "ngx-take-until-destroy";
+import { listRec } from "../redux/fiche-reception.selectors";
 
 @Component({
   selector: "app-designation-reception",
@@ -28,15 +29,10 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
   isUpdate = -1;
 
   deleteDsId = -1;
-
+  sortState;
   articleSelected: Boolean = false;
   fournisseurSelected: Boolean = false;
-  showDetails: [
-    {
-      cat: string;
-      show: boolean;
-    }
-  ] = [
+  showDetails = [
     {
       cat: "",
       show: false
@@ -49,8 +45,11 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
   founisseurToSelect = [];
   founisseurToSelect$ = [];
 
-  dsSelected = "";
+  formFilter = ["designation", "brf", "fournisseurNom", "observation"];
 
+  dsSelected = "";
+  isFilter = false;
+  receptionDs = [];
   idDsSeleced;
 
   ArticleToSelect = [];
@@ -67,6 +66,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     "designation",
     "unite",
     "quantite",
+    "brf",
     "fournisseurNom",
     "observation"
   ];
@@ -81,7 +81,6 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     this.store.select("ficheReception").subscribe(state => {
       this.fournisseurMaterielMap$ = state.fournisseurArticleToSelect;
     });
-
     this.store
       .select("fiche")
       .pipe(untilDestroyed(this))
@@ -90,35 +89,67 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        if (state.ficheSelectionner !== null)
-          this.FicheReception = state.ficheSelectionner;
+      });
+
+    this.store
+      .select(listRec)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        if (state.fiche !== null) this.FicheReception = state.fiche;
         if (this.FicheReception.categories !== undefined)
           this.categories$ = this.FicheReception.categories;
         else this.categories$ = [];
 
-        this.categories = this.categories$;
-
-        this.categories.forEach(c => {
-          if (this.showDetails.find(s => s.cat === c.categorie) === undefined) {
-            let s = { cat: c.categorie, show: false };
-            this.showDetails.push({ ...s });
+        this.sortState = [
+          {
+            name: "designation",
+            asc: true,
+            isFocus: false
+          },
+          {
+            name: "fournisseurNom",
+            asc: true,
+            isFocus: false
+          },
+          {
+            name: "brf",
+            asc: true,
+            isFocus: false
+          },
+          {
+            name: "observation",
+            asc: true,
+            isFocus: false
           }
-        });
+        ];
 
-        if (typeof this.form !== "undefined") {
-          let ds = this.form.value["DESIGNATION$"];
-          let fr = this.form.value["fournisseurNom$"];
-          let type = this.form.value["type"];
-          this.filter(ds, fr, type);
+        if (state.ListRecState.showDetails.length === 0) {
+          this.categories$.forEach(c => {
+            if (
+              this.showDetails.find(s => s.cat === c.categorie) === undefined
+            ) {
+              let s = { cat: c.categorie, show: false };
+              this.showDetails.push({ ...s });
+            }
+          });
+        } else {
+          this.showDetails = state.ListRecState.showDetails;
         }
+
+        this.filter();
       });
     this.store
       .select(refresh)
       .pipe(untilDestroyed(this))
       .subscribe(type => {
         if (type.refresh === "RECEPTION") {
+          this.isFilter = false;
           this.designationReceptionService.onGetFornisseurArticleByProjet();
           this.ficheService.onGetFicheByType("RECEPTION", null);
+          this.form.controls["designation$"].reset();
+          this.form.controls["fournisseurNom$"].reset();
+          this.form.controls["brf$"].reset();
+          this.form.controls["observation$"].reset();
         }
       });
     this.store
@@ -127,7 +158,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
       .subscribe(state => {
         if (state === "RECEPTION") {
           this.ficheService.validerFiche(this.FicheReception.id, "receptions");
-          this.store.dispatch(new fromFicheAction.ValiderFiche(""));
+          this.store.dispatch(new FromFicheAction.ValiderFiche(""));
         }
       });
   }
@@ -151,9 +182,11 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
       observation: this.form.value["observation"],
       quantite: this.form.value["quantite"],
       unite: null,
+      brf: this.form.value["brf"],
       designation: null,
       fournisseurNom: null,
-      idFiche: null
+      idFiche: null,
+      catId: null
     };
     this.designationReceptionService.onAddReceptionDesignation(ds);
     this.resetAddInput();
@@ -266,6 +299,12 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     );
     this.form.controls["unite"].setValue(this.ArticleToSelect[i].unite);
     this.form.controls["idArticle"].setValue(this.ArticleToSelect[i].id);
+
+    if (this.founisseurToSelect.length === 1) {
+      let fr = this.founisseurToSelect[0];
+      this.form.controls["fournisseur"].setValue(fr.fournisseurNom);
+      this.form.controls["idFournisseur"].setValue(fr.id);
+    }
   }
   onHoverArticleAdd(i) {
     this.form.controls["designation"].setValue(
@@ -328,8 +367,13 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
   /*UPDATE */
   onClickUpdate(ii: number, j: number) {
     this.dsSelected = ii.toString().concat("_", j.toString());
+    if (this.isFilter) {
+      this.showDetails.forEach(s => (s.show = false));
+      let cc = this.categories$.find(r => r.id == ii).categorie;
+      this.showDetails.find(s => s.cat === cc).show = true;
+    }
     //eliminate location and ouvrier
-    if (ii >= 2) {
+    if (ii >= 2 || ii == -1) {
       this.isUpdate = 1;
 
       this.formNames.forEach((key: any) => {
@@ -371,7 +415,8 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
         this.ArticleToSelect$ = tabAr.filter((a: articleModel) => {
           if (
             a.designation ===
-            this.categories[ii].receptionDesignation[j].designation
+            this.categories[ii].receptionDesignation.find(l => l.id === j)
+              .designation
           )
             return false;
           if (c === a.designation) {
@@ -406,7 +451,8 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
             this.form.value["designation".concat(this.transIJ(i, j))]
           ) &&
           this.form.value["designation".concat(this.transIJ(i, j))] !==
-            this.categories[i].receptionDesignation[j].designation
+            this.categories[i].receptionDesignation.find(r => r.id === j)
+              .designation
         ) {
           submit = false;
           msg =
@@ -417,7 +463,8 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
             this.form.value["fournisseurNom".concat(this.transIJ(i, j))]
           ) &&
           this.form.value["fournisseurNom".concat(this.transIJ(i, j))] !==
-            this.categories[i].receptionDesignation[j].fournisseurNom
+            this.categories[i].receptionDesignation.find(r => r.id === j)
+              .fournisseurNom
         ) {
           submit = false;
           msg =
@@ -428,7 +475,8 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
           submit = false;
           msg = "Le champs quantite est obligatoire";
           this.form.controls["quantite".concat(this.transIJ(i, j))].setValue(
-            this.categories[i].receptionDesignation[j].quantite
+            this.categories[i].receptionDesignation.find(r => r.id === j)
+              .quantite
           );
         }
         if (submit) {
@@ -445,7 +493,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
           );
           this.formNames.forEach((key: any) => {
             this.form.controls[key.concat(this.dsSelected)].setValue(
-              this.categories[i].receptionDesignation[j][key]
+              this.categories[i].receptionDesignation.find(r => r.id === j)[key]
             );
           });
           this.isUpdate = -1;
@@ -471,10 +519,11 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.articleSelected) {
         this.form.controls["designation".concat(this.transIJ(i, j))].setValue(
-          this.categories[i].receptionDesignation[j].designation
+          this.categories[i].receptionDesignation.find(r => r.id === j)
+            .designation
         );
         this.form.controls["unite".concat(this.transIJ(i, j))].setValue(
-          this.categories[i].receptionDesignation[j].unite
+          this.categories[i].receptionDesignation.find(r => r.id === j).unite
         );
       }
       list.hidden = true;
@@ -520,14 +569,16 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
       quantite: this.form.value["quantite".concat(this.dsSelected)],
       unite: null,
       designation: null,
+      brf: this.form.value["brf".concat(this.dsSelected)],
       fournisseurNom: null,
-      idFiche: null
+      idFiche: null,
+      catId: null
     };
     this.designationReceptionService.onUpdateReceptionDesignation(
       ds,
-      this.categories[this.idDsSeleced[0]].receptionDesignation[
-        this.idDsSeleced[1]
-      ].id
+      this.categories[this.idDsSeleced[0]].receptionDesignation.find(
+        r => r.id === this.idDsSeleced[1]
+      ).id
     );
     this.dsSelected = "";
   }
@@ -559,7 +610,10 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
       if (!this.fournisseurSelected) {
         this.form.controls[
           "fournisseurNom".concat(this.transIJ(i, j))
-        ].setValue(this.categories[i].receptionDesignation[j].fournisseurNom);
+        ].setValue(
+          this.categories[i].receptionDesignation.find(r => r.id === j)
+            .fournisseurNom
+        );
       }
       list.hidden = true;
     }, 100);
@@ -615,72 +669,87 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     );
     this.resetAddInput();
   }
-  onFilterByArticle(keyWord: string) {
-    let word = keyWord.toUpperCase();
-    this.categories = this.categories.filter(f => {
-      let isMateriel = false;
-      f.receptionDesignation.forEach(m => {
-        if (m.designation.includes(word)) isMateriel = true;
-      });
-      if (isMateriel) return true;
-      else return false;
-    });
-    this.categories.forEach(
-      f =>
-        (f.receptionDesignation = f.receptionDesignation.filter(m =>
-          m.designation.includes(word)
-        ))
-    );
-  }
-
-  onFilterByCategorie(keyWord: string) {
-    let word = keyWord.toUpperCase();
-    this.categories = this.categories.filter(c => c.categorie.includes(word));
-  }
-
-  onFilterByFounrisseur(keyWord: string) {
-    let word = keyWord.toUpperCase().trim();
-    this.categories = this.categories.filter(f => {
-      let isMateriel = false;
-      f.receptionDesignation.forEach(m => {
-        if (m.fournisseurNom.includes(word)) isMateriel = true;
-      });
-      if (isMateriel) return true;
-      else return false;
-    });
-    this.categories.forEach(
-      f =>
-        (f.receptionDesignation = f.receptionDesignation.filter(m =>
-          m.fournisseurNom.includes(word)
-        ))
-    );
-  }
-
-  filter(ds: string, fr: string, type) {
+  filter() {
     this.categories = this.slice(this.categories$);
-    let ds$ = ds.trim().toUpperCase();
-    let fr$ = fr.trim().toUpperCase();
-    let reset = true;
-    if (ds$ !== "" && ds$ !== "DESIGNATION") {
-      reset = false;
-      if (type == "A") this.onFilterByArticle(ds$);
-      else this.onFilterByCategorie(ds$);
+    this.receptionDs = this.categories
+      .map(c => {
+        let r = c.receptionDesignation;
+        let i = this.categories.findIndex(cc => cc == c);
+        r.forEach(d => {
+          d.catId = i;
+        });
+        return r;
+      })
+      .reduce((r, e) => (r.push(...e), r), []);
+    if (typeof this.form !== "undefined")
+      this.formFilter.forEach(n => {
+        let v = "";
+        if (this.form.value[n + "$"] !== null)
+          v = this.form.value[n + "$"].trim().toUpperCase();
+        if (v != "") {
+          this.isFilter = true;
+          this.receptionDs = this.receptionDs.filter(r => {
+            let o = r[n] === null ? "" : r[n];
+            return o.includes(v);
+          });
+        }
+      });
+  }
+
+  typeIsFocus(type) {
+    return this.sortState.find(s => s.name === type).isFocus;
+  }
+  typeAsc(type) {
+    return this.sortState.find(s => s.name === type).asc;
+  }
+
+  onSort(type) {
+    // descending order z->a
+
+    if (!this.isFilter) {
+      this.receptionDs = this.categories
+        .map(c => {
+          let r = c.receptionDesignation;
+          r.forEach(d => {
+            d.catId = c.id;
+          });
+          return r;
+        })
+        .reduce((r, e) => (r.push(...e), r), []);
+
+      this.isFilter = true;
     }
 
-    if (fr$ !== "" && fr$ !== "FOURNISSEUR") {
-      reset = false;
-      this.onFilterByFounrisseur(fr$);
-    }
+    let s = this.sortState.find(s => s.name === type).asc;
+    s = !s;
+    this.sortState.find(s => s.name === type).asc = !this.sortState.find(
+      s => s.name === type
+    ).asc;
+    this.sortState.forEach(e => {
+      if (e.name === type) e.isFocus = true;
+      else e.isFocus = false;
+    });
 
-    if (reset) this.categories = this.slice(this.categories$);
-  }
-
-  filterBox(vv: string, type) {
-    this.categories = this.slice(this.categories$);
-    let v = vv.trim().toUpperCase();
-
-    if (type == "A") this.onFilterByArticle(v);
-    else this.onFilterByCategorie(v);
+    if (s)
+      this.receptionDs = this.receptionDs.sort((a, b) => {
+        if (a[type] > b[type]) {
+          return -1;
+        }
+        if (a[type] < b[type]) {
+          return 1;
+        }
+        return 0;
+      });
+    if (!s)
+      this.receptionDs = this.receptionDs.sort((a, b) => {
+        if (a[type] < b[type]) {
+          return -1;
+        }
+        if (b[type] < a[type]) {
+          return 1;
+        }
+        return 0;
+      });
   }
 
   slice(c: ReceptionCategorieModel[]) {
@@ -696,20 +765,12 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     return cat;
   }
 
-  onFocusHeaderInput(input, value) {
-    let v = input.value;
-    if (v === value) input.value = "";
-  }
-  onBlurHeaderInput(input, value) {
-    let v = input.value.trim();
-    if (v === "") input.value = value;
-  }
-
   resetAddInput() {
     this.form.controls["unite"].reset();
     this.form.controls["designation"].reset();
     this.form.controls["fournisseur"].reset();
     this.form.controls["idArticle"].reset();
+    this.form.controls["brf"].reset();
     this.form.controls["idFournisseur"].reset();
     this.form.controls["observation"].reset();
     this.form.controls["quantite"].reset();
@@ -719,6 +780,7 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
     return (
       this.form.controls["fournisseur"].dirty ||
       this.form.controls["designation"].dirty ||
+      this.form.controls["brf"].dirty ||
       this.form.controls["quantite"].dirty ||
       this.form.controls["observation"].dirty
     );
@@ -726,5 +788,12 @@ export class DesignationReceptionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.
+
+    let state = {
+      showDetails: this.showDetails,
+      sortState: this.sortState
+    };
+
+    this.store.dispatch(new fromFicheReceptionAction.ListRecState(state));
   }
 }

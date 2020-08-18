@@ -89,11 +89,7 @@ export class NavComponent implements OnInit {
             .add(1, "days")
             .format("YYYY-MM-DD");
 
-          this.ficheService.onGetFicheByTypeAndDate(
-            firstType,
-            true,
-            date.toString()
-          );
+          this.ficheService.onGetFicheByTypeAndDate(firstType, date.toString());
         } else {
           let index = this.projetSelectionner.fichierTypes.findIndex(
             t => t === this.ficheSelectionner.type
@@ -102,7 +98,6 @@ export class NavComponent implements OnInit {
 
           this.ficheService.onGetFicheByTypeAndDate(
             nextType,
-            true,
             this.ficheSelectionner.date
           );
         }
@@ -113,7 +108,6 @@ export class NavComponent implements OnInit {
 
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          null,
           date.toString()
         );
       }
@@ -132,11 +126,7 @@ export class NavComponent implements OnInit {
             .subtract(1, "days")
             .format("YYYY-MM-DD");
 
-          this.ficheService.onGetFicheByTypeAndDate(
-            lastType,
-            true,
-            date.toString()
-          );
+          this.ficheService.onGetFicheByTypeAndDate(lastType, date.toString());
         } else {
           let index = this.projetSelectionner.fichierTypes.findIndex(
             t => t === this.ficheSelectionner.type
@@ -145,7 +135,6 @@ export class NavComponent implements OnInit {
 
           this.ficheService.onGetFicheByTypeAndDate(
             nextType,
-            true,
             this.ficheSelectionner.date
           );
         }
@@ -156,7 +145,6 @@ export class NavComponent implements OnInit {
 
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          null,
           date.toString()
         );
       }
@@ -172,14 +160,12 @@ export class NavComponent implements OnInit {
 
           this.ficheService.onGetFicheByTypeAndDate(
             lastType,
-            true,
             this.projetSelectionner.fin.toString()
           );
         } else this.sepBtwPressAndClick = false;
       } else {
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          null,
           this.projetSelectionner.fin.toString()
         );
       }
@@ -193,14 +179,12 @@ export class NavComponent implements OnInit {
 
           this.ficheService.onGetFicheByTypeAndDate(
             firstType,
-            true,
             this.projetSelectionner.debut.toString()
           );
         } else this.sepBtwPressAndClick = false;
       } else {
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          null,
           this.projetSelectionner.debut.toString()
         );
       }
@@ -218,7 +202,6 @@ export class NavComponent implements OnInit {
 
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          true,
           date.toString()
         );
       }
@@ -235,7 +218,6 @@ export class NavComponent implements OnInit {
 
         this.ficheService.onGetFicheByTypeAndDate(
           this.ficheSelectionner.type,
-          true,
           date.toString()
         );
       }

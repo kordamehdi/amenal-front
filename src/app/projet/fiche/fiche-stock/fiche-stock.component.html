@@ -3,28 +3,17 @@
     <tr>
       <th style="width: 60%">
         <input
-          (input)="filter(DsKeyWord.value, type.value)"
+          (input)="filter(DsKeyWord.value)"
           type="text"
           value="DESIGNATION"
           (blur)="onBlurHeaderInput(DsKeyWord, 'DESIGNATION')"
           (focus)="onFocusHeaderInput(DsKeyWord, 'DESIGNATION')"
-          [placeholder]="type.value === 'A' ? 'ARTICLE' : 'CATEGORIE'"
+          placeholder="DESIGNATION"
           #DsKeyWord
           ngModel
-          name="DESIGNATION$"
+          name="designation$"
           style="width: 60%"
         />
-        <ion-radio-group
-          ngModel
-          (ionChange)="filter(DsKeyWord.value, type.value)"
-          name="type"
-          #type
-        >
-          <ion-radio class="checkbox" value="A"></ion-radio>
-          <label class="label-radio">A</label>
-          <ion-radio class="checkbox" value="C"></ion-radio>
-          <label class="label-radio">C</label>
-        </ion-radio-group>
       </th>
       <th style="width: 20%">
         UNITÉ
@@ -34,44 +23,72 @@
       </th>
     </tr>
     <ng-container *ngIf="stocks.length > 0; else elseTemplate">
-      <tr class="stock-content" *ngFor="let stock of stocks; let i = index">
-        <td colspan="3">
-          <div>
-            <div class="categorie" (click)="onShowshowDetail(stock.categorie)">
-              {{ stock.categorie }}
+      <ng-container *ngIf="true; else elseTemplate$">
+        <tr class="stock-content" *ngFor="let stock of stocks; let i = index">
+          <td colspan="3">
+            <div>
               <div
-                *ngIf="!stock.stockable"
-                style="position: relative; left: 5px; top: 3px; width: 7px; height: 7px; background-color: red;border-radius: 40px;"
-              ></div>
-            </div>
-            <div #detail *ngIf="onTestShowDetail(stock.categorie)">
-              <div
-                [ngStyle]="{
-                  'background-color':
-                    this.dsSelected == transIJ(i, j)
-                      ? 'rgba(255, 0, 0, 0.1)'
-                      : '',
-                  color: !item.stockable ? 'red' : ''
-                }"
-                (clickOutside)="onClickedOutside(i, j)"
-                (click)="onFocus(i, j)"
-                *ngFor="let item of stock.stockDesignations; let j = index"
-                class="cont_div"
+                class="categorie"
+                (click)="onShowshowDetail(stock.categorie)"
               >
-                <span class="border-case" style="width: 60%">
-                  {{ item.designation }}
-                </span>
-                <span class="border-case" style="width: 20%">
-                  {{ item.unite }}
-                </span>
-                <span class="border-case" style="width: 20%">
-                  {{ item.quantite }}
-                </span>
+                {{ stock.categorie }}
+              </div>
+              <div *ngIf="!stock.stockable" class="stock-detail">
+                <div
+                  [ngStyle]="{
+                    'background-color':
+                      this.dsSelected == transIJ(i, j)
+                        ? 'rgba(255, 0, 0, 0.1)'
+                        : ''
+                  }"
+                  [attachOutsideOnClick]="true"
+                  (clickOutside)="onClickedOutside(i, j)"
+                  (click)="onFocus(i, j)"
+                  *ngFor="let item of stock.stockDesignations; let j = index"
+                  class="cont_div"
+                >
+                  <span class="border-case" style="width: 60%">
+                    {{ item.designation }}
+                  </span>
+                  <span class="border-case" style="width: 20%">
+                    {{ item.unite }}
+                  </span>
+                  <span class="border-case" style="width: 20%">
+                    {{ item.quantite }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </td>
-      </tr>
+          </td>
+        </tr>
+      </ng-container>
+      <ng-template #elseTemplate$>
+        <tr>
+          <td>
+            <div
+              [ngStyle]="{
+                'background-color':
+                  this.dsSelected == transIJ(i, j) ? 'rgba(255, 0, 0, 0.1)' : ''
+              }"
+              [attachOutsideOnClick]="true"
+              (clickOutside)="onClickedOutside(i, j)"
+              (click)="onFocus(i, j)"
+              *ngFor="let item of stock.stockDesignations; let j = index"
+              class="cont_div"
+            >
+              <span class="border-case" style="width: 60%">
+                {{ item.designation }}
+              </span>
+              <span class="border-case" style="width: 20%">
+                {{ item.unite }}
+              </span>
+              <span class="border-case" style="width: 20%">
+                {{ item.quantite }}
+              </span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
     </ng-container>
     <ng-template #elseTemplate>
       <tr

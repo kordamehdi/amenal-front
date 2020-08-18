@@ -1,3 +1,4 @@
+import { fiche } from "./../../redux/fiche.selector";
 import { validerFiche } from "./../../nav/nav.selector";
 import { FicheService } from "./../../fiche.service";
 import { refresh } from "./../../header/head.selector";
@@ -43,6 +44,15 @@ export class FicheAccidentDesignationComponent implements OnInit, OnDestroy {
         }
 
         this.ficheAccident = state.ficheSelectionner;
+        this.isValid = this.ficheAccident.isValidated;
+
+        this.designation$ = this.ficheAccident.designations;
+      });
+    this.store
+      .select(fiche)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        this.ficheAccident = state;
         this.isValid = this.ficheAccident.isValidated;
 
         this.designation$ = this.ficheAccident.designations;

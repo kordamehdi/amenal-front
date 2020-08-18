@@ -2,13 +2,13 @@ import { validerFiche } from "./../../nav/nav.selector";
 import { FicheService } from "./../../fiche.service";
 import { refresh } from "./../../header/head.selector";
 import { livraisonCategorieModel } from "./../../../models/livraison-designation.model";
+import { LivraisonDesignationModel } from "./../../../models/livraison-designation.model";
 import { DestinationService } from "./../destination/destination.service";
 import { LivraisonDesignationService } from "./livraison-designation.service";
-import { LivraisonDesignationModel } from "./../../../models/livraison.model";
 import { destinationModel } from "./../../../models/destination.model";
 import { StockDesignationModel } from "./../../../models/stock-designation.model";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import * as fromFicheAction from "../../redux/fiche.action";
+import * as FromFicheAction from "../../redux/fiche.action";
 import { NgForm } from "@angular/forms";
 import * as App from "../../../../store/app.reducers";
 import { Store } from "@ngrx/store";
@@ -33,9 +33,12 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   @ViewChild("f", { static: false })
   form: NgForm;
   isUpdate = -1;
+  isFilter = false;
+  livraisonDesignationCat: livraisonCategorieModel[] = [];
+  livraisonDesignationCat$: livraisonCategorieModel[] = [];
 
-  livraisonDesignation: livraisonCategorieModel[] = [];
-  livraisonDesignation$: livraisonCategorieModel[] = [];
+  livraisonDesignations: LivraisonDesignationModel[] = [];
+  livraisonDesignations$: LivraisonDesignationModel[] = [];
 
   articleSelected = false;
   showDetails = [];
@@ -50,10 +53,10 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   errorMsg = "";
 
   showAlert = false;
-
+  sortState = [];
   FicheLivraison: FicheModel;
   quantiteList;
-
+  formFilter = ["designation", "destinationNom"];
   formNames = ["articleId", "quantite", "destinationId", "observation"];
 
   constructor(
@@ -81,24 +84,39 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
         if (state.ficheSelectionner !== null)
           this.FicheLivraison = state.ficheSelectionner;
 
-        this.livraisonDesignation$ = this.FicheLivraison.categorieLivraisons;
+        this.sortState = [
+          {
+            name: "designation",
+            asc: true,
+            isFocus: false
+          },
+          {
+            name: "destinationNom",
+            asc: true,
+            isFocus: false
+          }
+        ];
+
+        this.livraisonDesignationCat$ = this.FicheLivraison.categorieLivraisons;
         if (state.type === "livDs" || state.type === "fiche") {
+          console.log(state.errorMsg, "    ", state.showAlert);
           this.errorMsg = state.errorMsg;
           this.showAlert = state.showAlert;
         }
-        this.livraisonDesignation = this.livraisonDesignation$;
-        if (typeof this.form !== "undefined") {
-          let ds = this.form.value["DESIGNATION$"];
-          let dst = this.form.value["destination$"];
-          let type = this.form.value["type"];
-          this.filter(ds, dst, type);
-        }
+        this.livraisonDesignationCat = this.livraisonDesignationCat$;
+        this.livraisonDesignationCat$.forEach(c => {
+          if (this.showDetails.find(s => s.catId === c.id) === undefined) {
+            let s = { catId: c.id, show: false };
+            this.showDetails.push({ ...s });
+          }
+        });
       });
     this.store
       .select(refresh)
       .pipe(untilDestroyed(this))
       .subscribe(type => {
         if (type.refresh === "LIVRAISON") {
+          this.isFilter = false;
           this.destinationService.onGetDestinationsAssoToProjet();
           this.livraisonDesignationService.onGetstockArticle();
           this.ficheService.onGetFicheByType("LIVRAISON", null);
@@ -110,7 +128,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       .subscribe(state => {
         if (state === "LIVRAISON") {
           this.ficheService.validerFiche(this.FicheLivraison.id, "livraisons");
-          this.store.dispatch(new fromFicheAction.ValiderFiche(""));
+          this.store.dispatch(new FromFicheAction.ValiderFiche(""));
         }
       });
   }
@@ -141,7 +159,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       ) {
         this.form.controls[name].setValue("");
         this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
+          new FromFicheAction.ShowFicheAlert({
             type: "livDs",
             showAlert: true,
             msg: "La designation doit etre selectionner depuis la liste!"
@@ -185,7 +203,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       if (!this.destSelected && this.form.controls[name].value.trim() != "") {
         this.form.controls[name].setValue("");
         this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
+          new FromFicheAction.ShowFicheAlert({
             type: "livDs",
             showAlert: true,
             msg: "La destination doit etre selectionner depuis la liste!"
@@ -231,7 +249,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
         } else {
           this.isUpdate = -1;
           this.store.dispatch(
-            new fromFicheAction.ShowFicheAlert({
+            new FromFicheAction.ShowFicheAlert({
               type: "livDs",
               showAlert: true,
               msg: msg
@@ -250,11 +268,22 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
 
   /******* INPUT_UPDATE ********/
 
-  onUpdateClickOutside(i, j) {
-    if (this.designationSelectedIndex === this.transIJ(i, j)) {
+  onUpdateClickOutside(idCat, idDs) {
+    if (this.designationSelectedIndex === this.transIJ(idCat, idDs)) {
       if (this.isUpdate === 1) {
         let submit = true;
-        if (this.form.dirty || this.articleSelected || this.destSelected) {
+        console.log(
+          "*************** ",
+          this.updateIsDirty(idCat, idDs),
+          this.articleSelected,
+          " v ",
+          this.destSelected
+        );
+        if (
+          this.updateIsDirty(idCat, idDs) ||
+          this.articleSelected ||
+          this.destSelected
+        ) {
           this.articleSelected = false;
           this.destSelected = false;
           let msg = "Un des champs est invalid!";
@@ -267,18 +296,24 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
             this.form.controls[
               "quantite".concat(this.designationSelectedIndex)
             ].setValue(
-              this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+              this.livraisonDesignationCat
+                .find(c => c.id === idCat)
+                .livraisonDesignationPresentations.find(c => c.id === idDs)
                 .quantite
             );
           }
 
           if (submit) {
             this.form.ngSubmit.emit();
+            this.articleSelected = false;
+            this.destSelected = false;
           } else {
+            this.articleSelected = false;
+            this.destSelected = false;
             this.designationSelectedIndex = "";
             this.isUpdate = -1;
             this.store.dispatch(
-              new fromFicheAction.ShowFicheAlert({
+              new FromFicheAction.ShowFicheAlert({
                 type: "livDs",
                 showAlert: true,
                 msg: msg
@@ -299,16 +334,24 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       ];
 
       names.forEach((key: string) => {
-        this.form.controls[key.concat(this.transIJ(i, j))].disable();
+        this.form.controls[key.concat(this.transIJ(idCat, idDs))].disable();
       });
     }
   }
-  onUpdateClick(i, j, id) {
-    this.designationSelectedIndex = this.transIJ(i, j);
-    this.i = this.transIJ(i, j);
-    this.designationSelectedId = id;
+  onUpdateClick(idCat, idDs) {
+    if (this.isFilter) {
+      this.showDetails.forEach(c => {
+        c.show = false;
+      });
+      this.onShowshowDetail(idCat);
+    }
+    this.designationSelectedIndex = this.transIJ(idCat, idDs);
+    this.designationSelectedId = idDs;
+    this.i = this.transIJ(idCat, idDs);
     this.isUpdate = 1;
-    let lv = this.livraisonDesignation[i].livraisonDesignationPresentations[j];
+    let lv = this.livraisonDesignationCat
+      .find(c => c.id === idCat)
+      .livraisonDesignationPresentations.find(c => c.id === idDs);
     let names = [
       "articleId",
       "destinationId",
@@ -328,56 +371,62 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       ).quantite;
     this.max = this.max + lv.quantite;
     names.forEach((key: string) => {
-      this.form.controls[key.concat(this.transIJ(i, j))].enable();
+      this.form.controls[key.concat(this.transIJ(idCat, idDs))].enable();
     });
   }
 
-  onSelectArticleUpdate(item, i, j) {
+  onSelectArticleUpdate(item, idCat, idDs) {
     if (
       item.designation !=
-      this.livraisonDesignation[i].livraisonDesignationPresentations[j]
-        .designation
+      this.livraisonDesignationCat
+        .find(c => c.id === idCat)
+        .livraisonDesignationPresentations.find(c => c.id === idDs).designation
     ) {
       this.articleSelected = true;
 
-      this.form.controls["designation".concat(this.transIJ(i, j))].setValue(
-        item.designation
-      );
-      this.form.controls["articleId".concat(this.transIJ(i, j))].setValue(
-        item.articleId
-      );
-      this.form.controls["unite".concat(this.transIJ(i, j))].setValue(
+      this.form.controls[
+        "designation".concat(this.transIJ(idCat, idDs))
+      ].setValue(item.designation);
+      this.form.controls[
+        "articleId".concat(this.transIJ(idCat, idDs))
+      ].setValue(item.articleId);
+      this.form.controls["unite".concat(this.transIJ(idCat, idDs))].setValue(
         item.unite
       );
 
       if (
-        this.form.value["quantite".concat(this.transIJ(i, j))] > item.quantite
+        this.form.value["quantite".concat(this.transIJ(idCat, idDs))] >
+        item.quantite
       )
-        this.form.controls["quantite".concat(this.transIJ(i, j))].setValue(
-          item.quantite
-        );
+        this.form.controls[
+          "quantite".concat(this.transIJ(idCat, idDs))
+        ].setValue(item.quantite);
     }
   }
 
   onFocusArtInputUpdateSearch(artAddList) {
     artAddList.hidden = false;
   }
-  onBlurArtInputUpdateSearch(artAddList, i, j) {
+  onBlurArtInputUpdateSearch(artAddList, idCat, idDs) {
     setTimeout(() => {
       artAddList.hidden = true;
-      let name = "designation".concat(this.transIJ(i, j));
+      let name = "designation".concat(this.transIJ(idCat, idDs));
       if (
         !this.articleSelected &&
         this.form.controls[name].value.trim() !=
-          this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+          this.livraisonDesignationCat
+            .find(c => c.id === idCat)
+            .livraisonDesignationPresentations.find(c => c.id === idDs)
             .designation
       ) {
         this.form.controls[name].setValue(
-          this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+          this.livraisonDesignationCat
+            .find(c => c.id === idCat)
+            .livraisonDesignationPresentations.find(c => c.id === idDs)
             .designation
         );
         this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
+          new FromFicheAction.ShowFicheAlert({
             type: "livDs",
             showAlert: true,
             msg: "La designation doit etre selectionner depuis la liste!"
@@ -390,24 +439,28 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   onFocusDestInputUpdateSearch(dstUpdateList) {
     dstUpdateList.hidden = false;
   }
-  onBlurDestInputUpdateSearch(dstUpdateList, i, j) {
+  onBlurDestInputUpdateSearch(dstUpdateList, idCat, idDs) {
     setTimeout(() => {
       dstUpdateList.hidden = true;
 
-      let name = "destination".concat(this.transIJ(i, j));
+      let name = "destination".concat(this.transIJ(idCat, idDs));
 
       if (
         !this.destSelected &&
         this.form.controls[name].value.trim() !=
-          this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+          this.livraisonDesignationCat
+            .find(c => c.id === idCat)
+            .livraisonDesignationPresentations.find(c => c.id === idDs)
             .destinationNom
       ) {
         this.form.controls[name].setValue(
-          this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+          this.livraisonDesignationCat
+            .find(c => c.id === idCat)
+            .livraisonDesignationPresentations.find(c => c.id === idDs)
             .destinationNom
         );
         this.store.dispatch(
-          new fromFicheAction.ShowFicheAlert({
+          new FromFicheAction.ShowFicheAlert({
             type: "livDs",
             showAlert: true,
             msg: "La destination doit etre selectionner depuis la liste!"
@@ -416,26 +469,28 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
-  onSelectDstUpdate(i, j, item: destinationModel) {
+  onSelectDstUpdate(idCat, idDs, item: destinationModel) {
     if (
       item.destination !=
-      this.livraisonDesignation[i].livraisonDesignationPresentations[j]
+      this.livraisonDesignationCat
+        .find(c => c.id === idCat)
+        .livraisonDesignationPresentations.find(c => c.id === idDs)
         .destinationNom
     ) {
       this.destSelected = true;
-      this.form.controls["destination".concat(this.transIJ(i, j))].setValue(
-        item.destination
-      );
-      this.form.controls["destinationId".concat(this.transIJ(i, j))].setValue(
-        item.id
-      );
+      this.form.controls[
+        "destination".concat(this.transIJ(idCat, idDs))
+      ].setValue(item.destination);
+      this.form.controls[
+        "destinationId".concat(this.transIJ(idCat, idDs))
+      ].setValue(item.id);
     }
   }
 
   /******* INPUT_UPDATE_END ********/
   OnUpdateLivraisonDesignation() {
     this.isUpdate = -1;
-    let ds: LivraisonDesignationModel = {
+    let ds = {
       idMateriel: this.form.controls[
         "articleId".concat(this.designationSelectedIndex)
       ].value,
@@ -462,7 +517,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   }
   OnAddLivraisonDesignation() {
     this.isUpdate = -1;
-    let ds: LivraisonDesignationModel = {
+    let ds = {
       idMateriel: this.form.controls["articleId"].value,
       destinationId: this.form.controls["destinationId"].value,
       quantite: this.form.controls["quantite"].value,
@@ -476,17 +531,18 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
     this.form.reset();
   }
 
-  deleteLivraisonDesignation(i, j) {
-    let art = this.livraisonDesignation[i].livraisonDesignationPresentations[j]
-      .designation;
-    let dst = this.livraisonDesignation[i].livraisonDesignationPresentations[j]
-      .destinationNom;
-    this.designationToDeleteId = this.livraisonDesignation[
-      i
-    ].livraisonDesignationPresentations[j].id;
+  deleteLivraisonDesignation(idCat, idDs) {
+    let ds = this.livraisonDesignationCat
+      .find(c => c.id === idCat)
+      .livraisonDesignationPresentations.find(c => c.id === idDs);
+    let art = ds.designation;
+
+    let dst = ds.destinationNom;
+
+    this.designationToDeleteId = idDs;
 
     this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
+      new FromFicheAction.ShowFicheAlert({
         type: "livDs",
         showAlert: true,
         msg:
@@ -499,17 +555,22 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
     );
   }
 
+  getShowdetail(i) {
+    return this.showDetails.find(c => c.catId === i).show;
+  }
   onShowshowDetail(i) {
-    this.showDetails[i] = !this.showDetails[i];
+    this.showDetails.find(c => c.catId === i).show = !this.showDetails.find(
+      c => c.catId === i
+    ).show;
   }
 
-  transIJ(i, j) {
-    return i.toString().concat("_", j.toString());
+  transIJ(idCat, idDs) {
+    return idCat.toString().concat("_", idDs.toString());
   }
 
   onCtnAlert() {
     this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
+      new FromFicheAction.ShowFicheAlert({
         type: "livDs",
         showAlert: false,
         msg: ""
@@ -527,7 +588,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
     this.designationToDeleteId = -1;
 
     this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
+      new FromFicheAction.ShowFicheAlert({
         type: "livDs",
         showAlert: false,
         msg: ""
@@ -536,7 +597,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
   }
   onFilterByArticle(keyWord: string) {
     let word = keyWord.toUpperCase();
-    this.livraisonDesignation = this.livraisonDesignation.filter(f => {
+    this.livraisonDesignationCat = this.livraisonDesignationCat.filter(f => {
       let isMateriel = false;
       f.livraisonDesignationPresentations.forEach(m => {
         if (m.designation.includes(word)) isMateriel = true;
@@ -544,7 +605,7 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       if (isMateriel) return true;
       else return false;
     });
-    this.livraisonDesignation.forEach(
+    this.livraisonDesignationCat.forEach(
       f =>
         (f.livraisonDesignationPresentations = f.livraisonDesignationPresentations.filter(
           m => m.designation.includes(word)
@@ -554,14 +615,14 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
 
   onFilterByCategorie(keyWord: string) {
     let word = keyWord.toUpperCase();
-    this.livraisonDesignation = this.livraisonDesignation.filter(c =>
+    this.livraisonDesignationCat = this.livraisonDesignationCat.filter(c =>
       c.categorie.includes(word)
     );
   }
 
   onFilterByDestination(keyWord: string) {
     let word = keyWord.toUpperCase().trim();
-    this.livraisonDesignation = this.livraisonDesignation.filter(f => {
+    this.livraisonDesignationCat = this.livraisonDesignationCat.filter(f => {
       let isMateriel = false;
       f.livraisonDesignationPresentations.forEach(m => {
         if (m.destinationNom.includes(word)) isMateriel = true;
@@ -569,34 +630,90 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       if (isMateriel) return true;
       else return false;
     });
-    this.livraisonDesignation.forEach(
+    this.livraisonDesignationCat.forEach(
       f =>
         (f.livraisonDesignationPresentations = f.livraisonDesignationPresentations.filter(
           m => m.destinationNom.includes(word)
         ))
     );
   }
-  filter(ds: string, dst: string, type) {
-    this.livraisonDesignation = this.slice(this.livraisonDesignation$);
-    let ds$ = ds.trim().toUpperCase();
-    let dst$ = dst.trim().toUpperCase();
-    let reset = true;
-    if (ds$ !== "" && ds$ !== "DESIGNATION") {
-      reset = false;
-      if (type == "A") this.onFilterByArticle(ds$);
-      else this.onFilterByCategorie(ds$);
+  typeIsFocus(type) {
+    return this.sortState.find(s => s.name === type).isFocus;
+  }
+  typeAsc(type) {
+    return this.sortState.find(s => s.name === type).asc;
+  }
+
+  onSort(type) {
+    // descending order z->a
+
+    if (!this.isFilter) {
+      this.livraisonDesignationCat = this.slice(this.livraisonDesignationCat$);
+      this.livraisonDesignations = this.livraisonDesignationCat$
+        .map(c => {
+          return c.livraisonDesignationPresentations;
+        })
+        .reduce((r, e) => (r.push(...e), r), []);
+
+      this.isFilter = true;
     }
 
-    if (dst$ !== "" && dst$ !== "FOURNISSEUR") {
-      reset = false;
-      this.onFilterByDestination(dst$);
-    }
+    let s = this.sortState.find(s => s.name === type).asc;
+    s = !s;
+    this.sortState.find(s => s.name === type).asc = !this.sortState.find(
+      s => s.name === type
+    ).asc;
+    this.sortState.forEach(e => {
+      if (e.name === type) e.isFocus = true;
+      else e.isFocus = false;
+    });
 
-    if (reset)
-      this.livraisonDesignation = this.slice(this.livraisonDesignation$);
+    if (s)
+      this.livraisonDesignations = this.livraisonDesignations.sort((a, b) => {
+        if (a[type] > b[type]) {
+          return -1;
+        }
+        if (a[type] < b[type]) {
+          return 1;
+        }
+        return 0;
+      });
+    if (!s)
+      this.livraisonDesignations = this.livraisonDesignations.sort((a, b) => {
+        if (a[type] < b[type]) {
+          return -1;
+        }
+        if (b[type] < a[type]) {
+          return 1;
+        }
+        return 0;
+      });
+  }
+
+  filter() {
+    this.isFilter = true;
+    this.livraisonDesignationCat = this.slice(this.livraisonDesignationCat$);
+    this.livraisonDesignations = this.livraisonDesignationCat$
+      .map(c => {
+        return c.livraisonDesignationPresentations;
+      })
+      .reduce((r, e) => (r.push(...e), r), []);
+
+    this.formFilter.forEach(n => {
+      let v = "";
+      if (this.form.value[n + "$"] !== null)
+        v = this.form.value[n + "$"].trim().toUpperCase();
+      if (v != "") {
+        this.isFilter = true;
+        this.livraisonDesignations = this.livraisonDesignations.filter(r => {
+          let o = r[n] === null ? "" : r[n];
+          return o.includes(v);
+        });
+      }
+    });
   }
   filterBox(vv: string, type) {
-    this.livraisonDesignation = this.slice(this.livraisonDesignation$);
+    this.livraisonDesignationCat = this.slice(this.livraisonDesignationCat$);
     let v = vv.trim().toUpperCase();
 
     if (type == "A") this.onFilterByArticle(v);
@@ -614,6 +731,12 @@ export class LivraisonDesignationComponent implements OnInit, OnDestroy {
       cat[i].livraisonDesignationPresentations = [...cList];
     });
     return cat;
+  }
+  updateIsDirty(idCat, idDs) {
+    return (
+      this.form.controls["quantite".concat(idCat, "_", idDs)].dirty ||
+      this.form.controls["observation".concat(idCat, "_", idDs)].dirty
+    );
   }
   ngOnDestroy() {
     // To protect you, we'll throw an error if it doesn't exist.

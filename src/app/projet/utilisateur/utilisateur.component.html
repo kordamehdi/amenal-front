@@ -5,9 +5,9 @@
     *ngIf="showSideBar"
   ></app-sidebar>
   <div
+    (swiperight)="onShowSideBar()"
+    (swipeleft)="onHideSideBar()"
     class="container"
-    (swiperight)="onShowSideBar($event)"
-    (swipeleft)="onHideSideBar($event)"
   >
     <span (click)="onRefresh()" class="side_left" style="padding: 6px"
       >. . .

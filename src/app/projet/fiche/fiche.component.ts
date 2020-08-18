@@ -2,7 +2,6 @@ import { Component, OnInit } from "@angular/core";
 import { Store } from "@ngrx/store";
 import * as App from "../../store/app.reducers";
 import * as fromProjetAction from "../redux/projet.actions";
-import * as fromFicheAction from "./redux/fiche.action";
 import { typeChange } from "./header/head.selector";
 
 @Component({
@@ -25,18 +24,17 @@ export class FicheComponent implements OnInit {
     this.showSideBar = false;
   }
 
-  onShowSideBar(ev) {
-    console.log(ev);
+  onShowSideBar() {
     this.showSideBar = true;
   }
 
-  /*onSwipeLeft() {
-    this.store.dispatch(new fromFicheAction.NextFiche());
+  onSwipeLeft() {
+    // this.store.dispatch(new fromFicheAction.NextFiche());
   }
   onSwipeRight() {
-    this.store.dispatch(new fromFicheAction.PreviousFiche());
-  }*/
-  onSwipeDown(e) {
+    //  this.store.dispatch(new fromFicheAction.PreviousFiche());
+  }
+  onSwipeDown() {
     console.log("onSwipeDown");
 
     this.store.dispatch(new fromProjetAction.Refresh(this.type));

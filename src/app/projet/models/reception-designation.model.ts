@@ -12,6 +12,8 @@ export interface ReceptionDesignationModel {
   unite: string;
   quantite: number;
   fournisseurNom: string;
+  brf: string;
   observation: string;
   idFiche: number;
+  catId: number;
 }

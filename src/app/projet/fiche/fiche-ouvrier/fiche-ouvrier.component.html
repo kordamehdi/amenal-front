@@ -1,7 +1,4 @@
 <div class="container">
-  <app-dialog *ngIf="hasError" (OnCtn)="onDelete()" (Cancel)="onHideAlert()">
-    {{ errorMsg }}
-  </app-dialog>
   <ng-container *ngIf="role === 'USER' || isRoot; else elseTmp">
     <ng-container *ngIf="!isValid; else elseTemplate">
       <app-fiche-ouvrier-designation></app-fiche-ouvrier-designation>

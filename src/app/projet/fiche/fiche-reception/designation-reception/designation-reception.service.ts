@@ -17,6 +17,7 @@ export class DesignationReceptionService {
   SERVER_ADDRESS = "http://localhost:8080";
   projetSelectionner;
   FicheSelectionner;
+  type = "RECEPTION";
 
   constructor(
     private store: Store<App.AppState>,
@@ -50,7 +51,7 @@ export class DesignationReceptionService {
       )
       .subscribe(
         dss => {
-          this.ficheService.onGetFicheByType("RECEPTION", null);
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
@@ -80,11 +81,10 @@ export class DesignationReceptionService {
       )
       .subscribe(
         dss => {
-          this.ficheService.onGetFicheByType("RECEPTION", null);
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          this.ficheService.onGetFicheByType("RECEPTION", null);
           this.store.dispatch(
             new FromFicheAction.ShowFicheAlert({
               type: "recDs",
@@ -111,6 +111,7 @@ export class DesignationReceptionService {
         dss => {
           this.ficheService.onGetFicheByType("RECEPTION", null);
           this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromProjetAction.Refresh(this.type));
         },
         resp => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
@@ -144,6 +145,7 @@ export class DesignationReceptionService {
           this.store.dispatch(
             new fromFicheReceptionAction.getfournisseurArticleToSelect(frs)
           );
+
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {

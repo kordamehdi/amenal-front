@@ -55,8 +55,9 @@ export class FicheOuvrierService {
       resp => {
         this.store.dispatch(new fromProjetAction.IsBlack(false));
         this.store.dispatch(
-          new fromFicheOuvrierAction.ShowAlert({
+          new fromFicheAction.ShowFicheAlert({
             showAlert: true,
+            type: "ouvrier",
             msg: resp.error.message
           })
         );
@@ -81,10 +82,10 @@ export class FicheOuvrierService {
       },
       resp => {
         this.store.dispatch(new fromProjetAction.IsBlack(false));
-
         this.store.dispatch(
-          new fromFicheOuvrierAction.ShowAlert({
+          new fromFicheAction.ShowFicheAlert({
             showAlert: true,
+            type: "ouvrier",
             msg: resp.error.message
           })
         );
@@ -110,10 +111,11 @@ export class FicheOuvrierService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          console.log(resp.error.message);
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
-            new fromFicheOuvrierAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
               showAlert: true,
+              type: "ouvrier",
               msg: resp.error.message
             })
           );
@@ -206,6 +208,59 @@ export class FicheOuvrierService {
       }
     );
   }
+  public OnDeleteVille(v) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    const req = new HttpRequest(
+      "DELETE",
+      this.SERVER_ADDRESS + "/villes/" + v,
+      {
+        reportProgress: true
+      }
+    );
+    this.httpClient.request(req).subscribe(
+      () => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+        this.onGetVilles();
+      },
+      resp => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "ouvrier",
+            showAlert: true,
+            msg: resp.error.message
+          })
+        );
+      }
+    );
+  }
+
+  public OnDeleteApprec(v) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    const req = new HttpRequest(
+      "DELETE",
+      this.SERVER_ADDRESS + "/appreciations/" + v,
+      {
+        reportProgress: true
+      }
+    );
+    this.httpClient.request(req).subscribe(
+      () => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+        this.onGetAppreciations();
+      },
+      resp => {
+        this.store.dispatch(new fromProjetAction.IsBlack(false));
+        this.store.dispatch(
+          new fromFicheAction.ShowFicheAlert({
+            type: "ouvrier",
+            showAlert: true,
+            msg: resp.error.message
+          })
+        );
+      }
+    );
+  }
   public addQualification(qual) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     this.httpClient
@@ -219,11 +274,59 @@ export class FicheOuvrierService {
           this.onGetQualifications();
         },
         resp => {
-          console.log(resp.error.message);
-          this.store.dispatch(new fromProjetAction.IsBlack(true));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
-            new fromFicheOuvrierAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
               showAlert: true,
+              type: "ouvrier",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+  public addVille(v) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    return this.httpClient
+      .post<String>(this.SERVER_ADDRESS + "/villes", v, {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        qls => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.onGetVilles();
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "ouvrier",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+  public addApprec(apprec) {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .post<String>(this.SERVER_ADDRESS + "/appreciations", apprec, {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        qls => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.onGetAppreciations();
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "ouvrier",
               msg: resp.error.message
             })
           );
@@ -241,13 +344,65 @@ export class FicheOuvrierService {
         qls => {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(new fromFicheOuvrierAction.GetDesignations(qls));
+          this.store.dispatch(new fromFicheOuvrierAction.villeAded());
         },
         resp => {
-          console.log(resp.error.message);
-          this.store.dispatch(new fromProjetAction.IsBlack(true));
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
           this.store.dispatch(
-            new fromFicheOuvrierAction.ShowAlert({
+            new fromFicheAction.ShowFicheAlert({
               showAlert: true,
+              type: "ouvrier",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+  public onGetVilles() {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .get<string[]>(this.SERVER_ADDRESS + "/villes", {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        qls => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromFicheOuvrierAction.GetVilles(qls));
+          this.store.dispatch(new fromFicheOuvrierAction.villeAded());
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "ouvrier",
+              msg: resp.error.message
+            })
+          );
+        }
+      );
+  }
+
+  public onGetAppreciations() {
+    this.store.dispatch(new fromProjetAction.IsBlack(true));
+    this.httpClient
+      .get<string[]>(this.SERVER_ADDRESS + "/appreciations", {
+        observe: "body",
+        responseType: "json"
+      })
+      .subscribe(
+        qls => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(new fromFicheOuvrierAction.GetApprec(qls));
+          this.store.dispatch(new fromFicheOuvrierAction.villeAded());
+        },
+        resp => {
+          this.store.dispatch(new fromProjetAction.IsBlack(false));
+          this.store.dispatch(
+            new fromFicheAction.ShowFicheAlert({
+              showAlert: true,
+              type: "ouvrier",
               msg: resp.error.message
             })
           );

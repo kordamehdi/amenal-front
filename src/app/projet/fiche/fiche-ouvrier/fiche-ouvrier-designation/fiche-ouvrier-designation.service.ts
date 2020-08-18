@@ -146,7 +146,7 @@ export class FicheOuvrierDesignationService {
       () => {
         this.store.dispatch(new fromProjetAction.IsBlack(false));
         this.store.dispatch(new fromFicheAction.FinishRemovingDs());
-        this.ficheService.onGetFicheByType("OUVRIER", null);
+        this.store.dispatch(new fromProjetAction.Refresh("OUVRIER"));
       },
       resp => {
         this.store.dispatch(

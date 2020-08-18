@@ -1,5 +1,4 @@
 import { validerFiche } from "./../../nav/nav.selector";
-import { FicheAction } from "./../../redux/fiche.action";
 import { FicheService } from "./../../fiche.service";
 import { refresh } from "./../../header/head.selector";
 import { FournisseurModel } from "./../../../models/fournisseur-materiel.model";
@@ -17,6 +16,9 @@ import * as fromFicheLocationAction from "../redux/fiche-location.action";
 import * as moment from "moment";
 import { untilDestroyed } from "ngx-take-until-destroy";
 import { stateFicheLocation } from "../redux/fiche-location.selector";
+import { Platform } from "@ionic/angular";
+import { listeAdmin, fiche } from "../../redux/fiche.selector";
+import { innerHeight, dimension } from "src/app/projet/redux/projet.selector";
 
 @Component({
   selector: "app-fiche-location-desgnation",
@@ -28,18 +30,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   form: NgForm;
   isSelected: Boolean = false;
   isSelectedDirty = false;
-  typeAsc = "";
+  typeAsc = "libelle";
   duration;
   Show = true;
-  columnDesignation: string[] = [
-    "DESIGNATION",
-    "UNITÉ",
-    "DEBUT",
-    "FIN",
-    "QUANTITÉ",
-    "FOURNISSEUR",
-    "OBSERVATION"
-  ];
   formNames = [
     "libelle",
     "unite",
@@ -47,6 +40,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     "tempsFin",
     "quantite",
     "fournisseurNom",
+    "brf",
     "observation"
   ];
   uniteOnUpdate: string;
@@ -56,7 +50,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   isFocus = false;
   fournisseurMaterielMap: FournisseurModel[];
   fournisseurMaterielMap$: FournisseurModel[];
-  inputSearchName = ["libelle", "fournisseurNom"];
+  inputSearchName = ["libelle", "fournisseurNom", "brf"];
   designtions: locationDesignationModel[] = [];
   designtions$: locationDesignationModel[] = [];
   designtions$$: locationDesignationModel[] = [];
@@ -80,57 +74,112 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   navPas = 1;
   position = 1;
   size;
-  ascendant = [];
+
   a = 0;
   b = this.navPas;
-  filterState: {
-    libelle: "";
-    fournisseurNom: "";
+  filterState = {
+    libelle: "",
+    fournisseurNom: ""
   };
+  order = [
+    {
+      type: "libelle",
+      order: true,
+      isFocus: false
+    },
+    {
+      type: "tempsFin",
+      order: true,
+      isFocus: false
+    },
+    {
+      type: "tempsDebut",
+      order: true,
+      isFocus: false
+    },
+    {
+      type: "travailleLoc",
+      order: true,
+      isFocus: false
+    },
+    {
+      type: "fournisseurNom",
+      order: true,
+      isFocus: false
+    },
+    {
+      type: "brf",
+      order: true,
+      isFocus: false
+    }
+  ];
+  screenHeight;
   constructor(
     private store: Store<App.AppState>,
     private ficheLocationService: FicheLocationService,
-    private ficheService: FicheService
+    private ficheService: FicheService,
+    private platform: Platform
   ) {}
 
   ngOnInit() {
     this.ficheLocationService.onGetFournisseurByProjet();
+
+    this.store
+      .select(listeAdmin)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
+        let newHeight;
+        if (state) {
+          newHeight = ((this.platform.height() - 73) * 0.5)
+            .toString()
+            .concat("px");
+        } else {
+          newHeight = ((this.platform.height() - 73) * 0.95)
+            .toString()
+            .concat("px");
+        }
+
+        if (this.screenHeight != newHeight) this.screenHeight = newHeight;
+      });
+
     this.store
       .select(stateFicheLocation)
       .pipe(untilDestroyed(this))
       .subscribe(state => {
+        this.filterState = state.filter;
+        this.order = state.sort.order;
+        this.typeAsc = state.sort.type;
         setTimeout(() => {
-          console.log(" loc ", state);
-          this.a = state.position.a;
-          if (state.position.b > 0) this.b = state.position.b;
-          this.position = state.position.position;
-          this.filterState = state.filter;
-          this.ascendant = state.sort.order;
-          this.typeAsc = state.sort.type;
-
           this.onFilter(true);
         }, 0);
       });
+
     this.store
       .select("ficheLocation")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
+        setTimeout(() => {
+          this.onFilter(true);
+        }, 0);
         this.fournisseurMaterielMap$ = [...state.fournisseurByProjet];
       });
     this.store
       .select("fiche")
       .pipe(untilDestroyed(this))
       .subscribe(state => {
+        if (state.type === "locDs" || state.type === "fiche") {
+          this.errorMsg = state.errorMsg;
+          this.showAlert = state.showAlert;
+        }
+      });
+    this.store
+      .select(fiche)
+      .pipe(untilDestroyed(this))
+      .subscribe(state => {
         setTimeout(() => {
-          if (state.type === "locDs" || state.type === "fiche") {
-            this.errorMsg = state.errorMsg;
-            this.showAlert = state.showAlert;
-          }
-          if (state.ficheSelectionner !== null)
-            this.FicheLocation = { ...state.ficheSelectionner };
+          if (state !== null) this.FicheLocation = { ...state };
 
-          if (this.FicheLocation.designations.length > 0)
-            this.designtions$$ = this.FicheLocation.designations;
+          this.designtions$$ = this.FicheLocation.designations;
 
           this.onFilter(true);
         }, 0);
@@ -177,8 +226,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       quantite: 1,
       tempsDebut: this.form.value["tempsDebut"],
       tempsFin: this.form.value["tempsFin"],
-      travailleLoc: +(duration / 60).toFixed(2),
+      travailleLoc: +duration,
       observation: this.form.value["observation"],
+      brf: this.form.value["brf"],
       idFiche: null,
       fournisseurNom: "",
       libelle: "",
@@ -221,14 +271,14 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
       quantite: 1,
       tempsDebut: this.form.value["tempsDebut".concat(this.dsID.toString())],
       tempsFin: this.form.value["tempsFin".concat(this.dsID.toString())],
-      travailleLoc: +(duration / 60).toFixed(2),
+      travailleLoc: +duration,
       observation: this.form.value["observation".concat(this.dsID.toString())],
       fournisseurNom: "",
+      brf: this.form.value["brf".concat(this.dsID.toString())],
       libelle: "",
       idFiche: null,
       idProjet: null
     };
-    console.log("ddd", locDs);
     this.ficheLocationService.onUpdateLocationDesignation(
       locDs,
       this.designtions$[this.dsIndex].id
@@ -251,6 +301,12 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     this.fournisseurs = this.fournisseurMaterielMap$.filter(
       fm => fm.materiel.id === mat.id
     );
+
+    if (this.fournisseurs.length == 1) {
+      this.form.controls["fournisseurNom"].setValue(
+        this.fournisseurs[0].fournisseurNom
+      );
+    }
 
     this.form.controls["libelle"].setValue(mat.designation);
     this.form.controls["unite"].setValue(mat.unite);
@@ -275,7 +331,6 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   }
 
   onAddClickOutside() {
-    console.log(this.isUpdate);
     if (this.isUpdate == 0 && (this.form.dirty || this.isSelectedDirty)) {
       this.isUpdate = -1;
       this.isSelectedDirty = false;
@@ -298,6 +353,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
         this.isUpdate = -1;
       } else {
         this.formNames.forEach((key: any) => {
+          console.log("*********** ", key);
           if (this.form.value[key] !== null) {
             if (!this.form.controls[key].valid) {
               this.store.dispatch(
@@ -327,8 +383,11 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   }
 
   onAddClick() {
-    this.isUpdate = 0;
-    this.dsIndex = -1;
+    setTimeout(() => {
+      this.isUpdate = 0;
+      this.dsIndex = -1;
+    }, 0);
+
     if (this.fournisseurMaterielMap$ === null) {
       this.fournisseurMaterielMap$ = [];
     }
@@ -408,14 +467,18 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
         .includes(this.FicheLocation.designations[i].fournisseurNom)
     ) {
       this.Show = false;
-      this.form.controls["fournisseurNom".concat(mat.id.toString())].reset();
+      if (this.fournisseurs.length == 1)
+        this.form.controls["fournisseurNom".concat(mat.id.toString())].setValue(
+          this.fournisseurs[0].fournisseurNom
+        );
+      else
+        this.form.controls["fournisseurNom".concat(mat.id.toString())].reset();
     }
   }
 
   onUpdateClickedOutside(i, id) {
     if (this.dsID === id) {
       if (this.isUpdate == 1 && (this.form.dirty || this.isSelectedDirty)) {
-        this.isSelectedDirty = false;
         let submit = true;
         var startTime = moment(
           this.form.value["tempsDebut".concat(id.toString())],
@@ -445,15 +508,17 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           );
           this.isUpdate = -1;
         } else {
-          let foursName = this.fournisseurs.map(f => f.fournisseurNom);
-          if (
-            !foursName.includes(
-              this.form.value["fournisseurNom".concat(id.toString())]
-            ) &&
-            this.form.value["fournisseurNom".concat(id.toString())] !==
-              this.designtions$[i].fournisseurNom
-          ) {
-            submit = false;
+          if (this.isSelectedDirty) {
+            let foursName = this.fournisseurs.map(f => f.fournisseurNom);
+            if (
+              !foursName.includes(
+                this.form.value["fournisseurNom".concat(id.toString())]
+              ) &&
+              this.form.value["fournisseurNom".concat(id.toString())] !==
+                this.designtions$[i].fournisseurNom
+            ) {
+              submit = false;
+            }
           }
           if (submit) this.form.ngSubmit.emit();
           else {
@@ -473,12 +538,15 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
           this.isSelectedDirty = false;
         }
         this.isUpdate = -1;
+        this.isSelectedDirty = false;
       } else {
         this.isUpdate = -1;
         this.dsIndex = -1;
         this.dsID = -1;
       }
-
+      console.log(
+        "*************************onUpdateClickedOutside******************"
+      );
       this.formNames.forEach((key: any) => {
         this.form.controls[key.concat(id.toString())].disable();
       });
@@ -490,78 +558,79 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
   }
 
   onUpdateClick(i, id, value, locDs: locationDesignationModel) {
-    if (this.isUpdate !== 1) {
+    setTimeout(() => {
       this.dsID = id;
-      this.dsIndex = i;
-      if (typeof this.form !== "undefined")
-        this.formNames.forEach((key: string) => {
-          console.log(this.form.controls);
-          this.form.controls[key.concat(id)].enable();
-        });
+    }, 0);
+    this.dsIndex = i;
+    console.log("*************************onUpdateClick******************");
 
-      this.isUpdate = 1;
-      if (this.FicheLocation.designations === null) {
-        this.designtions$ = [];
-      }
-
-      //remove double
-      this.fournisseurMaterielMap = this.fournisseurMaterielMap$.filter(fa => {
-        let pass = true;
-        this.designtions$.forEach((ds: locationDesignationModel) => {
-          if (fa.materiel.designation === ds.libelle) {
-            pass = false;
-          }
-        });
-        return pass;
+    if (typeof this.form !== "undefined")
+      this.formNames.forEach((key: string) => {
+        this.form.controls[key.concat(id)].enable();
       });
 
-      let tabAr = this.fournisseurMaterielMap$
-        .map(f => f.materiel)
-        .filter(m => m.designation !== locDs.libelle);
+    this.isUpdate = 1;
+    if (this.FicheLocation.designations === null) {
+      this.designtions$ = [];
+    }
 
-      if (tabAr.length > 0) {
-        let c = tabAr[0].designation;
-        let i = 0;
-        tabAr = tabAr.sort((a, b) => {
-          if (a.designation < b.designation) {
-            return -1;
-          }
-          if (a.designation > b.designation) {
-            return 1;
-          }
-          return 0;
-        });
-        this.materielsShow = tabAr.filter(a => {
-          let is;
-          if (c === a.designation) {
-            i = i + 1;
-            if (i > 1) return false;
-            else return true;
-          } else {
-            c = a.designation;
-            i = 1;
-            return true;
-          }
-        });
-        this.materielsShow$ = [...this.materielsShow];
-      }
-
-      this.fournisseurs$ = this.fournisseurMaterielMap$.filter(fm => {
-        let pass = true;
-        if (
-          fm.fournisseurNom === locDs.fournisseurNom &&
-          fm.materiel.designation === locDs.libelle
-        ) {
+    //remove double
+    this.fournisseurMaterielMap = this.fournisseurMaterielMap$.filter(fa => {
+      let pass = true;
+      this.designtions$.forEach((ds: locationDesignationModel) => {
+        if (fa.materiel.designation === ds.libelle) {
           pass = false;
         }
-
-        this.fournisseurs = this.fournisseurs$;
-
-        return pass && fm.materiel.designation === value;
       });
+      return pass;
+    });
+
+    let tabAr = this.fournisseurMaterielMap$
+      .map(f => f.materiel)
+      .filter(m => m.designation !== locDs.libelle);
+
+    if (tabAr.length > 0) {
+      let c = tabAr[0].designation;
+      let i = 0;
+      tabAr = tabAr.sort((a, b) => {
+        if (a.designation < b.designation) {
+          return -1;
+        }
+        if (a.designation > b.designation) {
+          return 1;
+        }
+        return 0;
+      });
+      this.materielsShow = tabAr.filter(a => {
+        let is;
+        if (c === a.designation) {
+          i = i + 1;
+          if (i > 1) return false;
+          else return true;
+        } else {
+          c = a.designation;
+          i = 1;
+          return true;
+        }
+      });
+      this.materielsShow$ = [...this.materielsShow];
     }
+
+    this.fournisseurs$ = this.fournisseurMaterielMap$.filter(fm => {
+      let pass = true;
+      if (
+        fm.fournisseurNom === locDs.fournisseurNom &&
+        fm.materiel.designation === locDs.libelle
+      ) {
+        pass = false;
+      }
+
+      this.fournisseurs = this.fournisseurs$;
+
+      return pass && fm.materiel.designation === value;
+    });
   }
-  onSelectUpdateFr(fournisseurNom, i, id) {
+  onSelectUpdateFr(fournisseurNom, id) {
     this.isSelectedDirty = true;
     this.form.controls["fournisseurNom".concat(id.toString())].setValue(
       fournisseurNom
@@ -575,7 +644,7 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     } else this.fournisseurs = this.fournisseurs$;
   }
 
-  onUpdateFournisseurFocus(value, listfrUpdate) {
+  onUpdateFournisseurFocus(listfrUpdate) {
     listfrUpdate.hidden = false;
   }
 
@@ -602,55 +671,23 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
     return Math.trunc(hours) + "H " + minutes + "M";
   }
   OnDeleteDs(id) {
-    console.log("OnDeleteDs");
-    this.locDsToDelete = id;
-    this.store.dispatch(
-      new fromFicheAction.ShowFicheAlert({
-        type: "locDs",
-        showAlert: true,
-        msg: "est ce que vous voulez vraiment supprimer cette designation?"
-      })
-    );
-  }
-  OnInputDate(debut, fin, i = "") {
-    if (debut !== null && fin !== null) {
-      var startTime = moment(debut, "HH:mm:ss");
-      var endTime = moment(fin, "HH:mm:ss");
-
-      // calculate total duration
-      let duration: number = moment
-        .duration(endTime.diff(startTime))
-        .asMinutes();
-
-      if (Number.isNaN(duration)) duration = 0.0;
-
-      // duration in hours
-
-      if (i !== "")
-        this.designtions$[i].travailleLocString = +(duration / 60).toFixed(2);
-      else this.form.controls["quantite"].setValue(+(duration / 60).toFixed(2));
-    } else {
-      if (i !== "") this.designtions$[i].travailleLocString = "0.0";
-      else this.form.controls["quantite"].setValue("0.0");
+    if (this.dsID === id) {
+      this.locDsToDelete = id;
+      this.store.dispatch(
+        new fromFicheAction.ShowFicheAlert({
+          type: "locDs",
+          showAlert: true,
+          msg: "est ce que vous voulez vraiment supprimer cette designation?"
+        })
+      );
     }
   }
 
   /* */
 
-  onFilterBur(input) {
-    if (input.value.trim() === "") {
-      this.designtions$ = this.designtions$;
-      this.designtions = this.designtions$; /*.slice(0, this.navPas);
-      this.size = Math.trunc(this.designtions$.length / this.navPas);
-      if (this.size < this.designtions$.length / this.navPas)
-        this.size = this.size + 1;*/
-    }
-  }
-
   onFilter(init) {
     this.designtions$ = this.slice(this.designtions$$);
     let empty = true;
-    console.log("before   ", this.filterState);
 
     if (typeof this.form !== "undefined")
       this.inputSearchName.forEach((key: string) => {
@@ -671,51 +708,63 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
         }
       });
 
-    console.log("after   ", this.filterState);
     if (!init && !empty) {
       this.a = 0;
       this.b = this.navPas;
       this.position = 1;
     }
     this.designtions = this.designtions$;
-    this.designtions.forEach((d: locationDesignationModel, i) => {
-      this.OnInputDate(d.tempsDebut, d.tempsFin, i.toString());
-    });
-    this.designtions = this.designtions$.slice(this.a, this.b);
+
+    /* this.designtions = this.designtions$.slice(this.a, this.b);
     this.size = Math.trunc(this.designtions$.length / this.navPas);
     if (this.size < this.designtions$.length / this.navPas)
-      this.size = this.size + 1;
+      this.size = this.size + 1;*/
 
-    this.onSort(this.typeAsc, true);
+    this.onSort(true, this.typeAsc);
   }
 
   /*********** */
-
+  orderByType(type) {
+    return this.order.find(s => s.type === type).order;
+  }
+  orderTypeFocus(type) {
+    return this.order.find(s => s.type === type).isFocus;
+  }
   /********** */
 
-  onSort(type, init) {
+  onSort(init, type) {
     // descending order z->a
     this.typeAsc = type;
-    if (!init) this.ascendant[type] = !this.ascendant[type];
-    if (!this.ascendant[type])
+    let o = this.order.find(s => s.type === type).order;
+    if (!init) {
+      o = !o;
+      this.order.find(s => s.type === type).order = !this.order.find(
+        s => s.type === type
+      ).order;
+      this.order.forEach(e => {
+        if (e.type === type) e.isFocus = true;
+        else e.isFocus = false;
+      });
+    }
+    if (o)
       this.designtions = this.designtions.sort((a, b) => {
         if (a[type] > b[type]) {
           return -1;
-        }
-        if (b[type] > a[type]) {
+        } else if (b[type] > a[type]) {
           return 1;
+        } else {
+          return b.id < a.id ? 1 : -1;
         }
-        return 0;
       });
-    if (this.ascendant[type])
+    if (!o)
       this.designtions = this.designtions.sort((a, b) => {
         if (a[type] < b[type]) {
           return -1;
-        }
-        if (b[type] < a[type]) {
+        } else if (b[type] < a[type]) {
           return 1;
+        } else {
+          return b.id < a.id ? 1 : -1;
         }
-        return 0;
       });
   }
 
@@ -775,14 +824,9 @@ export class FicheLocationDesgnationComponent implements OnInit, OnDestroy {
 
     this.store.dispatch(
       new fromFicheLocationAction.getFicheState({
-        position: {
-          a: this.a,
-          b: this.b,
-          position: this.position
-        },
         filter: this.filterState,
         sort: {
-          order: this.ascendant,
+          order: this.order,
           type: this.typeAsc
         }
       })

@@ -37,6 +37,7 @@
       </tr>
       <tr
         (click)="onAddClick()"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onAddClickOutside()"
         class="stock-content"
       >
@@ -131,6 +132,7 @@
           color: ds.retard < 0 ? 'red' : ''
         }"
         (click)="onUpdateClick(i, ds.id)"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onUpdateClickOutside(i)"
         class="stock-content"
         *ngFor="let ds of designation$; let i = index"

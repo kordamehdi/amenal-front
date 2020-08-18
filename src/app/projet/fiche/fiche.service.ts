@@ -50,7 +50,6 @@ export class FicheService {
         () => {
           this.onGetFicheByTypeAndDate(
             this.ficheSelectionner.type,
-            null,
             this.ficheSelectionner.date.toString()
           );
           this.store.dispatch(new fromProjetAction.IsBlack(false));
@@ -104,8 +103,6 @@ export class FicheService {
           this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
-          console.log(resp.error.message);
-
           this.store.dispatch(
             new fromFicheAction.ShowFicheAlert({
               showAlert: true,
@@ -116,7 +113,7 @@ export class FicheService {
         }
       );
   }
-  onGetFicheWithRoute(ficheType: String, route) {
+  onGetFicheWithRoute(ficheType: String) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     let params;
     params = new HttpParams().set(
@@ -140,8 +137,6 @@ export class FicheService {
       .subscribe(
         fiche => {
           this.store.dispatch(new fromFicheAction.RefreshFiche(fiche));
-
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
           console.log(resp.error.message);
@@ -156,7 +151,7 @@ export class FicheService {
       );
   }
 
-  onGetFicheByTypeAndDate(ficheType: String, route, date) {
+  onGetFicheByTypeAndDate(ficheType: String, date) {
     this.store.dispatch(new fromProjetAction.IsBlack(true));
     let params;
     console.log(this.projetSelectionner);
@@ -178,8 +173,6 @@ export class FicheService {
       .subscribe(
         fiche => {
           this.store.dispatch(new fromFicheAction.RefreshFiche(fiche));
-
-          this.store.dispatch(new fromProjetAction.IsBlack(false));
         },
         resp => {
           console.log(resp.error.message);

@@ -1,21 +1,14 @@
-<div (onclick)="click()" class="container">
+<div class="container">
   <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onHideAlert()">
     {{ errorMsg }}
   </app-dialog>
-  <form
-    (ngSubmit)="
-      update === 1
-        ? OnUpdateVisiteurDesignation(id)
-        : OnAddVisiteurDesignation()
-    "
-    #f="ngForm"
-  >
+  <form #f="ngForm">
     <div class="header-nav">
       <span class="left" (click)="onPrevious()"
         ><ion-icon name="arrow-dropleft"></ion-icon>
       </span>
 
-      <span class="middle"> FICHE LOCATION : {{ position }}/{{ size }}</span>
+      <span class="middle"> FICHE VISITEUR : {{ position }}/{{ size }}</span>
 
       <span class="left" (click)="onNext()">
         <ion-icon name="arrow-dropright"></ion-icon>
@@ -61,7 +54,8 @@
       </tr>
       <tr
         (click)="onAddClick()"
-        (clickOutside)="onAddClickOutside(nom, org)"
+        [attachOutsideOnClick]="true"
+        (clickOutside)="onAddClickOutside()"
         class="inputs"
       >
         <td class="tdInput">
@@ -130,6 +124,7 @@
         }"
         (press)="onDeleteVisiteurDesignation(item.id)"
         (click)="onUpdateClick(item.id)"
+        [attachOutsideOnClick]="true"
         (clickOutside)="onUpdateClickOutside(item.id)"
         *ngFor="let item of designation; let i = index"
       >
@@ -200,7 +195,7 @@
         <td>
           <input
             readonly
-            [type]="text"
+            type="text"
             [ngModel]="item.debut_sys"
             name="debut_sys{{ item.id }}"
             placeholder="DEBUT_SYS"
@@ -223,7 +218,7 @@
         <td>
           <input
             readonly
-            [type]="text"
+            type="text"
             [ngModel]="item.fin_sys"
             name="fin_sys{{ item.id }}"
             placeholder="FIN_SYS"

@@ -27,7 +27,7 @@ const InitialState: projetState = {
   usersWithRole: [],
   currentUser: null,
   loginError: { isErr: false, msg: "" },
-  innerHeight: window.innerHeight
+  innerHeight: 0
 };
 
 export function ProjetReducer(

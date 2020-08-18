@@ -35,7 +35,6 @@ export class ProjetTabComponent implements OnInit {
   ngOnInit() {
     this.store.select("projet").subscribe(p => {
       this.projets = p.projets;
-      console.log(this.projets);
     });
     this.store.select("fiche").subscribe(state => {
       if (state.type === "projet") {
@@ -80,7 +79,7 @@ export class ProjetTabComponent implements OnInit {
     this.showSideBar = false;
   }
 
-  onShowSideBar(ev) {
+  onShowSideBar() {
     this.showSideBar = true;
   }
 

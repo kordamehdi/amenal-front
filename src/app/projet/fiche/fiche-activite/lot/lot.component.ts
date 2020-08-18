@@ -359,7 +359,7 @@ export class LotComponent implements OnInit, OnDestroy {
     this.listEntree = this.listEntree$;
     list.hidden = false;
   }
-  onBlurEntreeAdd(list, i, j) {
+  onBlurEntreeAdd(list) {
     setTimeout(() => {
       list.hidden = true;
     }, 200);

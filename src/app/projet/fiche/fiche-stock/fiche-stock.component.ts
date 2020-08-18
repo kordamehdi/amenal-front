@@ -37,6 +37,7 @@ export class FicheStockComponent implements OnInit {
       this.stocks$ = this.FicheReception.stockDesignations;
       this.onSortByStockable();
       this.stocks = this.stocks$;
+      console.log("************** ", this.stocks);
       this.stocks.forEach(c => {
         if (this.showDetails.find(s => s.cat === c.categorie) === undefined) {
           let s = { cat: c.categorie, show: false };
@@ -97,14 +98,13 @@ export class FicheStockComponent implements OnInit {
     this.stocks = this.stocks.filter(c => c.categorie.includes(word));
   }
 
-  filter(ds: string, type) {
+  filter(ds: string) {
     this.stocks = this.slice(this.stocks$);
     let ds$ = ds.trim().toUpperCase();
     let reset = true;
-    if (ds$ !== "" && ds$ !== "DESIGNATION") {
+    if (ds$ !== "") {
       reset = false;
-      if (type == "A") this.onFilterByArticle(ds$);
-      else this.onFilterByCategorie(ds$);
+      this.onFilterByArticle(ds$);
     }
 
     if (reset) this.stocks = this.slice(this.stocks$);

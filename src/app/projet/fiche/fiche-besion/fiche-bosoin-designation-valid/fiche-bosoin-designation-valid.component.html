@@ -35,6 +35,7 @@
         'background-color': selectedDsIndex === i ? 'rgba(255, 0, 0, 0.1)' : ''
       }"
       (click)="onUpdateClick(i, ds.id)"
+      [attachOutsideOnClick]="true"
       (clickOutside)="onUpdateClickOutside(i)"
       class="stock-content"
       *ngFor="let ds of designation$; let i = index"
@@ -73,7 +74,7 @@
           readonly
           [ngModel]="ds.datePrevu"
           type="date"
-          [type]="text"
+          type="text"
           name="datePrevu{{ i }}"
         />
       </td>

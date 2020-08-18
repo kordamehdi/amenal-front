@@ -1,5 +1,5 @@
 <div class="container">
-  <app-dialog *ngIf="showAlert" (OnCtn)="onContinue()" (Cancel)="onCancel()">
+  <app-dialog *ngIf="showAlert" (Cancel)="onCancel()">
     {{ errorMsg }}
   </app-dialog>
   <form style="width: 100%" id="form" #f="ngForm">
@@ -49,6 +49,7 @@
         <td colspan="12">
           <div
             (click)="onClickDesignation(i)"
+            [attachOutsideOnClick]="true"
             (clickOutside)="onClickOutsideDesignation(i)"
             [ngStyle]="{
               'background-color':
@@ -93,6 +94,7 @@
             <div
               (click)="onClickSousLot(ds.lot, i, j)"
               (clickOutside)="onClickOutsideSousLot(sLot, i, j)"
+              [attachOutsideOnClick]="true"
               *ngFor="
                 let sLot of ds.sousLotDesignationPresentations;
                 let j = index
