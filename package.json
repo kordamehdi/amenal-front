@@ -40,7 +40,7 @@
     "igniteui-angular": "^8.2.20",
     "jszip": "^3.1.5",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "ng-click-outside": "^6.0.0",
     "ngx-take-until-destroy": "^5.4.0",
     "resize-observer-polyfill": "^1.5.1",
